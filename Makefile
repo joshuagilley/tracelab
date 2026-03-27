@@ -1,4 +1,11 @@
-.PHONY: dev api web install build clean
+.PHONY: dev api web install build clean compose-up compose-down
+
+# Docker: Python playground + Go API (Vite: run `make web` separately)
+compose-up:
+	docker compose up --build
+
+compose-down:
+	docker compose down
 
 dev:
 	@echo "Starting TraceLab..."

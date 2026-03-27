@@ -1,0 +1,43 @@
+[
+  {
+    "id": "ds-1",
+    "title": "Numerical Computing",
+    "slug": "numerical-computing",
+    "summary": "Core NumPy routines for array creation and inspection — the foundation for scientific Python.",
+    "difficulty": "easy",
+    "tags": ["numpy", "arrays"],
+    "status": "available",
+    "labKind": "data-science",
+    "vizType": "numerical",
+    "codeFiles": [
+      {
+        "name": "arrays.py",
+        "lang": "python",
+        "code": "import numpy as np\n\n# --- Array creation (pick one in the simulator) ---\n# np.ones(n)      — vector of 1.0\n# np.zeros(n)     — vector of 0.0\n# np.arange(n)    — 0, 1, …, n-1\n# np.linspace(0, 1, n) — n evenly spaced points in [0, 1]\n\nn = 8\na = np.ones(n)\n\nprint(\"shape:\", a.shape)\nprint(\"dtype:\", a.dtype)\nprint(\"values:\", a)\nprint(\"sum:\", a.sum(), \"mean:\", a.mean())"
+      },
+      {
+        "name": "notes.md",
+        "lang": "markdown",
+        "code": "## NumPy in TraceLab\n\n- **Production** serves this lesson from **static JSON** (no Python execution).\n- **Local dev**: run `docker compose up datascience` and hit `/api/datascience/api/playground/numpy-demo` via the Go proxy to execute real NumPy."
+      }
+    ],
+    "parameters": [
+      {
+        "id": "numpy_fn",
+        "label": "NUMPY FUNCTION",
+        "type": "select",
+        "options": ["ones", "zeros", "arange", "linspace"],
+        "defaultOption": "ones"
+      },
+      {
+        "id": "array_len",
+        "label": "ARRAY LENGTH",
+        "type": "slider",
+        "min": 4,
+        "max": 32,
+        "step": 1,
+        "default": 8
+      }
+    ]
+  }
+]

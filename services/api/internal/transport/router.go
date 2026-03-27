@@ -2,15 +2,23 @@ package transport
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 
 	"github.com/tracelab/api/internal/concepts"
+	"github.com/tracelab/api/internal/labs"
 )
 
 func NewRouter() http.Handler {
 	store := concepts.NewMemoryStore()
 	h := concepts.NewHandler(store)
+
+	labStore, err := labs.NewMemoryStore()
+	if err != nil {
+		log.Fatalf("labs store: %v", err)
+	}
+	labHandler := labs.NewHandler(labStore)
 
 	mux := http.NewServeMux()
 
@@ -31,6 +39,12 @@ func NewRouter() http.Handler {
 	})
 
 	mux.HandleFunc("/api/concepts", h.List)
+
+	// /api/labs/{design-patterns|data-science}/concepts[/{slug}]
+	mux.Handle("/api/labs/", labHandler)
+
+	// Optional proxy to Python datascience container (same origin for browser)
+	mux.Handle("/api/datascience/", datascienceProxy())
 
 	return withCORS(mux)
 }

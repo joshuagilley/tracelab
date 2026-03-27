@@ -1,29 +1,65 @@
 import { useEffect, useState } from 'react'
 import { fetchConcepts } from '../api'
+import { fetchLabConcepts } from '@/features/labs/api'
+import { useLab } from '@/contexts/lab'
 import ConceptCard from '../components/ConceptCard'
 import type { Concept } from '@/types/concept'
 import styles from './ConceptLibraryPage.module.css'
 
+const COPY: Record<string, { title: string; subtitle: string }> = {
+  'system-design': {
+    title: 'Concept Library',
+    subtitle: 'Select a system design concept to open an interactive lesson.',
+  },
+  'design-patterns': {
+    title: 'Design Patterns',
+    subtitle: 'Classic object-oriented patterns with code and structure diagrams.',
+  },
+  'data-science': {
+    title: 'Data Science',
+    subtitle: 'Numerical and analytical concepts — static lessons in production; Python playground via Docker.',
+  },
+}
+
 export default function ConceptLibraryPage() {
+  const { labId } = useLab()
   const [concepts, setConcepts] = useState<Concept[]>([])
-  const [error, setError]       = useState<string | null>(null)
-  const [loading, setLoading]   = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const { title, subtitle } = COPY[labId] ?? COPY['system-design']
 
   useEffect(() => {
-    fetchConcepts()
-      .then(setConcepts)
-      .catch(() => setError('Could not reach the TraceLab API. Is the Go server running?'))
-      .finally(() => setLoading(false))
-  }, [])
+    setLoading(true)
+    setError(null)
+
+    const run = async () => {
+      try {
+        if (labId === 'system-design') {
+          const list = await fetchConcepts()
+          setConcepts(list)
+        } else if (labId === 'design-patterns') {
+          setConcepts(await fetchLabConcepts('design-patterns'))
+        } else {
+          setConcepts(await fetchLabConcepts('data-science'))
+        }
+      } catch {
+        setError('Could not reach the TraceLab API. Is the Go server running?')
+        setConcepts([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    run()
+  }, [labId])
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>Concept Library</h1>
-          <p className={styles.subtitle}>
-            Select a system design concept to open an interactive lesson.
-          </p>
+          <h1 className={styles.title}>{title}</h1>
+          <p className={styles.subtitle}>{subtitle}</p>
         </div>
         <div className={styles.statusBadge}>
           <span className={`dot ${!loading && !error ? 'live' : ''}`} />

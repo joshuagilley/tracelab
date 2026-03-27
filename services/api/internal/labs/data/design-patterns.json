@@ -1,0 +1,20 @@
+[
+  {
+    "id": "dp-1",
+    "title": "Singleton",
+    "slug": "singleton",
+    "summary": "Ensure a type has at most one instance and provide a global point of access to it.",
+    "difficulty": "easy",
+    "tags": ["creational", "go"],
+    "status": "available",
+    "labKind": "design-patterns",
+    "vizType": "singleton",
+    "codeFiles": [
+      {
+        "name": "singleton.go",
+        "lang": "go",
+        "code": "package singleton\n\nimport (\n\t\"sync\"\n)\n\n// Database represents an expensive shared resource.\ntype Database struct {\n\tconn string\n}\n\nvar (\n\tinstance *Database\n\tonce     sync.Once\n)\n\n// GetInstance returns the sole Database instance.\n// sync.Once guarantees the initializer runs exactly once,\n// even under concurrent GetInstance calls.\nfunc GetInstance() *Database {\n\tonce.Do(func() {\n\t\tinstance = &Database{conn: \"postgres://tracelab\"}\n\t})\n\treturn instance\n}\n\n// Example: multiple packages call GetInstance — they share one DB.\nfunc HandlerA() {\n\tdb := GetInstance()\n\t_ = db.conn\n}\n\nfunc HandlerB() {\n\tdb := GetInstance()\n\t_ = db.conn\n}"
+      }
+    ]
+  }
+]

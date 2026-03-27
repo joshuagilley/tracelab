@@ -67,3 +67,9 @@
   background: var(--bg-base);
   border-radius: 0 0 var(--radius) var(--radius);
 }
+
+.empty {
+  padding: 16px;
+  color: var(--text-muted);
+  font-size: 13px;
+}

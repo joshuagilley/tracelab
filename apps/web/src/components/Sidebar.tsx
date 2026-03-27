@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { fetchConcepts } from '@/features/concepts/api'
+import { fetchLabConcepts } from '@/features/labs/api'
 import { LAB_OPTIONS, useLab, type LabId } from '@/contexts/lab'
 import type { Concept } from '@/types/concept'
 import styles from './Sidebar.module.css'
@@ -26,10 +27,21 @@ export default function Sidebar() {
   const { labId, setLabId, current } = useLab()
 
   useEffect(() => {
-    fetchConcepts()
-      .then(setConcepts)
-      .catch(() => setConcepts([]))
-  }, [])
+    const load = async () => {
+      try {
+        if (labId === 'system-design') {
+          setConcepts(await fetchConcepts())
+        } else if (labId === 'design-patterns') {
+          setConcepts(await fetchLabConcepts('design-patterns'))
+        } else {
+          setConcepts(await fetchLabConcepts('data-science'))
+        }
+      } catch {
+        setConcepts([])
+      }
+    }
+    load()
+  }, [labId])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -108,7 +120,11 @@ export default function Sidebar() {
       </nav>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}>SYSTEM COMPONENTS</div>
+        <div className={styles.sectionTitle}>
+          {labId === 'system-design' && 'SYSTEM COMPONENTS'}
+          {labId === 'design-patterns' && 'PATTERNS'}
+          {labId === 'data-science' && 'TOPICS'}
+        </div>
         <div className={styles.conceptList}>
           {concepts.map(c => (
             <button
