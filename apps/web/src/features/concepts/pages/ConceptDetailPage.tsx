@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { fetchConcept } from '../api'
 import { fetchLabConcept } from '@/features/labs/api'
@@ -7,9 +7,9 @@ import SimulationPanel, { type SimMetrics } from '@/components/SimulationPanel'
 import CodePanel from '@/components/CodePanel'
 import MetricsPanel from '@/components/MetricsPanel'
 import DynamicCodePanel from '@/components/DynamicCodePanel'
-import SingletonVisualizer from '@/components/SingletonVisualizer'
+import SingletonVisualizer, { type SingletonStats } from '@/components/SingletonVisualizer'
 import NumericalComputingVisualizer from '@/components/NumericalComputingVisualizer'
-import DesignPatternBottomPanel from '@/components/DesignPatternBottomPanel'
+import SingletonPatternPanel from '@/components/SingletonPatternPanel'
 import DataScienceLabPanel from '@/components/DataScienceLabPanel'
 import type { Concept } from '@/types/concept'
 import type { LabConceptDetail } from '@/types/labConcept'
@@ -17,6 +17,11 @@ import type { NumpyFn } from '@/lib/numpyDemo'
 import styles from './ConceptDetailPage.module.css'
 
 const DEFAULT_METRICS: SimMetrics = { hits: 0, misses: 0, total: 0 }
+const DEFAULT_SINGLETON_STATS: SingletonStats = {
+  getInstanceCalls: 0,
+  initRuns: 0,
+  fastPathReturns: 0,
+}
 const MIN_WIDTH = 260
 const MAX_WIDTH = 680
 
@@ -46,7 +51,17 @@ export default function ConceptDetailPage() {
   const [numpyFn, setNumpyFn] = useState<NumpyFn>('ones')
   const [arrayLen, setArrayLen] = useState(8)
 
+  const [singletonHandlers, setSingletonHandlers] = useState(3)
+  const [singletonSpawn, setSingletonSpawn] = useState(450)
+  const [singletonStress, setSingletonStress] = useState(false)
+  const [singletonEmphasize, setSingletonEmphasize] = useState(true)
+  const [singletonStats, setSingletonStats] = useState<SingletonStats>(DEFAULT_SINGLETON_STATS)
+
   const [rightWidth, setRightWidth] = useState(400)
+
+  const onSingletonStats = useCallback((s: SingletonStats) => {
+    setSingletonStats(s)
+  }, [])
 
   useEffect(() => {
     if (!slug) return
@@ -83,7 +98,7 @@ export default function ConceptDetailPage() {
   const handleToggleRun = () => {
     if (isRunning) {
       setRunning(false)
-      setMetrics(DEFAULT_METRICS)
+      if (labId === 'system-design') setMetrics(DEFAULT_METRICS)
     } else {
       setRunning(true)
     }
@@ -111,10 +126,14 @@ export default function ConceptDetailPage() {
     document.addEventListener('mouseup', onUp)
   }, [rightWidth])
 
-  const title =
-    labId === 'system-design' ? concept?.title : labConcept?.title
-  const difficulty =
-    labId === 'system-design' ? concept?.difficulty : labConcept?.difficulty
+  const title = useMemo(
+    () => (labId === 'system-design' ? concept?.title : labConcept?.title),
+    [labId, concept?.title, labConcept?.title],
+  )
+  const difficulty = useMemo(
+    () => (labId === 'system-design' ? concept?.difficulty : labConcept?.difficulty),
+    [labId, concept?.difficulty, labConcept?.difficulty],
+  )
 
   if (error) {
     return (
@@ -207,10 +226,28 @@ export default function ConceptDetailPage() {
         >
           <div className={styles.leftCol}>
             <div className={styles.center}>
-              <SingletonVisualizer isRunning={isRunning} onToggleRun={handleToggleRun} />
+              <SingletonVisualizer
+                isRunning={isRunning}
+                onToggleRun={handleToggleRun}
+                handlerCount={singletonHandlers}
+                spawnIntervalMs={singletonSpawn}
+                stressMode={singletonStress}
+                emphasizeOnce={singletonEmphasize}
+                onStatsChange={onSingletonStats}
+              />
             </div>
             <div className={styles.bottom}>
-              <DesignPatternBottomPanel />
+              <SingletonPatternPanel
+                handlerCount={singletonHandlers}
+                spawnIntervalMs={singletonSpawn}
+                stressMode={singletonStress}
+                emphasizeOnce={singletonEmphasize}
+                stats={singletonStats}
+                onHandlerCount={setSingletonHandlers}
+                onSpawnInterval={setSingletonSpawn}
+                onStressMode={setSingletonStress}
+                onEmphasizeOnce={setSingletonEmphasize}
+              />
             </div>
           </div>
 

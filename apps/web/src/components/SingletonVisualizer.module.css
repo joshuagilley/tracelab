@@ -4,6 +4,46 @@
   flex-shrink: 0;
 }
 
+.panel :global(.panel-header) {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.infoBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  font-style: italic;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.infoBtn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
 .headerRight {
   display: flex;
   align-items: center;
@@ -43,26 +83,30 @@
 }
 
 .body {
+  display: flex;
+  flex-direction: column;
   padding: 14px;
+  gap: 12px;
 }
 
-.subtitle {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  margin-bottom: 12px;
-}
-
-.subtitle code {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--accent);
+/*
+ * Fixed-size frame (does not grow/shrink when parameters change).
+ * Inner SVG still uses full width like before; extra diagram scrolls inside.
+ */
+.vizViewport {
+  box-sizing: border-box;
+  width: 100%;
+  height: 520px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-base);
 }
 
 .svg {
+  display: block;
   width: 100%;
   height: auto;
-  display: block;
 }
 
 .pulse {
@@ -72,4 +116,21 @@
 @keyframes glow {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.75; }
+}
+
+.handlerGlow {
+  animation: glow 2.5s ease-in-out infinite;
+}
+
+@keyframes flashOnce {
+  0% { filter: brightness(1.4); }
+  100% { filter: brightness(1); }
+}
+
+.boxFlash {
+  animation: flashOnce 0.38s ease-out;
+}
+
+.singletonBox {
+  transition: stroke-width 0.12s ease;
 }
