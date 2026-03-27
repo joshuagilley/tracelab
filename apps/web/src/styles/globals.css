@@ -39,6 +39,30 @@
   --sidebar-width: 230px;
 }
 
+/* ─── Lab themes (System Design / Design Patterns / Data Science) ─── */
+.lab-root {
+  height: 100%;
+  min-height: 0;
+}
+
+.lab-theme-system-design {
+  --accent: #3de8a0;
+  --accent-dim: rgba(61, 232, 160, 0.14);
+  --accent-glow: rgba(61, 232, 160, 0.28);
+}
+
+.lab-theme-design-patterns {
+  --accent: #f0a040;
+  --accent-dim: rgba(240, 160, 64, 0.14);
+  --accent-glow: rgba(240, 160, 64, 0.28);
+}
+
+.lab-theme-data-science {
+  --accent: #f04d4d;
+  --accent-dim: rgba(240, 77, 77, 0.14);
+  --accent-glow: rgba(240, 77, 77, 0.28);
+}
+
 /* ─── Reset ──────────────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;

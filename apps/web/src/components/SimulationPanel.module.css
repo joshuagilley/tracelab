@@ -29,7 +29,7 @@
 }
 
 .runBtn:hover {
-  background: rgba(61, 232, 200, 0.2);
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .runBtnActive {

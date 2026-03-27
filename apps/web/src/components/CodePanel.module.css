@@ -37,7 +37,7 @@
 
 .tabActive {
   background: var(--accent-dim);
-  border-color: rgba(61, 232, 200, 0.25);
+  border-color: color-mix(in srgb, var(--accent) 25%, transparent);
   color: var(--accent);
 }
 

@@ -10,30 +10,138 @@
 /* ─── Brand ───────────────────────────────────────── */
 .brand {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
-  padding: 16px 14px;
+  padding: 14px 12px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
 .brandIcon {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--accent-dim);
   border: 1px solid var(--accent);
   border-radius: var(--radius-sm);
-  color: var(--accent);
-  font-size: 16px;
+  box-shadow: 0 0 12px var(--accent-glow);
 }
 
-.brandName {
+.brandGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2px;
+  width: 22px;
+  height: 22px;
+}
+
+.gridDot {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.95;
+}
+
+.brandText {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brandTrace {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.labTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  padding: 4px 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  text-align: left;
+}
+
+.labTrigger:hover .labLabel {
+  color: var(--accent);
+}
+
+.labLabel {
   font-size: 13px;
   font-weight: 600;
+  line-height: 1.2;
+  transition: color 0.15s;
+}
+
+.chevron {
+  font-size: 8px;
+  color: var(--text-muted);
+  transition: transform 0.2s, color 0.15s;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.labTrigger:hover .chevron {
+  color: var(--accent);
+}
+
+.chevronOpen {
+  transform: rotate(-180deg);
+}
+
+.labMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  padding: 4px;
+  list-style: none;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  z-index: 50;
+}
+
+.labOption {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.labOption:hover {
+  background: var(--bg-subtle);
   color: var(--text-primary);
+}
+
+.labOptionActive {
+  background: var(--accent-dim);
+  color: var(--accent);
 }
 
 .brandVersion {
@@ -41,6 +149,7 @@
   font-size: 9px;
   color: var(--text-muted);
   letter-spacing: 0.06em;
+  margin-top: 2px;
 }
 
 /* ─── Nav ─────────────────────────────────────────── */
@@ -73,7 +182,7 @@
 .navItemActive {
   background: var(--accent-dim);
   color: var(--accent);
-  border: 1px solid rgba(61, 232, 200, 0.2);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .navIcon {
