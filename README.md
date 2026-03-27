@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" alt="TraceLab" width="340" />
+  <img src="assets/logo-v2.png" alt="TraceLab" width="340" />
 </p>
 
 # TraceLab
