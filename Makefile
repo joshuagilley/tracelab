@@ -1,4 +1,10 @@
-.PHONY: dev api web install build clean compose-up compose-down
+.PHONY: dev api web install build clean compose-up compose-down labs-sync
+
+# Copy lab-authored Go into the API embed tree (Go embed must live under services/api).
+# Run after editing labs/design-patterns/concepts/**/present.go before building the API.
+labs-sync:
+	@mkdir -p services/api/internal/labs/embed/design-patterns
+	rsync -a labs/design-patterns/concepts/ services/api/internal/labs/embed/design-patterns/
 
 # Docker: Python playground + Go API (Vite: run `make web` separately)
 compose-up:
@@ -9,9 +15,10 @@ compose-down:
 
 dev:
 	@echo "Starting TraceLab..."
+	@$(MAKE) labs-sync
 	@$(MAKE) api & $(MAKE) web
 
-api:
+api: labs-sync
 	@echo "Starting Go API on :8080"
 	cd services/api && go run ./cmd/server
 
@@ -22,7 +29,7 @@ web:
 install:
 	cd apps/web && npm install
 
-build:
+build: labs-sync
 	cd apps/web && npm run build
 	cd services/api && go build -o bin/server ./cmd/server
 

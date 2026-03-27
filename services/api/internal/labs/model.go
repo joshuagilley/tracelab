@@ -18,7 +18,10 @@ type LabConcept struct {
 type CodeFile struct {
 	Name string `json:"name"`
 	Lang string `json:"lang"`
-	Code string `json:"code"`
+	// Code is either set inline in JSON (e.g. data-science) or filled from Embed for design-patterns.
+	Code string `json:"code,omitempty"`
+	// Embed is a path relative to internal/labs/embed/design-patterns/ (e.g. singleton/present.go).
+	Embed string `json:"embed,omitempty"`
 }
 
 type Parameter struct {

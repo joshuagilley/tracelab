@@ -8,7 +8,9 @@ services:
       TRACELAB_MODE: playground
 
   api:
-    build: ./services/api
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
     ports:
       - "8080:8080"
     environment:

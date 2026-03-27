@@ -85,7 +85,7 @@ jobs:
       - name: Build and push API image
         run: |
           IMAGE="${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPO }}/api:${{ github.sha }}"
-          docker build -t "$IMAGE" ./services/api
+          docker build -f services/api/Dockerfile -t "$IMAGE" .
           docker push "$IMAGE"
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 

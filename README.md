@@ -53,6 +53,7 @@ Unset `DATASCIENCE_SERVICE_URL` on the Go process to disable the proxy (static D
 ```
 tracelab/
   apps/web/              React + TypeScript frontend
+  labs/                  Authoring workspace for lab concepts (see labs/CONCEPT.md)
   services/api/          Go backend + embedded lab JSON + optional DS proxy
   services/datascience/   FastAPI + NumPy (local / Cloud Run playground)
   docker-compose.yml
