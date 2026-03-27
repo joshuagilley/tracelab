@@ -1,0 +1,20 @@
+# Go
+/services/api/bin/
+*.exe
+
+# Node
+apps/web/node_modules/
+apps/web/dist/
+
+# Env
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp

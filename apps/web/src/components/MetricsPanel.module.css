@@ -1,0 +1,243 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  overflow-y: auto;
+  height: 100%;
+}
+
+/* ─── Run button ─────────────────────────────────── */
+.runBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.runBtn:hover {
+  background: rgba(61, 232, 200, 0.2);
+}
+
+.runBtnActive {
+  background: rgba(240, 77, 77, 0.12);
+  border-color: var(--color-hard);
+  color: var(--color-hard);
+}
+
+.runBtnActive:hover {
+  background: rgba(240, 77, 77, 0.2);
+}
+
+/* ─── Sections ───────────────────────────────────── */
+.section {
+  flex-shrink: 0;
+}
+
+/* ─── Params ─────────────────────────────────────── */
+.params {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px 14px;
+}
+
+.sliderRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sliderTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sliderLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.sliderValue {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--bg-subtle);
+  outline: none;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent-glow);
+  cursor: pointer;
+}
+
+.slider:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.slider:disabled::-webkit-slider-thumb {
+  cursor: not-allowed;
+}
+
+/* ─── Performance metrics ────────────────────────── */
+.metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px 14px;
+}
+
+.statRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.statBox {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.statLabel {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.statValue {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ─── Metric blocks ──────────────────────────────── */
+.metricBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metricLabelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metricLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.metricValue {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+}
+
+/* ─── Bar chart ──────────────────────────────────── */
+.barChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 50px;
+  padding: 0 2px;
+}
+
+.bar {
+  flex: 1;
+  background: var(--accent);
+  opacity: 0.6;
+  border-radius: 2px 2px 0 0;
+  transition: height 0.4s ease;
+}
+
+/* ─── Progress bar ───────────────────────────────── */
+.progressBar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-subtle);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+/* ─── Counters ───────────────────────────────────── */
+.counters {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.counter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 4px;
+  gap: 2px;
+}
+
+.counterVal {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.counterLabel {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+/* ─── Hint ───────────────────────────────────────── */
+.hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  padding-top: 4px;
+}
