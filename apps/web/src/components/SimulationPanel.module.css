@@ -4,6 +4,44 @@
   flex-shrink: 0;
 }
 
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.runBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.runBtn:hover {
+  background: rgba(61, 232, 200, 0.2);
+}
+
+.runBtnActive {
+  background: rgba(240, 77, 77, 0.12);
+  border-color: var(--color-hard);
+  color: var(--color-hard);
+}
+
+.runBtnActive:hover {
+  background: rgba(240, 77, 77, 0.2);
+}
+
 .body {
   padding: 14px;
 }

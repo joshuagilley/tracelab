@@ -1,8 +1,10 @@
 .panel {
   display: flex;
   flex-direction: column;
-  min-height: 0;
   flex: 1;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .header {

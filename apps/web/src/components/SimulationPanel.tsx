@@ -28,6 +28,7 @@ interface Props {
   isRunning: boolean
   hitRate: number              // 0–1, e.g. 0.7 = 70% hit rate
   onMetrics: (m: SimMetrics) => void
+  onToggleRun: () => void
 }
 
 // ─── SVG layout constants ──────────────────────────────────────
@@ -70,7 +71,7 @@ const SPAWN_MS     = 900  // spawn a new packet every N ms
 
 // ─── Component ────────────────────────────────────────────────
 
-export default function SimulationPanel({ isRunning, hitRate, onMetrics }: Props) {
+export default function SimulationPanel({ isRunning, hitRate, onMetrics, onToggleRun }: Props) {
   const [packets, setPackets]   = useState<Packet[]>([])
   const nextId   = useRef(0)
   const metrics  = useRef<SimMetrics>({ hits: 0, misses: 0, total: 0 })
@@ -156,9 +157,18 @@ export default function SimulationPanel({ isRunning, hitRate, onMetrics }: Props
     <div className={`panel ${styles.panel}`}>
       <div className="panel-header">
         <span className="panel-label">Architecture Visualizer</span>
-        <div className="status-dot">
-          <span className={`dot ${isRunning ? 'live' : ''}`} />
-          <span>{isRunning ? 'SIMULATION LIVE' : 'READY'}</span>
+        <div className={styles.headerRight}>
+          <div className="status-dot">
+            <span className={`dot ${isRunning ? 'live' : ''}`} />
+            <span>{isRunning ? 'SIMULATION LIVE' : 'READY'}</span>
+          </div>
+          <button
+            className={[styles.runBtn, isRunning ? styles.runBtnActive : ''].join(' ')}
+            onClick={onToggleRun}
+          >
+            <span>{isRunning ? '■' : '▶'}</span>
+            {isRunning ? 'STOP' : 'EXECUTE SIMULATION'}
+          </button>
         </div>
       </div>
 

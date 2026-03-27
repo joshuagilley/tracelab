@@ -1,13 +1,14 @@
+/* ─── Page shell ─────────────────────────────────── */
 .page {
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  padding: 16px 20px 0 20px;
+  padding: 16px 20px 12px 20px;
   gap: 12px;
 }
 
-/* ─── Header ─────────────────────────────────────── */
+/* ─── Breadcrumb ─────────────────────────────────── */
 .pageHeader {
   display: flex;
   align-items: center;
@@ -41,32 +42,96 @@
   font-weight: 500;
 }
 
-/* ─── 2-col layout ───────────────────────────────── */
-.layout {
+/* ─── 3-col grid: left | handle | code ──────────── */
+.mainArea {
   display: grid;
-  grid-template-columns: 1fr 270px;
-  gap: 12px;
+  /* grid-template-columns overridden by inline style */
+  grid-template-columns: 1fr 6px 400px;
+  gap: 0;
   flex: 1;
   min-height: 0;
-  padding-bottom: 16px;
 }
 
-/* ─── Center column ──────────────────────────────── */
-.center {
+/* ─── Left column ────────────────────────────────── */
+.leftCol {
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-height: 0;
   overflow: hidden;
+  padding-right: 12px;
 }
 
-/* ─── Right column ───────────────────────────────── */
-.right {
-  overflow-y: auto;
+/* Visualizer: shrinks to its natural content height */
+.center {
+  flex-shrink: 0;
+}
+
+/* Metrics: fills all remaining space below visualizer */
+.bottom {
+  flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
-/* ─── Error ──────────────────────────────────────── */
+/* ─── Drag handle ────────────────────────────────── */
+.dragHandle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: col-resize;
+  background: var(--border-dim);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.dragHandle:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+
+/* Three horizontal dots as visual affordance */
+.dragDots {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  pointer-events: none;
+}
+
+.dragDots::before,
+.dragDots::after,
+.dragHandle .dragDots {
+  content: '';
+}
+
+/* Use box-shadow trick for 3 dots */
+.dragDots {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  box-shadow: 0 5px 0 var(--text-muted), 0 10px 0 var(--text-muted);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.dragHandle:hover .dragDots {
+  background: var(--accent);
+  box-shadow: 0 5px 0 var(--accent), 0 10px 0 var(--accent);
+}
+
+/* ─── Right column (code panel, full height) ─────── */
+.right {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  padding-left: 12px;
+}
+
+/* ─── Error state ────────────────────────────────── */
 .errorPage {
   display: flex;
   flex-direction: column;

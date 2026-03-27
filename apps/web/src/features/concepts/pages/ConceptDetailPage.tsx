@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { fetchConcept } from '../api'
 import SimulationPanel, { type SimMetrics } from '@/components/SimulationPanel'
@@ -8,6 +8,8 @@ import type { Concept } from '@/types/concept'
 import styles from './ConceptDetailPage.module.css'
 
 const DEFAULT_METRICS: SimMetrics = { hits: 0, misses: 0, total: 0 }
+const MIN_WIDTH = 260
+const MAX_WIDTH = 680
 
 export default function ConceptDetailPage() {
   const { slug } = useParams<{ slug: string }>()
@@ -16,6 +18,8 @@ export default function ConceptDetailPage() {
   const [isRunning, setRunning] = useState(false)
   const [hitRate, setHitRate]   = useState(0.7)
   const [metrics, setMetrics]   = useState<SimMetrics>(DEFAULT_METRICS)
+  const [rightWidth, setRightWidth] = useState(400)
+  const isDragging = useRef(false)
 
   useEffect(() => {
     if (!slug) return
@@ -33,6 +37,30 @@ export default function ConceptDetailPage() {
     }
   }
 
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    isDragging.current = true
+    const startX = e.clientX
+    const startW = rightWidth
+
+    const onMove = (ev: MouseEvent) => {
+      const delta = startX - ev.clientX  // drag left → wider
+      setRightWidth(Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, startW + delta)))
+    }
+    const onUp = () => {
+      isDragging.current = false
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }, [rightWidth])
+
   if (error) {
     return (
       <div className={styles.errorPage}>
@@ -44,7 +72,8 @@ export default function ConceptDetailPage() {
 
   return (
     <div className={styles.page}>
-      {/* ── Page header ───────────────────────────── */}
+
+      {/* ── Breadcrumb ────────────────────────────── */}
       <div className={styles.pageHeader}>
         <div className={styles.breadcrumb}>
           <Link to="/" className={styles.breadcrumbLink}>Concept Library</Link>
@@ -56,31 +85,46 @@ export default function ConceptDetailPage() {
         )}
       </div>
 
-      {/* ── 2-col layout: content + right panel ────── */}
-      <div className={styles.layout}>
+      {/* ── 3-col: left | drag-handle | right (code) ── */}
+      <div
+        className={styles.mainArea}
+        style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
+      >
+        <div className={styles.leftCol}>
+          <div className={styles.center}>
+            <SimulationPanel
+              isRunning={isRunning}
+              hitRate={hitRate}
+              onMetrics={setMetrics}
+              onToggleRun={handleToggleRun}
+            />
+          </div>
+          <div className={styles.bottom}>
+            <MetricsPanel
+              isRunning={isRunning}
+              metrics={metrics}
+              hitRate={hitRate}
+              onHitRateChange={setHitRate}
+            />
+          </div>
+        </div>
 
-        {/* Center: visualizer + code */}
-        <div className={styles.center}>
-          <SimulationPanel
-            isRunning={isRunning}
-            hitRate={hitRate}
-            onMetrics={setMetrics}
-          />
+        {/* Drag handle */}
+        <div
+          className={styles.dragHandle}
+          onMouseDown={handleDragStart}
+          title="Drag to resize"
+        >
+          <div className={styles.dragDots} />
+        </div>
+
+        {/* Code panel: full height */}
+        <div className={styles.right}>
           <CodePanel />
         </div>
 
-        {/* Right: metrics + controls */}
-        <div className={styles.right}>
-          <MetricsPanel
-            isRunning={isRunning}
-            metrics={metrics}
-            hitRate={hitRate}
-            onHitRateChange={setHitRate}
-            onToggleRun={handleToggleRun}
-          />
-        </div>
-
       </div>
+
     </div>
   )
 }
