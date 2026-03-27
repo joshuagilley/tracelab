@@ -81,7 +81,7 @@ export default function SingletonPatternPanel({
         <div className={styles.kicker}>Live metrics</div>
         <div className={styles.metricGrid}>
           <div className={styles.metric}>
-            <span className={styles.mLabel}>GetInstance()</span>
+            <span className={styles.mLabel}>GetLogger()</span>
             <span className={styles.mVal}>{stats.getInstanceCalls}</span>
           </div>
           <div className={styles.metric}>

@@ -67,11 +67,25 @@
   flex-shrink: 0;
 }
 
+/* DI (and similar): let the diagram use leftover column height instead of a short fixed viewport */
+.centerGrow {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Metrics: fills all remaining space below visualizer */
 .bottom {
   flex: 1;
   min-height: 0;
   overflow: hidden;
+}
+
+/* Dependency injection: bottom strip is only as tall as its content (singleton-style), not flex-grown */
+.bottomLabPanel {
+  flex: 0 0 auto;
+  overflow: visible;
 }
 
 /* ─── Drag handle ────────────────────────────────── */
@@ -83,7 +97,9 @@
   background: var(--border-dim);
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
   flex-shrink: 0;
   position: relative;
 }
@@ -104,7 +120,7 @@
 .dragDots::before,
 .dragDots::after,
 .dragHandle .dragDots {
-  content: '';
+  content: "";
 }
 
 /* Use box-shadow trick for 3 dots */
@@ -113,13 +129,19 @@
   height: 2px;
   border-radius: 50%;
   background: var(--text-muted);
-  box-shadow: 0 5px 0 var(--text-muted), 0 10px 0 var(--text-muted);
-  transition: background 0.15s, box-shadow 0.15s;
+  box-shadow:
+    0 5px 0 var(--text-muted),
+    0 10px 0 var(--text-muted);
+  transition:
+    background 0.15s,
+    box-shadow 0.15s;
 }
 
 .dragHandle:hover .dragDots {
   background: var(--accent);
-  box-shadow: 0 5px 0 var(--accent), 0 10px 0 var(--accent);
+  box-shadow:
+    0 5px 0 var(--accent),
+    0 10px 0 var(--accent);
 }
 
 /* ─── Right column (code panel, full height) ─────── */
@@ -162,7 +184,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .spinner {

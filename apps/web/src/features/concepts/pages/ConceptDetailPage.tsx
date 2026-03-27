@@ -8,8 +8,14 @@ import CodePanel from '@/components/CodePanel'
 import MetricsPanel from '@/components/MetricsPanel'
 import DynamicCodePanel from '@/components/DynamicCodePanel'
 import SingletonVisualizer, { type SingletonStats } from '@/components/SingletonVisualizer'
+import DependencyInjectionVisualizer, {
+  type DIStats,
+  type StorageBackend,
+} from '@/components/DependencyInjectionVisualizer'
 import NumericalComputingVisualizer from '@/components/NumericalComputingVisualizer'
 import SingletonPatternPanel from '@/components/SingletonPatternPanel'
+import DependencyInjectionPatternPanel from '@/components/DependencyInjectionPatternPanel'
+import DependencyInjectionCodePanel from '@/components/DependencyInjectionCodePanel'
 import DataScienceLabPanel from '@/components/DataScienceLabPanel'
 import type { Concept } from '@/types/concept'
 import type { LabConceptDetail } from '@/types/labConcept'
@@ -22,6 +28,7 @@ const DEFAULT_SINGLETON_STATS: SingletonStats = {
   initRuns: 0,
   fastPathReturns: 0,
 }
+const DEFAULT_DI_STATS: DIStats = { uploadsCompleted: 0, putCalls: 0, wires: 0 }
 const MIN_WIDTH = 260
 const MAX_WIDTH = 680
 
@@ -57,10 +64,21 @@ export default function ConceptDetailPage() {
   const [singletonEmphasize, setSingletonEmphasize] = useState(true)
   const [singletonStats, setSingletonStats] = useState<SingletonStats>(DEFAULT_SINGLETON_STATS)
 
+  const [diHandlers, setDiHandlers] = useState(3)
+  const [diSpawn, setDiSpawn] = useState(450)
+  const [diStress, setDiStress] = useState(false)
+  const [diStorageBackend, setDiStorageBackend] = useState<StorageBackend>('sftp')
+  const [diEmphasizeIface, setDiEmphasizeIface] = useState(true)
+  const [diStats, setDiStats] = useState<DIStats>(DEFAULT_DI_STATS)
+
   const [rightWidth, setRightWidth] = useState(400)
 
   const onSingletonStats = useCallback((s: SingletonStats) => {
     setSingletonStats(s)
+  }, [])
+
+  const onDIStats = useCallback((s: DIStats) => {
+    setDiStats(s)
   }, [])
 
   useEffect(() => {
@@ -261,6 +279,70 @@ export default function ConceptDetailPage() {
 
           <div className={styles.right}>
             <DynamicCodePanel files={labConcept.codeFiles} />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (labId === 'design-patterns' && labConcept?.vizType === 'dependency-injection') {
+    return (
+      <div className={styles.page}>
+        <div className={styles.pageHeader}>
+          <div className={styles.breadcrumb}>
+            <Link to="/" className={styles.breadcrumbLink}>{libraryLabel}</Link>
+            <span className={styles.breadcrumbSep}>›</span>
+            <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
+          </div>
+          {difficulty && (
+            <span className={`badge badge--${difficulty}`}>{difficulty}</span>
+          )}
+        </div>
+
+        <div
+          className={styles.mainArea}
+          style={{ gridTemplateColumns: `1fr 3px ${rightWidth}px` }}
+        >
+          <div className={styles.leftCol}>
+            <div className={`${styles.center} ${styles.centerGrow}`}>
+              <DependencyInjectionVisualizer
+                isRunning={isRunning}
+                onToggleRun={handleToggleRun}
+                handlerCount={diHandlers}
+                spawnIntervalMs={diSpawn}
+                stressMode={diStress}
+                storageBackend={diStorageBackend}
+                emphasizeIface={diEmphasizeIface}
+                onStatsChange={onDIStats}
+              />
+            </div>
+            <div className={`${styles.bottom} ${styles.bottomLabPanel}`}>
+              <DependencyInjectionPatternPanel
+                handlerCount={diHandlers}
+                spawnIntervalMs={diSpawn}
+                stressMode={diStress}
+                storageBackend={diStorageBackend}
+                emphasizeIface={diEmphasizeIface}
+                stats={diStats}
+                onHandlerCount={setDiHandlers}
+                onSpawnInterval={setDiSpawn}
+                onStressMode={setDiStress}
+                onStorageBackend={setDiStorageBackend}
+                onEmphasizeIface={setDiEmphasizeIface}
+              />
+            </div>
+          </div>
+
+          <div
+            className={styles.dragHandle}
+            onMouseDown={handleDragStart}
+            title="Drag to resize"
+          >
+            <div className={styles.dragDots} />
+          </div>
+
+          <div className={styles.right}>
+            <DependencyInjectionCodePanel files={labConcept.codeFiles} />
           </div>
         </div>
       </div>

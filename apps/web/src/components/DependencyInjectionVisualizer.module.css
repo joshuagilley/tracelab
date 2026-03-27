@@ -1,0 +1,164 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.panel :global(.panel-header) {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.infoBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  font-style: italic;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.infoBtn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.runBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.runBtn:hover {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.runBtnActive {
+  background: rgba(240, 77, 77, 0.12);
+  border-color: var(--color-hard);
+  color: var(--color-hard);
+}
+
+.runBtnActive:hover {
+  background: rgba(240, 77, 77, 0.2);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 14px;
+  gap: 12px;
+}
+
+.vizViewport {
+  box-sizing: border-box;
+  width: 100%;
+  flex: 1;
+  min-height: 280px;
+  height: auto;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-base);
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.handlerGlow {
+  animation: glow 2.5s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+@keyframes flashOnce {
+  0% {
+    filter: brightness(1.35);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+.boxFlash {
+  animation: flashOnce 0.38s ease-out;
+}
+
+.implBox {
+  transition: stroke-width 0.12s ease, stroke 0.2s ease;
+}
+
+.blackBox {
+  fill: color-mix(in srgb, var(--bg-base) 55%, #030508);
+}
+
+.diagramNote {
+  margin: 0;
+  padding: 0 2px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.diagramNote code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.diagramNote strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}

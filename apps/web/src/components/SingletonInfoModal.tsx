@@ -42,8 +42,8 @@ export default function SingletonInfoModal({ open, onClose }: Props) {
               and provides a single global access point (Gamma et al., <em>Design Patterns</em>).
             </p>
             <p className={styles.p}>
-              Use it when exactly one shared object coordinates behavior across the system — configuration, logging, or a
-              connection pool — and you need controlled access instead of scattered globals.
+              Use it when exactly one shared object coordinates behavior across the system — a logger, a connection pool,
+              or a config registry — and you need controlled access instead of scattered globals.
             </p>
           </section>
           <section className={styles.section}>
@@ -57,15 +57,13 @@ export default function SingletonInfoModal({ open, onClose }: Props) {
           <section className={styles.section}>
             <h3 className={styles.kicker}>Example</h3>
             <p className={styles.p}>
-              <strong>Shared DB pool or client:</strong> A service opens one connection pool (or gRPC client) to Postgres
-              or Redis and every HTTP handler calls <code>GetInstance()</code> (or receives the same pointer via DI).
-              You want a single pool so you do not exhaust the DB server with duplicate pools — that is a real
-              single-resource rule, not convenience.
+              <strong>Shared Logger:</strong> A process creates one <code>Logger</code> with a timestamp prefix and every
+              service calls <code>GetLogger()</code> to reuse it. You want a single writer so log lines share the same
+              prefix and output stream — that is a real single-resource rule, not convenience.
             </p>
             <p className={styles.p}>
-              Other common fits: a process-wide <strong>metrics registry</strong>, a <strong>structured logger</strong>{' '}
-              backed by one writer, or a <strong>license / feature-flag client</strong> that must stay in sync across
-              goroutines.
+              <strong>Bad:</strong> Each caller does <code>NewLogger()</code> and gets a separate instance with its own
+              prefix. Duplicate setup, inconsistent output, wasted resources.
             </p>
           </section>
           <section className={styles.section}>

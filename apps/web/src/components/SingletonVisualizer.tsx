@@ -170,7 +170,7 @@ export default function SingletonVisualizer({
     return { x: x1 + (x2 - x1) * u, y: y1 + (y2 - y1) * u }
   }
 
-  const labels = ['HandlerA', 'HandlerB', 'HandlerC', 'HandlerD', 'HandlerE', 'HandlerF', 'HandlerG', 'HandlerH']
+  const labels = ['ServiceA', 'ServiceB', 'ServiceC', 'ServiceD', 'ServiceE', 'ServiceF', 'ServiceG', 'ServiceH']
 
   return (
     <div className={`panel ${styles.panel}`}>
@@ -322,7 +322,7 @@ export default function SingletonVisualizer({
             fontSize={10}
             fontFamily="var(--font-mono)"
           >
-            *Database
+            *Logger
           </text>
           <text
             x={singX + 50}
@@ -332,7 +332,7 @@ export default function SingletonVisualizer({
             fontSize={9}
             fontFamily="var(--font-mono)"
           >
-            shared addr · GetInstance() {callCount}
+            shared instance · GetLogger() {callCount}
           </text>
 
           {particles.map(p => {

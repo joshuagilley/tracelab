@@ -1,36 +1,42 @@
 package singleton
 
 import (
+	"fmt"
 	"sync"
+	"time"
 )
 
-// Database represents an expensive shared resource.
-type Database struct {
-	conn string
+// Logger is an expensive shared resource — one writer, one prefix, one instance.
+type Logger struct {
+	prefix string
 }
 
 var (
-	instance *Database
+	instance *Logger
 	once     sync.Once
 )
 
-// GetInstance returns the sole Database instance.
+// GetLogger returns the sole Logger instance.
 // sync.Once guarantees the initializer runs exactly once,
-// even under concurrent GetInstance calls.
-func GetInstance() *Database {
+// even under concurrent GetLogger calls.
+func GetLogger() *Logger {
 	once.Do(func() {
-		instance = &Database{conn: "postgres://tracelab"}
+		instance = &Logger{prefix: fmt.Sprintf("[%s] ", time.Now().Format(time.RFC3339))}
 	})
 	return instance
 }
 
-// Example: multiple packages call GetInstance — they share one DB.
-func HandlerA() {
-	db := GetInstance()
-	_ = db.conn
+func (l *Logger) Log(msg string) {
+	fmt.Println(l.prefix + msg)
 }
 
-func HandlerB() {
-	db := GetInstance()
-	_ = db.conn
+// Example: multiple services call GetLogger — they share one Logger.
+func ServiceA() {
+	log := GetLogger()
+	log.Log("ServiceA started")
+}
+
+func ServiceB() {
+	log := GetLogger()
+	log.Log("ServiceB started")
 }

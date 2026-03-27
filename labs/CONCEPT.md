@@ -8,6 +8,7 @@ TraceLab serves **design-pattern concepts** from the Go API as JSON, but the **G
 |----------|---------|
 | `labs/<lab>/sandbox/` | **Scratch space** — throwaway `main` packages, tests, spikes, and notes. Nothing here is embedded or served. |
 | `labs/<lab>/concepts/<slug>/present.go` | **Canonical presentation source** — the code learners see in the code panel (and what ships in the API after sync / Docker). |
+| `labs/.../concepts/<slug>/bad.go` (optional) | **Contrast / anti-pattern** — e.g. `//go:build ignore` so it is not compiled with `present.go`; listed as a second `codeFiles` embed for side-by-side UI toggles. |
 | `services/api/internal/labs/embed/design-patterns/` | **Synced copy** — Go’s `embed` must live under `services/api`; `make labs-sync` copies `labs/design-patterns/concepts/` here so `go run` / `go test` work locally. **Commit this tree** so clones and editors work without extra steps; it should always match `labs/` after you finish editing. |
 | `services/api/internal/labs/data/design-patterns.json` | **Metadata** — title, summary, slug, `vizType`, tags, and **references** to presentation files (`embed` paths), not huge inline code strings for Go. |
 
