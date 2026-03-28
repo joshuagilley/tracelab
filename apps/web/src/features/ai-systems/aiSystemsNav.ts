@@ -68,9 +68,4 @@ export const AI_SYSTEMS_SECTIONS: CurriculumNavSection[] = [
   },
 ]
 
-export const AI_SYSTEMS_DEFAULT_OPEN = [
-  'machine-learning',
-  'deep-learning',
-  'representations',
-  'production',
-] as const
+export const AI_SYSTEMS_DEFAULT_OPEN = [] as const

@@ -9,7 +9,6 @@ function initialOpenState(): Record<string, boolean> {
   for (const s of DATABASE_DESIGN_SECTIONS) {
     o[s.id] = false
   }
-  o.foundations = true
   return o
 }
 

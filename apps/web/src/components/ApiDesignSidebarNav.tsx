@@ -9,8 +9,6 @@ function initialOpenState(): Record<string, boolean> {
   for (const s of API_DESIGN_SECTIONS) {
     o[s.id] = false
   }
-  o.foundations = true
-  o.performance = true
   return o
 }
 

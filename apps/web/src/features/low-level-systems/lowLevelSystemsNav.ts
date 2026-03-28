@@ -104,8 +104,4 @@ export const LOW_LEVEL_SYSTEMS_SECTIONS: CurriculumNavSection[] = [
   },
 ]
 
-export const LOW_LEVEL_SYSTEMS_DEFAULT_OPEN = [
-  'memory-fundamentals',
-  'data-representation',
-  'manual-memory',
-] as const
+export const LOW_LEVEL_SYSTEMS_DEFAULT_OPEN = [] as const

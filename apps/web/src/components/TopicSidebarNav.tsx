@@ -12,10 +12,7 @@ function buildInitialOpen(
   for (const s of sections) {
     o[s.id] = false
   }
-  const openIds =
-    defaultOpenSectionIds?.filter(Boolean).length ?
-      defaultOpenSectionIds!
-    : sections[0] ? [sections[0].id] : []
+  const openIds = defaultOpenSectionIds?.filter(Boolean) ?? []
   for (const id of openIds) {
     o[id] = true
   }
@@ -27,7 +24,7 @@ export interface TopicSidebarNavProps {
   sections: CurriculumNavSection[]
   /** Prefix for stable DOM ids, e.g. "net", "sec" */
   panelPrefix: string
-  /** Which accordion sections start expanded */
+  /** Which accordion sections start expanded (default: none) */
   defaultOpenSectionIds?: string[]
 }
 

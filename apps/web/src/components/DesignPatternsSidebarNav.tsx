@@ -4,6 +4,14 @@ import { DESIGN_PATTERN_SECTIONS } from '@/features/design-patterns/designPatter
 import type { Concept } from '@/types/concept'
 import styles from './DesignPatternsSidebarNav.module.css'
 
+function initialPatternOpenState(): Record<string, boolean> {
+  const o: Record<string, boolean> = {}
+  for (const s of DESIGN_PATTERN_SECTIONS) {
+    o[s.id] = false
+  }
+  return o
+}
+
 interface Props {
   concepts: Concept[]
 }
@@ -12,12 +20,7 @@ export default function DesignPatternsSidebarNav({ concepts }: Props) {
   const navigate = useNavigate()
   const bySlug = useMemo(() => Object.fromEntries(concepts.map(c => [c.slug, c])), [concepts])
 
-  const [open, setOpen] = useState<Record<string, boolean>>(() => ({
-    creational: true,
-    structural: false,
-    behavioral: false,
-    advanced: true,
-  }))
+  const [open, setOpen] = useState<Record<string, boolean>>(() => initialPatternOpenState())
 
   const toggle = (id: string) => {
     setOpen(s => ({ ...s, [id]: !s[id] }))

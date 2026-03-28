@@ -20,4 +20,4 @@ export const ALGORITHMS_SECTIONS: CurriculumNavSection[] = [
   },
 ]
 
-export const ALGORITHMS_DEFAULT_OPEN = ['foundations', 'structures'] as const
+export const ALGORITHMS_DEFAULT_OPEN = [] as const

@@ -31,4 +31,4 @@ export const DEVOPS_SECTIONS: CurriculumNavSection[] = [
   },
 ]
 
-export const DEVOPS_DEFAULT_OPEN = ['delivery', 'runtime'] as const
+export const DEVOPS_DEFAULT_OPEN = [] as const

@@ -9,8 +9,6 @@ function initialOpenState(): Record<string, boolean> {
   for (const s of CLOUD_ARCHITECTURE_SECTIONS) {
     o[s.id] = false
   }
-  o.foundations = true
-  o.networking = true
   return o
 }
 

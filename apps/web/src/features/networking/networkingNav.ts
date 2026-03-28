@@ -33,4 +33,4 @@ export const NETWORKING_SECTIONS: CurriculumNavSection[] = [
   },
 ]
 
-export const NETWORKING_DEFAULT_OPEN = ['fundamentals', 'scaling-realtime'] as const
+export const NETWORKING_DEFAULT_OPEN = [] as const

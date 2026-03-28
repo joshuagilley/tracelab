@@ -23,4 +23,4 @@ export const TESTING_SECTIONS: CurriculumNavSection[] = [
   },
 ]
 
-export const TESTING_DEFAULT_OPEN = ['foundations', 'beyond-happy-path'] as const
+export const TESTING_DEFAULT_OPEN = [] as const

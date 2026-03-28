@@ -29,4 +29,4 @@ export const SOFTWARE_ARCHITECTURE_SECTIONS: CurriculumNavSection[] = [
   },
 ]
 
-export const SOFTWARE_ARCHITECTURE_DEFAULT_OPEN = ['structure', 'ports-boundaries'] as const
+export const SOFTWARE_ARCHITECTURE_DEFAULT_OPEN = [] as const

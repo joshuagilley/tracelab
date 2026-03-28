@@ -699,4 +699,4 @@ export const PROGRAMMING_LANGUAGES: ProgrammingLanguage[] = [
   },
 ]
 
-export const PROGRAMMING_LANGUAGES_DEFAULT_OPEN = ['javascript', 'typescript', 'go'] as const
+export const PROGRAMMING_LANGUAGES_DEFAULT_OPEN = [] as const

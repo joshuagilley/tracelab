@@ -34,4 +34,4 @@ export const SECURITY_SECTIONS: CurriculumNavSection[] = [
   },
 ]
 
-export const SECURITY_DEFAULT_OPEN = ['identity-access', 'application'] as const
+export const SECURITY_DEFAULT_OPEN = [] as const

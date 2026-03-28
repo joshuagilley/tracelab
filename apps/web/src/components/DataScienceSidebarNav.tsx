@@ -9,7 +9,6 @@ function initialOpenState(): Record<string, boolean> {
   for (const s of DATA_SCIENCE_SECTIONS) {
     o[s.id] = false
   }
-  o['python-ds'] = true
   return o
 }
 

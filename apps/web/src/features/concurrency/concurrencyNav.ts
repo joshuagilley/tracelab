@@ -97,9 +97,4 @@ export const CONCURRENCY_SECTIONS: CurriculumNavSection[] = [
   },
 ]
 
-export const CONCURRENCY_DEFAULT_OPEN = [
-  'foundations',
-  'synchronization',
-  'communication',
-  'execution-patterns',
-] as const
+export const CONCURRENCY_DEFAULT_OPEN = [] as const

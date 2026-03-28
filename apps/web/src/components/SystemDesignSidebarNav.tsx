@@ -9,9 +9,6 @@ function initialOpenState(): Record<string, boolean> {
   for (const s of SYSTEM_DESIGN_SECTIONS) {
     o[s.id] = false
   }
-  o.hld = true
-  o['architectural-styles'] = true
-  o['latency-caching'] = true
   return o
 }
 
