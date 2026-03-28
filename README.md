@@ -72,6 +72,8 @@ tracelab/
 | GET | /api/sections/design-patterns/concepts/:slug | Singleton, DI, etc. |
 | GET | /api/sections/data-science/concepts | Data science — list |
 | GET | /api/sections/data-science/concepts/:slug | Numerical Computing, etc. |
+| GET | /api/sections/database-design/concepts | Database design — list |
+| GET | /api/sections/database-design/concepts/:slug | Embedded present/bad (Go DDL strings) |
 | GET | /api/datascience/* | Proxied to Python service when `DATASCIENCE_SERVICE_URL` is set |
 
 ## Concepts

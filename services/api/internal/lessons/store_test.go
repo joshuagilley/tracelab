@@ -101,6 +101,32 @@ func TestHydrateDesignPatternsDependencyInjection(t *testing.T) {
 	}
 }
 
+func TestHydrateDatabaseDesignPrimaryKeys(t *testing.T) {
+	s, err := NewMemoryStore()
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err := s.Get("database-design", "primary-keys-foreign-keys")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(c.CodeFiles) != 2 {
+		t.Fatalf("code files: got %d want 2", len(c.CodeFiles))
+	}
+	for _, f := range c.CodeFiles {
+		switch f.Name {
+		case "present.go":
+			if !strings.Contains(f.Code, "REFERENCES users") {
+				t.Fatal("expected REFERENCES users in present.go")
+			}
+		case "bad.go":
+			if !strings.Contains(f.Code, "Anti-pattern") {
+				t.Fatal("expected Anti-pattern in bad.go")
+			}
+		}
+	}
+}
+
 func TestHydrateDataScienceNumericalComputing(t *testing.T) {
 	s, err := NewMemoryStore()
 	if err != nil {

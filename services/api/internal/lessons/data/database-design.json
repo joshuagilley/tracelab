@@ -1,0 +1,25 @@
+[
+  {
+    "id": "db-1",
+    "title": "Primary Keys and Foreign Keys",
+    "slug": "primary-keys-foreign-keys",
+    "summary": "Stable row identity (PK) and referential integrity (FK) keep related data correct as your app grows — without duplicating user columns on every order.",
+    "difficulty": "easy",
+    "tags": ["sql", "schema", "relational"],
+    "status": "available",
+    "labKind": "database-design",
+    "vizType": "db-lesson",
+    "codeFiles": [
+      {
+        "name": "present.go",
+        "lang": "go",
+        "embed": "primary-keys-foreign-keys/present.go"
+      },
+      {
+        "name": "bad.go",
+        "lang": "go",
+        "embed": "primary-keys-foreign-keys/bad.go"
+      }
+    ]
+  }
+]

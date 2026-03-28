@@ -21,6 +21,11 @@ const COPY: Record<string, { title: string; subtitle: string; countLabel: string
     subtitle: 'Numerical and analytical concepts — static lessons in production; Python playground via Docker.',
     countLabel: 'TOPICS',
   },
+  'database-design': {
+    title: 'Database Design',
+    subtitle: 'How data is modeled, stored, queried, and scaled — one diagram, one code sample, one takeaway per topic.',
+    countLabel: 'LESSONS',
+  },
 }
 
 export default function ConceptLibraryPage() {

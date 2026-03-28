@@ -39,7 +39,7 @@
   --sidebar-width: 230px;
 }
 
-/* ─── Lab themes (System Design / Design Patterns / Data Science) ─── */
+/* ─── Lab themes (per-track accent) ─── */
 .lab-root {
   height: 100%;
   min-height: 0;
@@ -61,6 +61,12 @@
   --accent: #f04d4d;
   --accent-dim: rgba(240, 77, 77, 0.14);
   --accent-glow: rgba(240, 77, 77, 0.28);
+}
+
+.lab-theme-database-design {
+  --accent: #5b9cf5;
+  --accent-dim: rgba(91, 156, 245, 0.16);
+  --accent-glow: rgba(91, 156, 245, 0.32);
 }
 
 /* ─── Reset ──────────────────────────────────────────────────── */

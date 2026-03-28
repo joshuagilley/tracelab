@@ -20,6 +20,7 @@ var validSections = map[string]struct{}{
 	"system-design":   {},
 	"design-patterns": {},
 	"data-science":    {},
+	"database-design": {},
 }
 
 // ServeHTTP handles GET /api/sections/{section}/concepts and .../concepts/{slug}.

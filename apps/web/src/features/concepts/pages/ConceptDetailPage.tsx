@@ -15,6 +15,7 @@ import SingletonPatternPanel from '@/components/SingletonPatternPanel'
 import DependencyInjectionPatternPanel from '@/components/DependencyInjectionPatternPanel'
 import DependencyInjectionCodePanel from '@/components/DependencyInjectionCodePanel'
 import DataScienceLabPanel from '@/components/DataScienceLabPanel'
+import DatabaseDesignLessonPanel from '@/components/DatabaseDesignLessonPanel'
 import type { LabConceptDetail } from '@/types/labConcept'
 import type { NumpyFn } from '@/lib/numpyDemo'
 import styles from './ConceptDetailPage.module.css'
@@ -147,7 +148,9 @@ export default function ConceptDetailPage() {
       ? 'Concept Library'
       : labId === 'design-patterns'
         ? 'Design Patterns'
-        : 'Data Science'
+        : labId === 'data-science'
+          ? 'Data Science'
+          : 'Database Design'
 
   if (labId === 'system-design' && lesson) {
     return (
@@ -389,7 +392,52 @@ export default function ConceptDetailPage() {
     )
   }
 
-  if (lesson && (labId === 'design-patterns' || labId === 'data-science')) {
+  if (labId === 'database-design' && lesson?.vizType === 'db-lesson') {
+    return (
+      <div className={styles.page}>
+        <div className={styles.pageHeader}>
+          <div className={styles.breadcrumb}>
+            <Link to="/" className={styles.breadcrumbLink}>
+              {libraryLabel}
+            </Link>
+            <span className={styles.breadcrumbSep}>›</span>
+            <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
+          </div>
+          {difficulty && (
+            <span className={`badge badge--${difficulty}`}>{difficulty}</span>
+          )}
+        </div>
+
+        <div
+          className={styles.mainArea}
+          style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
+        >
+          <div className={styles.leftCol}>
+            <div className={`${styles.center} ${styles.centerGrow}`}>
+              <DatabaseDesignLessonPanel summary={lesson.summary} slug={lesson.slug} />
+            </div>
+          </div>
+
+          <div
+            className={styles.dragHandle}
+            onMouseDown={handleDragStart}
+            title="Drag to resize"
+          >
+            <div className={styles.dragDots} />
+          </div>
+
+          <div className={styles.right}>
+            <DynamicCodePanel files={lesson.codeFiles ?? []} />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (
+    lesson &&
+    (labId === 'design-patterns' || labId === 'data-science' || labId === 'database-design')
+  ) {
     return (
       <div className={styles.errorPage}>
         <p>This lesson layout is not available yet.</p>
