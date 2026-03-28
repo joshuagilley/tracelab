@@ -4,21 +4,16 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strings"
 
-	"github.com/tracelab/api/internal/concepts"
-	"github.com/tracelab/api/internal/labs"
+	"github.com/tracelab/api/internal/lessons"
 )
 
 func NewRouter() http.Handler {
-	store := concepts.NewMemoryStore()
-	h := concepts.NewHandler(store)
-
-	labStore, err := labs.NewMemoryStore()
+	lessonStore, err := lessons.NewMemoryStore()
 	if err != nil {
-		log.Fatalf("labs store: %v", err)
+		log.Fatalf("lessons store: %v", err)
 	}
-	labHandler := labs.NewHandler(labStore)
+	lessonHandler := lessons.NewHandler(lessonStore)
 
 	mux := http.NewServeMux()
 
@@ -27,21 +22,8 @@ func NewRouter() http.Handler {
 		json.NewEncoder(w).Encode(map[string]string{"status": "ok", "service": "tracelab-api"})
 	})
 
-	// /api/concepts        → list
-	// /api/concepts/{slug} → get by slug
-	mux.HandleFunc("/api/concepts/", func(w http.ResponseWriter, r *http.Request) {
-		slug := strings.TrimPrefix(r.URL.Path, "/api/concepts/")
-		if slug == "" {
-			h.List(w, r)
-			return
-		}
-		h.GetBySlug(w, r)
-	})
-
-	mux.HandleFunc("/api/concepts", h.List)
-
-	// /api/labs/{design-patterns|data-science}/concepts[/{slug}]
-	mux.Handle("/api/labs/", labHandler)
+	// GET /api/sections/{system-design|design-patterns|data-science}/concepts[/{slug}]
+	mux.Handle("/api/sections/", lessonHandler)
 
 	// Optional proxy to Python datascience container (same origin for browser)
 	mux.Handle("/api/datascience/", datascienceProxy())

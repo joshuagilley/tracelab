@@ -1,0 +1,48 @@
+[
+  {
+    "id": "dp-1",
+    "title": "Singleton",
+    "slug": "singleton",
+    "summary": "Ensure a type has at most one instance — here a Logger — and provide a global point of access via sync.Once.",
+    "difficulty": "easy",
+    "tags": ["creational", "go"],
+    "status": "available",
+    "labKind": "design-patterns",
+    "vizType": "singleton",
+    "codeFiles": [
+      {
+        "name": "present.go",
+        "lang": "go",
+        "embed": "singleton/present.go"
+      },
+      {
+        "name": "bad.go",
+        "lang": "go",
+        "embed": "singleton/bad.go"
+      }
+    ]
+  },
+  {
+    "id": "dp-2",
+    "title": "Dependency Injection",
+    "slug": "dependency-injection",
+    "summary": "Inject an ObjectUploader (SFTP, WebDAV, or mock) so ingest code stays thin; swap wiring, not business logic.",
+    "difficulty": "easy",
+    "tags": ["structural", "go", "solid"],
+    "status": "available",
+    "labKind": "design-patterns",
+    "vizType": "dependency-injection",
+    "codeFiles": [
+      {
+        "name": "present.go",
+        "lang": "go",
+        "embed": "dependency-injection/present.go"
+      },
+      {
+        "name": "bad.go",
+        "lang": "go",
+        "embed": "dependency-injection/bad.go"
+      }
+    ]
+  }
+]

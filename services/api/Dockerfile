@@ -1,5 +1,5 @@
 # Build from repository root: docker build -f services/api/Dockerfile .
-# Copies lab-authored sources from labs/*/concepts/ into the embed tree.
+# Lesson files (present/bad per topic) live in services/api/internal/lessons/embed/ and are committed.
 
 # ── Build stage ────────────────────────────────────
 FROM golang:1.22-alpine AS builder
@@ -10,13 +10,10 @@ COPY services/api/go.mod ./
 RUN go mod download
 
 COPY services/api/ ./
-COPY labs/design-patterns/concepts/ internal/labs/embed/design-patterns/
-COPY labs/data-science/concepts/ internal/labs/embed/data-science/
 
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -o server ./cmd/server
 
 # ── Runtime stage ───────────────────────────────────
-# distroless has no shell — minimal attack surface
 FROM gcr.io/distroless/static-debian12
 
 COPY --from=builder /app/server /server

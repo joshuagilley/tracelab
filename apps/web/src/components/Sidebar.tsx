@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, NavLink } from 'react-router-dom'
-import { fetchConcepts } from '@/features/concepts/api'
-import { fetchLabConcepts } from '@/features/labs/api'
+import { fetchSectionConcepts } from '@/features/sections/api'
 import { LAB_OPTIONS, useLab, type LabId } from '@/contexts/lab'
 
 const LIBRARY_LINK_LABEL: Record<LabId, string> = {
@@ -30,13 +29,7 @@ export default function Sidebar() {
   useEffect(() => {
     const load = async () => {
       try {
-        if (labId === 'system-design') {
-          setConcepts(await fetchConcepts())
-        } else if (labId === 'design-patterns') {
-          setConcepts(await fetchLabConcepts('design-patterns'))
-        } else {
-          setConcepts(await fetchLabConcepts('data-science'))
-        }
+        setConcepts(await fetchSectionConcepts(labId))
       } catch {
         setConcepts([])
       }

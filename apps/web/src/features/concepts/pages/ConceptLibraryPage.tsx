@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchConcepts } from '../api'
-import { fetchLabConcepts } from '@/features/labs/api'
+import { fetchSectionConcepts } from '@/features/sections/api'
 import { useLab } from '@/contexts/lab'
 import ConceptCard from '../components/ConceptCard'
 import type { Concept } from '@/types/concept'
@@ -38,14 +37,7 @@ export default function ConceptLibraryPage() {
 
     const run = async () => {
       try {
-        if (labId === 'system-design') {
-          const list = await fetchConcepts()
-          setConcepts(list)
-        } else if (labId === 'design-patterns') {
-          setConcepts(await fetchLabConcepts('design-patterns'))
-        } else {
-          setConcepts(await fetchLabConcepts('data-science'))
-        }
+        setConcepts(await fetchSectionConcepts(labId))
       } catch {
         setError('Could not reach the TraceLab API. Is the Go server running?')
         setConcepts([])

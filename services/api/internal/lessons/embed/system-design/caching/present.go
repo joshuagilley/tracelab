@@ -1,9 +1,9 @@
-// Package caching holds a small thread-safe LRU cache with per-entry TTL.
-// This mirrors the TraceLab system-design Caching lesson (see ../../sandbox/caching/main.go).
 package caching
 
 import (
 	"container/list"
+	"encoding/json"
+	"net/http"
 	"sync"
 	"time"
 )
@@ -23,7 +23,6 @@ type entry struct {
 	expAt time.Time
 }
 
-// NewLRUCache creates an empty cache with the given max entry count.
 func NewLRUCache(capacity int) *LRUCache {
 	return &LRUCache{
 		capacity:  capacity,
@@ -86,4 +85,36 @@ func (c *LRUCache) evictOldest() {
 func (c *LRUCache) removeElement(el *list.Element) {
 	c.evictList.Remove(el)
 	delete(c.items, el.Value.(*entry).key)
+}
+
+var cache = NewLRUCache(1000)
+
+// findUser simulates a database fetch — replace with your repository in production.
+var findUser = func(userID string) (any, error) {
+	return map[string]string{"id": userID, "name": "Example User"}, nil
+}
+
+// GetUser demonstrates a cache-aside (lazy-loading) pattern.
+// 1. Check the cache — return immediately on HIT (fast path).
+// 2. On MISS — fetch from the database and populate the cache.
+func GetUser(w http.ResponseWriter, r *http.Request) {
+	userID := r.PathValue("id")
+	cacheKey := "user:" + userID
+
+	if data, ok := cache.Get(cacheKey); ok {
+		w.Header().Set("X-Cache", "HIT")
+		_ = json.NewEncoder(w).Encode(data)
+		return
+	}
+
+	user, err := findUser(userID)
+	if err != nil {
+		http.Error(w, "user not found", http.StatusNotFound)
+		return
+	}
+
+	cache.Set(cacheKey, user, 5*time.Minute)
+
+	w.Header().Set("X-Cache", "MISS")
+	_ = json.NewEncoder(w).Encode(user)
 }

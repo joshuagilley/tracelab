@@ -1,12 +1,10 @@
 .PHONY: dev api web install build clean compose-up compose-down labs-sync
 
-# Copy lab-authored sources into the API embed tree (Go embed must live under services/api).
-# Run after editing labs/design-patterns/concepts/** or labs/data-science/concepts/** before building the API.
+# Optional: copy data-science Python pins into the API embed tree (reference only; not a codeFile).
+# Lesson sources (present/bad) live under services/api/internal/lessons/embed/ — edit there.
 labs-sync:
-	@mkdir -p services/api/internal/labs/embed/design-patterns
-	@mkdir -p services/api/internal/labs/embed/data-science
-	rsync -a labs/design-patterns/concepts/ services/api/internal/labs/embed/design-patterns/
-	rsync -a labs/data-science/concepts/ services/api/internal/labs/embed/data-science/
+	@mkdir -p services/api/internal/lessons/embed/data-science
+	cp labs/data-science/requirements.txt services/api/internal/lessons/embed/data-science/requirements.txt
 
 # Docker: Python playground + Go API (Vite: run `make web` separately)
 compose-up:
@@ -14,6 +12,11 @@ compose-up:
 
 compose-down:
 	docker compose down
+
+dev-full:
+	@echo "Starting Full TraceLab..."
+	@$(MAKE) labs-sync
+	@$(MAKE) compose-up & $(MAKE) web
 
 dev:
 	@echo "Starting TraceLab..."

@@ -1,10 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { fetchConcept } from '../api'
-import { fetchLabConcept } from '@/features/labs/api'
+import { fetchSectionLesson } from '@/features/sections/api'
 import { useLab } from '@/contexts/lab'
 import SimulationPanel, { type SimMetrics } from '@/components/SimulationPanel'
-import CodePanel from '@/components/CodePanel'
 import MetricsPanel from '@/components/MetricsPanel'
 import DynamicCodePanel from '@/components/DynamicCodePanel'
 import SingletonVisualizer, { type SingletonStats } from '@/components/SingletonVisualizer'
@@ -17,7 +15,6 @@ import SingletonPatternPanel from '@/components/SingletonPatternPanel'
 import DependencyInjectionPatternPanel from '@/components/DependencyInjectionPatternPanel'
 import DependencyInjectionCodePanel from '@/components/DependencyInjectionCodePanel'
 import DataScienceLabPanel from '@/components/DataScienceLabPanel'
-import type { Concept } from '@/types/concept'
 import type { LabConceptDetail } from '@/types/labConcept'
 import type { NumpyFn } from '@/lib/numpyDemo'
 import styles from './ConceptDetailPage.module.css'
@@ -47,8 +44,7 @@ export default function ConceptDetailPage() {
   const { slug } = useParams<{ slug: string }>()
   const { labId } = useLab()
 
-  const [concept, setConcept] = useState<Concept | null>(null)
-  const [labConcept, setLabConcept] = useState<LabConceptDetail | null>(null)
+  const [lesson, setLesson] = useState<LabConceptDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const [isRunning, setRunning] = useState(false)
@@ -84,33 +80,18 @@ export default function ConceptDetailPage() {
   useEffect(() => {
     if (!slug) return
     setError(null)
-    setConcept(null)
-    setLabConcept(null)
+    setLesson(null)
 
-    if (labId === 'system-design') {
-      fetchConcept(slug)
-        .then(setConcept)
-        .catch(() => setError('Concept not found.'))
-      return
-    }
-
-    if (labId === 'design-patterns') {
-      fetchLabConcept('design-patterns', slug)
-        .then(setLabConcept)
-        .catch(() => setError('Concept not found.'))
-      return
-    }
-
-    if (labId === 'data-science') {
-      fetchLabConcept('data-science', slug)
-        .then(c => {
-          setLabConcept(c)
+    fetchSectionLesson(labId, slug)
+      .then(c => {
+        setLesson(c)
+        if (labId === 'data-science') {
           const init = initialNumpyState(c)
           setNumpyFn(init.fn)
           setArrayLen(init.len)
-        })
-        .catch(() => setError('Concept not found.'))
-    }
+        }
+      })
+      .catch(() => setError('Concept not found.'))
   }, [slug, labId])
 
   const handleToggleRun = () => {
@@ -147,14 +128,8 @@ export default function ConceptDetailPage() {
     [rightWidth],
   )
 
-  const title = useMemo(
-    () => (labId === 'system-design' ? concept?.title : labConcept?.title),
-    [labId, concept?.title, labConcept?.title],
-  )
-  const difficulty = useMemo(
-    () => (labId === 'system-design' ? concept?.difficulty : labConcept?.difficulty),
-    [labId, concept?.difficulty, labConcept?.difficulty],
-  )
+  const title = lesson?.title
+  const difficulty = lesson?.difficulty
 
   if (error) {
     return (
@@ -174,7 +149,7 @@ export default function ConceptDetailPage() {
         ? 'Design Patterns'
         : 'Data Science'
 
-  if (labId === 'system-design') {
+  if (labId === 'system-design' && lesson) {
     return (
       <div className={styles.page}>
         <div className={styles.pageHeader}>
@@ -185,8 +160,8 @@ export default function ConceptDetailPage() {
             <span className={styles.breadcrumbSep}>›</span>
             <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
           </div>
-          {concept && (
-            <span className={`badge badge--${concept.difficulty}`}>{concept.difficulty}</span>
+          {difficulty && (
+            <span className={`badge badge--${difficulty}`}>{difficulty}</span>
           )}
         </div>
 
@@ -222,14 +197,14 @@ export default function ConceptDetailPage() {
           </div>
 
           <div className={styles.right}>
-            <CodePanel />
+            <DynamicCodePanel files={lesson.codeFiles ?? []} />
           </div>
         </div>
       </div>
     )
   }
 
-  if (labId === 'design-patterns' && labConcept?.vizType === 'singleton') {
+  if (labId === 'design-patterns' && lesson?.vizType === 'singleton') {
     return (
       <div className={styles.page}>
         <div className={styles.pageHeader}>
@@ -285,14 +260,14 @@ export default function ConceptDetailPage() {
           </div>
 
           <div className={styles.right}>
-            <DynamicCodePanel files={labConcept.codeFiles} />
+            <DynamicCodePanel files={lesson.codeFiles ?? []} />
           </div>
         </div>
       </div>
     )
   }
 
-  if (labId === 'design-patterns' && labConcept?.vizType === 'dependency-injection') {
+  if (labId === 'design-patterns' && lesson?.vizType === 'dependency-injection') {
     return (
       <div className={styles.page}>
         <div className={styles.pageHeader}>
@@ -351,14 +326,14 @@ export default function ConceptDetailPage() {
           </div>
 
           <div className={styles.right}>
-            <DependencyInjectionCodePanel files={labConcept.codeFiles} />
+            <DependencyInjectionCodePanel files={lesson.codeFiles ?? []} />
           </div>
         </div>
       </div>
     )
   }
 
-  if (labId === 'data-science' && labConcept?.vizType === 'numerical') {
+  if (labId === 'data-science' && lesson?.vizType === 'numerical') {
     return (
       <div className={styles.page}>
         <div className={styles.pageHeader}>
@@ -389,7 +364,7 @@ export default function ConceptDetailPage() {
             </div>
             <div className={styles.bottom}>
               <DataScienceLabPanel
-                parameters={labConcept.parameters ?? []}
+                parameters={lesson.parameters ?? []}
                 numpyFn={numpyFn}
                 arrayLen={arrayLen}
                 onNumpyFn={setNumpyFn}
@@ -407,14 +382,14 @@ export default function ConceptDetailPage() {
           </div>
 
           <div className={styles.right}>
-            <DynamicCodePanel files={labConcept.codeFiles} />
+            <DynamicCodePanel files={lesson.codeFiles ?? []} />
           </div>
         </div>
       </div>
     )
   }
 
-  if (labConcept && (labId === 'design-patterns' || labId === 'data-science')) {
+  if (lesson && (labId === 'design-patterns' || labId === 'data-science')) {
     return (
       <div className={styles.errorPage}>
         <p>This lesson layout is not available yet.</p>

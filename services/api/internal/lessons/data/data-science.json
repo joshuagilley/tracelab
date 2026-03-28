@@ -1,0 +1,43 @@
+[
+  {
+    "id": "ds-1",
+    "title": "Numerical Computing",
+    "slug": "numerical-computing",
+    "summary": "Core NumPy routines for array creation and inspection — the foundation for scientific Python.",
+    "difficulty": "easy",
+    "tags": ["numpy", "arrays"],
+    "status": "available",
+    "labKind": "data-science",
+    "vizType": "numerical",
+    "codeFiles": [
+      {
+        "name": "present.py",
+        "lang": "python",
+        "embed": "numerical-computing/present.py"
+      },
+      {
+        "name": "bad.py",
+        "lang": "python",
+        "embed": "numerical-computing/bad.py"
+      }
+    ],
+    "parameters": [
+      {
+        "id": "numpy_fn",
+        "label": "NUMPY FUNCTION",
+        "type": "select",
+        "options": ["ones", "zeros", "arange", "linspace"],
+        "defaultOption": "ones"
+      },
+      {
+        "id": "array_len",
+        "label": "ARRAY LENGTH",
+        "type": "slider",
+        "min": 4,
+        "max": 32,
+        "step": 1,
+        "default": 8
+      }
+    ]
+  }
+]
