@@ -1,21 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { fetchConcepts } from '@/features/concepts/api'
 import { fetchLabConcepts } from '@/features/labs/api'
 import { LAB_OPTIONS, useLab, type LabId } from '@/contexts/lab'
+import DesignPatternsSidebarNav from './DesignPatternsSidebarNav'
 import type { Concept } from '@/types/concept'
 import styles from './Sidebar.module.css'
 
-const NAV_ITEMS = [
-  { label: 'Concept Library',    icon: '▦', path: '/' },
-  { label: 'Scenario Explorer',  icon: '◎', path: '#' },
-  { label: 'Systems Analytics',  icon: '▤', path: '#' },
-  { label: 'Visual Simulation',  icon: '◈', path: '#' },
-  { label: 'Code Editor',        icon: '▧', path: '#' },
-]
-
 function BrandGridIcon() {
-  const cells = Array.from({ length: 36 }, (_, i) => <span key={i} className={styles.gridDot} />)
+  const cells = Array.from({ length: 36 }, (_, i) => (
+    <span key={i} className={styles.gridDot} />
+  ))
   return <div className={styles.brandGrid}>{cells}</div>
 }
 
@@ -100,57 +95,35 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <nav className={styles.nav}>
-        {NAV_ITEMS.map(item => (
-          <NavLink
-            key={item.label}
-            to={item.path}
-            end={item.path === '/'}
-            className={({ isActive }) =>
-              [styles.navItem, isActive && item.path !== '#' ? styles.navItemActive : ''].join(' ')
-            }
-            onClick={e => {
-              if (item.path === '#') e.preventDefault()
-            }}
-          >
-            <span className={styles.navIcon}>{item.icon}</span>
-            <span>{item.label}</span>
-          </NavLink>
-        ))}
-      </nav>
-
       <div className={styles.section}>
         <div className={styles.sectionTitle}>
           {labId === 'system-design' && 'SYSTEM COMPONENTS'}
-          {labId === 'design-patterns' && 'PATTERNS'}
+          {labId === 'design-patterns' && 'BY CATEGORY'}
           {labId === 'data-science' && 'TOPICS'}
         </div>
-        <div className={styles.conceptList}>
-          {concepts.map(c => (
-            <button
-              key={c.id}
-              className={styles.conceptItem}
-              onClick={() => {
-                if (c.status === 'available') navigate(`/concept/${c.slug}`)
-              }}
-              disabled={c.status !== 'available'}
-            >
-              <div className={styles.conceptTop}>
-                <span className={styles.conceptTitle}>{c.title}</span>
-                <span className={`badge badge--${c.difficulty}`}>{c.difficulty}</span>
-              </div>
-              <div className={styles.conceptSummary}>{c.summary}</div>
-            </button>
-          ))}
-        </div>
+        {labId === 'design-patterns' ? (
+          <DesignPatternsSidebarNav concepts={concepts} />
+        ) : (
+          <div className={styles.conceptList}>
+            {concepts.map(c => (
+              <button
+                key={c.id}
+                className={styles.conceptItem}
+                onClick={() => {
+                  if (c.status === 'available') navigate(`/concept/${c.slug}`)
+                }}
+                disabled={c.status !== 'available'}
+              >
+                <div className={styles.conceptTop}>
+                  <span className={styles.conceptTitle}>{c.title}</span>
+                  <span className={`badge badge--${c.difficulty}`}>{c.difficulty}</span>
+                </div>
+                <div className={styles.conceptSummary}>{c.summary}</div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
-
-      <button
-        className={styles.newButton}
-        onClick={() => navigate('/')}
-      >
-        NEW SYSTEM DESIGN
-      </button>
     </aside>
   )
 }

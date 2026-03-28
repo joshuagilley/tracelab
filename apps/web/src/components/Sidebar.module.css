@@ -152,46 +152,6 @@
   margin-top: 2px;
 }
 
-/* ─── Nav ─────────────────────────────────────────── */
-.nav {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 10px 8px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.navItem {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 13px;
-  transition: background 0.15s, color 0.15s;
-}
-
-.navItem:hover {
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-}
-
-.navItemActive {
-  background: var(--accent-dim);
-  color: var(--accent);
-  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
-}
-
-.navIcon {
-  font-size: 14px;
-  width: 16px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
 /* ─── Concept list ────────────────────────────────── */
 .section {
   flex: 1;
@@ -258,23 +218,3 @@
   overflow: hidden;
 }
 
-/* ─── Bottom button ───────────────────────────────── */
-.newButton {
-  margin: 8px;
-  padding: 10px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-  flex-shrink: 0;
-}
-
-.newButton:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}

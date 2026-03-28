@@ -13,7 +13,6 @@ export type LabId = 'system-design' | 'design-patterns' | 'data-science'
 export interface LabOption {
   id: LabId
   label: string
-  /** Short hint for future content routing */
   slug: string
 }
 

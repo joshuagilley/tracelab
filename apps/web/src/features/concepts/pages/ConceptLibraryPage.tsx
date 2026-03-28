@@ -6,18 +6,21 @@ import ConceptCard from '../components/ConceptCard'
 import type { Concept } from '@/types/concept'
 import styles from './ConceptLibraryPage.module.css'
 
-const COPY: Record<string, { title: string; subtitle: string }> = {
+const COPY: Record<string, { title: string; subtitle: string; countLabel: string }> = {
   'system-design': {
     title: 'Concept Library',
     subtitle: 'Select a system design concept to open an interactive lesson.',
+    countLabel: 'CONCEPTS',
   },
   'design-patterns': {
     title: 'Design Patterns',
     subtitle: 'Classic object-oriented patterns with code and structure diagrams.',
+    countLabel: 'PATTERNS',
   },
   'data-science': {
     title: 'Data Science',
     subtitle: 'Numerical and analytical concepts — static lessons in production; Python playground via Docker.',
+    countLabel: 'TOPICS',
   },
 }
 
@@ -27,7 +30,7 @@ export default function ConceptLibraryPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const { title, subtitle } = COPY[labId] ?? COPY['system-design']
+  const { title, subtitle, countLabel } = COPY[labId] ?? COPY['system-design']
 
   useEffect(() => {
     setLoading(true)
@@ -63,7 +66,9 @@ export default function ConceptLibraryPage() {
         </div>
         <div className={styles.statusBadge}>
           <span className={`dot ${!loading && !error ? 'live' : ''}`} />
-          <span className="panel-label">{loading ? 'LOADING…' : error ? 'API OFFLINE' : `${concepts.length} CONCEPTS`}</span>
+          <span className="panel-label">
+            {loading ? 'LOADING…' : error ? 'API OFFLINE' : `${concepts.length} ${countLabel}`}
+          </span>
         </div>
       </div>
 

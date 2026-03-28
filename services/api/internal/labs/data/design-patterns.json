@@ -19,6 +19,11 @@
         "name": "bad.go",
         "lang": "go",
         "embed": "singleton/bad.go"
+      },
+      {
+        "name": "demo/main.go",
+        "lang": "go",
+        "embed": "singleton/demo/main.go"
       }
     ]
   },
@@ -42,6 +47,11 @@
         "name": "bad.go",
         "lang": "go",
         "embed": "dependency-injection/bad.go"
+      },
+      {
+        "name": "demo/main.go",
+        "lang": "go",
+        "embed": "dependency-injection/demo/main.go"
       }
     ]
   }

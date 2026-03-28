@@ -122,27 +122,30 @@ export default function ConceptDetailPage() {
     }
   }
 
-  const handleDragStart = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    const startX = e.clientX
-    const startW = rightWidth
+  const handleDragStart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault()
+      const startX = e.clientX
+      const startW = rightWidth
 
-    const onMove = (ev: MouseEvent) => {
-      const delta = startX - ev.clientX
-      setRightWidth(Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, startW + delta)))
-    }
-    const onUp = () => {
-      document.removeEventListener('mousemove', onMove)
-      document.removeEventListener('mouseup', onUp)
-      document.body.style.cursor = ''
-      document.body.style.userSelect = ''
-    }
+      const onMove = (ev: MouseEvent) => {
+        const delta = startX - ev.clientX
+        setRightWidth(Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, startW + delta)))
+      }
+      const onUp = () => {
+        document.removeEventListener('mousemove', onMove)
+        document.removeEventListener('mouseup', onUp)
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+      }
 
-    document.body.style.cursor = 'col-resize'
-    document.body.style.userSelect = 'none'
-    document.addEventListener('mousemove', onMove)
-    document.addEventListener('mouseup', onUp)
-  }, [rightWidth])
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
+      document.addEventListener('mousemove', onMove)
+      document.addEventListener('mouseup', onUp)
+    },
+    [rightWidth],
+  )
 
   const title = useMemo(
     () => (labId === 'system-design' ? concept?.title : labConcept?.title),
@@ -157,7 +160,9 @@ export default function ConceptDetailPage() {
     return (
       <div className={styles.errorPage}>
         <p>{error}</p>
-        <Link to="/" className={styles.backLink}>← Back to Library</Link>
+        <Link to="/" className={styles.backLink}>
+          ← Back to library
+        </Link>
       </div>
     )
   }
@@ -169,13 +174,14 @@ export default function ConceptDetailPage() {
         ? 'Design Patterns'
         : 'Data Science'
 
-  /* ── System design (unchanged) ───────────────────────── */
   if (labId === 'system-design') {
     return (
       <div className={styles.page}>
         <div className={styles.pageHeader}>
           <div className={styles.breadcrumb}>
-            <Link to="/" className={styles.breadcrumbLink}>{libraryLabel}</Link>
+            <Link to="/" className={styles.breadcrumbLink}>
+              {libraryLabel}
+            </Link>
             <span className={styles.breadcrumbSep}>›</span>
             <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
           </div>
@@ -223,13 +229,14 @@ export default function ConceptDetailPage() {
     )
   }
 
-  /* ── Design patterns ─────────────────────────────────── */
   if (labId === 'design-patterns' && labConcept?.vizType === 'singleton') {
     return (
       <div className={styles.page}>
         <div className={styles.pageHeader}>
           <div className={styles.breadcrumb}>
-            <Link to="/" className={styles.breadcrumbLink}>{libraryLabel}</Link>
+            <Link to="/" className={styles.breadcrumbLink}>
+              {libraryLabel}
+            </Link>
             <span className={styles.breadcrumbSep}>›</span>
             <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
           </div>
@@ -290,7 +297,9 @@ export default function ConceptDetailPage() {
       <div className={styles.page}>
         <div className={styles.pageHeader}>
           <div className={styles.breadcrumb}>
-            <Link to="/" className={styles.breadcrumbLink}>{libraryLabel}</Link>
+            <Link to="/" className={styles.breadcrumbLink}>
+              {libraryLabel}
+            </Link>
             <span className={styles.breadcrumbSep}>›</span>
             <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
           </div>
@@ -349,13 +358,14 @@ export default function ConceptDetailPage() {
     )
   }
 
-  /* ── Data science ────────────────────────────────────── */
   if (labId === 'data-science' && labConcept?.vizType === 'numerical') {
     return (
       <div className={styles.page}>
         <div className={styles.pageHeader}>
           <div className={styles.breadcrumb}>
-            <Link to="/" className={styles.breadcrumbLink}>{libraryLabel}</Link>
+            <Link to="/" className={styles.breadcrumbLink}>
+              {libraryLabel}
+            </Link>
             <span className={styles.breadcrumbSep}>›</span>
             <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
           </div>
@@ -408,7 +418,9 @@ export default function ConceptDetailPage() {
     return (
       <div className={styles.errorPage}>
         <p>This lesson layout is not available yet.</p>
-        <Link to="/" className={styles.backLink}>← Back to Library</Link>
+        <Link to="/" className={styles.backLink}>
+          ← Back to library
+        </Link>
       </div>
     )
   }
