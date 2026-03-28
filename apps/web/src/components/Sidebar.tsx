@@ -9,6 +9,7 @@ const LIBRARY_LINK_LABEL: Record<LabId, string> = {
   'data-science': 'All topics',
 }
 import DesignPatternsSidebarNav from './DesignPatternsSidebarNav'
+import SystemDesignSidebarNav from './SystemDesignSidebarNav'
 import type { Concept } from '@/types/concept'
 import styles from './Sidebar.module.css'
 
@@ -108,12 +109,14 @@ export default function Sidebar() {
 
       <div className={styles.section}>
         <div className={styles.sectionTitle}>
-          {labId === 'system-design' && 'SYSTEM COMPONENTS'}
+          {labId === 'system-design' && 'BY TOPIC'}
           {labId === 'design-patterns' && 'BY CATEGORY'}
           {labId === 'data-science' && 'TOPICS'}
         </div>
         {labId === 'design-patterns' ? (
           <DesignPatternsSidebarNav concepts={concepts} />
+        ) : labId === 'system-design' ? (
+          <SystemDesignSidebarNav concepts={concepts} />
         ) : (
           <div className={styles.conceptList}>
             {concepts.map(c => (
