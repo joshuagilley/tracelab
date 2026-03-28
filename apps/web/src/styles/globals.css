@@ -117,6 +117,12 @@
   --accent-glow: rgba(251, 146, 60, 0.28);
 }
 
+.lab-theme-low-level-systems {
+  --accent: #c4b5fd;
+  --accent-dim: rgba(196, 181, 253, 0.14);
+  --accent-glow: rgba(196, 181, 253, 0.3);
+}
+
 .lab-theme-algorithms {
   --accent: #e879f9;
   --accent-dim: rgba(232, 121, 249, 0.14);

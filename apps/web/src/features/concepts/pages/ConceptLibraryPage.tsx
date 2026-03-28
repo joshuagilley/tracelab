@@ -57,6 +57,12 @@ const COPY: Record<
       'How software is built, shipped, and operated — CI/CD, git discipline, containers, orchestration, and safe releases (managed VPC/Lambda building blocks stay in Cloud Architecture).',
     countLabel: 'TOPICS',
   },
+  'low-level-systems': {
+    title: 'Low-Level Systems',
+    subtitle:
+      'What your code is really doing — memory, pointers, the CPU, syscalls, and the OS in C (`present.c` / `bad.c`), with almost no runtime magic. Goroutines and channels stay under Concurrency; distributed design under System Design.',
+    countLabel: 'TOPICS',
+  },
   algorithms: {
     title: 'Algorithms & Data Structures',
     subtitle:

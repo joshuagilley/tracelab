@@ -69,6 +69,41 @@ func TestHydrateDesignPatternsSingleton(t *testing.T) {
 	}
 }
 
+func TestHydrateLowLevelSystemsPointers(t *testing.T) {
+	s, err := NewMemoryStore()
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err := s.Get("low-level-systems", "pointers")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.VizType != "low-level-lesson" {
+		t.Fatalf("vizType: got %q", c.VizType)
+	}
+	if len(c.CodeFiles) != 2 {
+		t.Fatalf("code files: got %d want 2", len(c.CodeFiles))
+	}
+	var sawPresent, sawBad bool
+	for _, f := range c.CodeFiles {
+		switch f.Name {
+		case "present.c":
+			sawPresent = true
+			if !strings.Contains(f.Code, "*p = 42") {
+				t.Fatal("expected *p = 42 in present.c")
+			}
+		case "bad.c":
+			sawBad = true
+			if !strings.Contains(f.Code, `printf("value at x: %d\n", p)`) {
+				t.Fatal("expected mistaken printf in bad.c")
+			}
+		}
+	}
+	if !sawPresent || !sawBad {
+		t.Fatal("expected present.c and bad.c only")
+	}
+}
+
 func TestHydrateDesignPatternsDependencyInjection(t *testing.T) {
 	s, err := NewMemoryStore()
 	if err != nil {

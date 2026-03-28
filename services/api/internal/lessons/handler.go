@@ -26,6 +26,7 @@ var validSections = map[string]struct{}{
 	"data-science":          {},
 	"design-patterns":       {},
 	"devops":                {},
+	"low-level-systems":     {},
 	"networking":            {},
 	"security":              {},
 	"software-architecture": {},

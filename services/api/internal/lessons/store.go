@@ -48,6 +48,9 @@ var testingCode embed.FS
 //go:embed embed/devops
 var devopsCode embed.FS
 
+//go:embed embed/low-level-systems
+var lowLevelSystemsCode embed.FS
+
 //go:embed embed/algorithms
 var algorithmsCode embed.FS
 
@@ -81,6 +84,7 @@ func NewMemoryStore() (*MemoryStore, error) {
 		{"data/software-architecture.json", "software-architecture", softwareArchitectureCode},
 		{"data/testing.json", "testing", testingCode},
 		{"data/devops.json", "devops", devopsCode},
+		{"data/low-level-systems.json", "low-level-systems", lowLevelSystemsCode},
 		{"data/algorithms.json", "algorithms", algorithmsCode},
 		{"data/ai-systems.json", "ai-systems", aiSystemsCode},
 	}

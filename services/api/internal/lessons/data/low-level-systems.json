@@ -1,0 +1,17 @@
+[
+  {
+    "id": "lls-1",
+    "title": "Pointers",
+    "slug": "pointers",
+    "summary": "A pointer stores the memory address of another variable. Use & to take an address, * to read or write through that address.",
+    "difficulty": "easy",
+    "tags": ["c", "memory", "pointers"],
+    "status": "available",
+    "labKind": "low-level-systems",
+    "vizType": "low-level-lesson",
+    "codeFiles": [
+      { "name": "present.c", "lang": "c", "embed": "pointers/present.c" },
+      { "name": "bad.c", "lang": "c", "embed": "pointers/bad.c" }
+    ]
+  }
+]

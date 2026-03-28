@@ -19,6 +19,7 @@ export type LabId =
   | 'software-architecture'
   | 'testing'
   | 'devops'
+  | 'low-level-systems'
   | 'algorithms'
   | 'ai-systems'
   | 'design-patterns'
@@ -55,6 +56,7 @@ export const LAB_GROUPS: LabGroup[] = [
       { id: 'software-architecture', label: 'Software Architecture', slug: 'software-architecture' },
       { id: 'testing', label: 'Testing', slug: 'testing' },
       { id: 'devops', label: 'DevOps', slug: 'devops' },
+      { id: 'low-level-systems', label: 'Low-Level Systems', slug: 'low-level-systems' },
     ],
   },
   {

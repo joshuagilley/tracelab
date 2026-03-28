@@ -18,6 +18,7 @@ import DataScienceLabPanel from '@/components/DataScienceLabPanel'
 import DatabaseDesignLessonPanel from '@/components/DatabaseDesignLessonPanel'
 import CloudArchitectureLessonPanel from '@/components/CloudArchitectureLessonPanel'
 import ApiDesignLessonPanel from '@/components/ApiDesignLessonPanel'
+import LowLevelSystemsLessonPanel from '@/components/LowLevelSystemsLessonPanel'
 import type { LabConceptDetail } from '@/types/labConcept'
 import type { NumpyFn } from '@/lib/numpyDemo'
 import styles from './ConceptDetailPage.module.css'
@@ -41,6 +42,7 @@ const LIBRARY_LABELS: Record<LabId, string> = {
   'software-architecture': 'Software Architecture',
   testing: 'Testing',
   devops: 'DevOps',
+  'low-level-systems': 'Low-Level Systems',
   algorithms: 'Algorithms & Data Structures',
   'ai-systems': 'AI Systems',
   'design-patterns': 'Design Patterns',
@@ -486,6 +488,48 @@ export default function ConceptDetailPage() {
           <div className={styles.leftCol}>
             <div className={`${styles.center} ${styles.centerGrow}`}>
               <CloudArchitectureLessonPanel summary={lesson.summary} slug={lesson.slug} />
+            </div>
+          </div>
+
+          <div
+            className={styles.dragHandle}
+            onMouseDown={handleDragStart}
+            title="Drag to resize"
+          >
+            <div className={styles.dragDots} />
+          </div>
+
+          <div className={styles.right}>
+            <DynamicCodePanel files={lesson.codeFiles ?? []} />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (labId === 'low-level-systems' && lesson && lesson.vizType === 'low-level-lesson') {
+    return (
+      <div className={styles.page}>
+        <div className={styles.pageHeader}>
+          <div className={styles.breadcrumb}>
+            <Link to="/" className={styles.breadcrumbLink}>
+              {libraryLabel}
+            </Link>
+            <span className={styles.breadcrumbSep}>›</span>
+            <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
+          </div>
+          {difficulty && (
+            <span className={`badge badge--${difficulty}`}>{difficulty}</span>
+          )}
+        </div>
+
+        <div
+          className={styles.mainArea}
+          style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
+        >
+          <div className={styles.leftCol}>
+            <div className={`${styles.center} ${styles.centerGrow}`}>
+              <LowLevelSystemsLessonPanel summary={lesson.summary} slug={lesson.slug} />
             </div>
           </div>
 
