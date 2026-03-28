@@ -14,6 +14,13 @@ export type LabId =
   | 'concurrency'
   | 'database-design'
   | 'cloud-architecture'
+  | 'networking'
+  | 'security'
+  | 'software-architecture'
+  | 'testing'
+  | 'devops'
+  | 'algorithms'
+  | 'ai-systems'
   | 'design-patterns'
   | 'data-science'
 
@@ -23,15 +30,45 @@ export interface LabOption {
   slug: string
 }
 
-export const LAB_OPTIONS: LabOption[] = [
-  { id: 'system-design', label: 'System Design', slug: 'system-design' },
-  { id: 'api-design', label: 'API Design', slug: 'api-design' },
-  { id: 'concurrency', label: 'Concurrency', slug: 'concurrency' },
-  { id: 'database-design', label: 'Database Design', slug: 'database-design' },
-  { id: 'cloud-architecture', label: 'Cloud Architecture', slug: 'cloud-architecture' },
-  { id: 'design-patterns', label: 'Design Patterns', slug: 'design-patterns' },
-  { id: 'data-science', label: 'Data Science', slug: 'data-science' },
+export interface LabGroup {
+  heading: string
+  options: LabOption[]
+}
+
+/** Grouped picker: core engineering → supporting layers → specialized tracks */
+export const LAB_GROUPS: LabGroup[] = [
+  {
+    heading: 'Core engineering',
+    options: [
+      { id: 'system-design', label: 'System Design', slug: 'system-design' },
+      { id: 'api-design', label: 'API Design', slug: 'api-design' },
+      { id: 'concurrency', label: 'Concurrency', slug: 'concurrency' },
+      { id: 'database-design', label: 'Database Design', slug: 'database-design' },
+      { id: 'cloud-architecture', label: 'Cloud Architecture', slug: 'cloud-architecture' },
+    ],
+  },
+  {
+    heading: 'Supporting layers',
+    options: [
+      { id: 'networking', label: 'Networking', slug: 'networking' },
+      { id: 'security', label: 'Security', slug: 'security' },
+      { id: 'software-architecture', label: 'Software Architecture', slug: 'software-architecture' },
+      { id: 'testing', label: 'Testing', slug: 'testing' },
+      { id: 'devops', label: 'DevOps', slug: 'devops' },
+    ],
+  },
+  {
+    heading: 'Specialized',
+    options: [
+      { id: 'design-patterns', label: 'Design Patterns', slug: 'design-patterns' },
+      { id: 'data-science', label: 'Data Science', slug: 'data-science' },
+      { id: 'algorithms', label: 'Algorithms & Data Structures', slug: 'algorithms' },
+      { id: 'ai-systems', label: 'AI Systems', slug: 'ai-systems' },
+    ],
+  },
 ]
+
+export const LAB_OPTIONS: LabOption[] = LAB_GROUPS.flatMap(g => g.options)
 
 const STORAGE_KEY = 'tracelab-lab'
 

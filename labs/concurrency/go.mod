@@ -1,3 +1,3 @@
-module tracelab.design-patterns
+module tracelab.concurrency
 
 go 1.21

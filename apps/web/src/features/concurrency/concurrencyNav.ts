@@ -1,22 +1,11 @@
-export interface ConcurrencyNavItem {
-  label: string
-  /** Set when a lesson exists in concurrency.json */
-  slug?: string
-}
-
-export interface ConcurrencyNavSection {
-  id: string
-  title: string
-  blurb: string
-  items: ConcurrencyNavItem[]
-}
+import type { CurriculumNavSection } from '@/types/curriculumNav'
 
 /**
  * In-process execution: goroutines, locks, channels, pools — what happens inside
  * one service under load. Macro queues/async topology → System Design; HTTP rate
  * limits and contracts → API Design.
  */
-export const CONCURRENCY_SECTIONS: ConcurrencyNavSection[] = [
+export const CONCURRENCY_SECTIONS: CurriculumNavSection[] = [
   {
     id: 'foundations',
     title: 'Foundations',
@@ -107,3 +96,10 @@ export const CONCURRENCY_SECTIONS: ConcurrencyNavSection[] = [
     ],
   },
 ]
+
+export const CONCURRENCY_DEFAULT_OPEN = [
+  'foundations',
+  'synchronization',
+  'communication',
+  'execution-patterns',
+] as const

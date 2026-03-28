@@ -1,26 +1,45 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import { fetchSectionConcepts } from '@/features/sections/api'
-import { LAB_OPTIONS, useLab, type LabId } from '@/contexts/lab'
-
-const LIBRARY_LINK_LABEL: Record<LabId, string> = {
-  'system-design': 'System design',
-  'api-design': 'All APIs',
-  'concurrency': 'All topics',
-  'design-patterns': 'All patterns',
-  'data-science': 'All topics',
-  'database-design': 'All lessons',
-  'cloud-architecture': 'All lessons',
-}
+import { LAB_GROUPS, useLab, type LabId } from '@/contexts/lab'
+import CurriculumTopicPane from './CurriculumTopicPane'
 import DesignPatternsSidebarNav from './DesignPatternsSidebarNav'
 import SystemDesignSidebarNav from './SystemDesignSidebarNav'
 import DataScienceSidebarNav from './DataScienceSidebarNav'
 import DatabaseDesignSidebarNav from './DatabaseDesignSidebarNav'
 import CloudArchitectureSidebarNav from './CloudArchitectureSidebarNav'
 import ApiDesignSidebarNav from './ApiDesignSidebarNav'
-import ConcurrencySidebarNav from './ConcurrencySidebarNav'
 import type { Concept } from '@/types/concept'
 import styles from './Sidebar.module.css'
+
+const LIBRARY_LINK_LABEL: Record<LabId, string> = {
+  'system-design': 'System design',
+  'api-design': 'All APIs',
+  concurrency: 'All topics',
+  networking: 'All topics',
+  security: 'All topics',
+  'software-architecture': 'All topics',
+  testing: 'All topics',
+  devops: 'All topics',
+  algorithms: 'All topics',
+  'ai-systems': 'All topics',
+  'design-patterns': 'All patterns',
+  'data-science': 'All topics',
+  'database-design': 'All lessons',
+  'cloud-architecture': 'All lessons',
+}
+
+/** Accordion curriculum driven by `TopicSidebarNav` + feature nav files */
+const TOPIC_CURRICULUM_IDS = new Set<LabId>([
+  'concurrency',
+  'networking',
+  'security',
+  'software-architecture',
+  'testing',
+  'devops',
+  'algorithms',
+  'ai-systems',
+])
 
 function BrandGridIcon() {
   const cells = Array.from({ length: 36 }, (_, i) => (
@@ -62,6 +81,26 @@ export default function Sidebar() {
     setMenuOpen(false)
   }
 
+  let topicNav: ReactNode = null
+  if (labId === 'design-patterns') {
+    topicNav = <DesignPatternsSidebarNav concepts={concepts} />
+  } else if (labId === 'system-design') {
+    topicNav = <SystemDesignSidebarNav concepts={concepts} />
+  } else if (labId === 'api-design') {
+    topicNav = <ApiDesignSidebarNav concepts={concepts} />
+  } else if (TOPIC_CURRICULUM_IDS.has(labId)) {
+    topicNav = <CurriculumTopicPane labId={labId} concepts={concepts} />
+  } else if (labId === 'data-science') {
+    topicNav = <DataScienceSidebarNav concepts={concepts} />
+  } else if (labId === 'database-design') {
+    topicNav = <DatabaseDesignSidebarNav concepts={concepts} />
+  } else if (labId === 'cloud-architecture') {
+    topicNav = <CloudArchitectureSidebarNav concepts={concepts} />
+  }
+
+  const sidebarSectionLabel =
+    labId === 'design-patterns' ? 'BY CATEGORY' : 'BY TOPIC'
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.brand} ref={menuRef}>
@@ -84,17 +123,29 @@ export default function Sidebar() {
           </button>
           {menuOpen && (
             <ul className={styles.labMenu} role="listbox">
-              {LAB_OPTIONS.map(opt => (
-                <li key={opt.id}>
-                  <button
-                    type="button"
-                    role="option"
-                    aria-selected={opt.id === labId}
-                    className={[styles.labOption, opt.id === labId ? styles.labOptionActive : ''].join(' ')}
-                    onClick={() => selectLab(opt.id)}
-                  >
-                    {opt.label}
-                  </button>
+              {LAB_GROUPS.map(group => (
+                <li key={group.heading} className={styles.labMenuGroup}>
+                  <div className={styles.labMenuHeading} role="presentation">
+                    {group.heading}
+                  </div>
+                  <ul className={styles.labMenuSublist}>
+                    {group.options.map(opt => (
+                      <li key={opt.id}>
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={opt.id === labId}
+                          className={[
+                            styles.labOption,
+                            opt.id === labId ? styles.labOptionActive : '',
+                          ].join(' ')}
+                          onClick={() => selectLab(opt.id)}
+                        >
+                          {opt.label}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 </li>
               ))}
             </ul>
@@ -116,30 +167,8 @@ export default function Sidebar() {
       </nav>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}>
-          {labId === 'system-design' && 'BY TOPIC'}
-          {labId === 'api-design' && 'BY TOPIC'}
-          {labId === 'concurrency' && 'BY TOPIC'}
-          {labId === 'design-patterns' && 'BY CATEGORY'}
-          {labId === 'data-science' && 'BY TOPIC'}
-          {labId === 'database-design' && 'BY TOPIC'}
-          {labId === 'cloud-architecture' && 'BY TOPIC'}
-        </div>
-        {labId === 'design-patterns' ? (
-          <DesignPatternsSidebarNav concepts={concepts} />
-        ) : labId === 'system-design' ? (
-          <SystemDesignSidebarNav concepts={concepts} />
-        ) : labId === 'api-design' ? (
-          <ApiDesignSidebarNav concepts={concepts} />
-        ) : labId === 'concurrency' ? (
-          <ConcurrencySidebarNav concepts={concepts} />
-        ) : labId === 'data-science' ? (
-          <DataScienceSidebarNav concepts={concepts} />
-        ) : labId === 'database-design' ? (
-          <DatabaseDesignSidebarNav concepts={concepts} />
-        ) : labId === 'cloud-architecture' ? (
-          <CloudArchitectureSidebarNav concepts={concepts} />
-        ) : null}
+        <div className={styles.sectionTitle}>{sidebarSectionLabel}</div>
+        {topicNav}
       </div>
     </aside>
   )

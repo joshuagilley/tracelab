@@ -27,6 +27,48 @@ const COPY: Record<
       'Parallel execution, coordination, and shared state inside one service — goroutines, channels, locks, and pools (the layer between `go processJob()` in a handler and macro-scale queues in System Design).',
     countLabel: 'TOPICS',
   },
+  networking: {
+    title: 'Networking',
+    subtitle:
+      'How data moves across the wire — DNS, TCP/HTTP, TLS, and connection behavior that sits under APIs, CDNs, and load balancers (resource modeling stays in API Design; global topology in System Design).',
+    countLabel: 'TOPICS',
+  },
+  security: {
+    title: 'Security',
+    subtitle:
+      'Protecting users, data, and access paths — authn/z, common web attacks, crypto basics, and secrets (HTTP JWT/OAuth details also touch API Design; cloud IAM/KMS in Cloud Architecture).',
+    countLabel: 'TOPICS',
+  },
+  'software-architecture': {
+    title: 'Software Architecture',
+    subtitle:
+      'How you structure code inside a system — layers, modules, ports/adapters, and domain modeling (small OO patterns live under Design Patterns; deployment workflows under DevOps).',
+    countLabel: 'TOPICS',
+  },
+  testing: {
+    title: 'Testing',
+    subtitle:
+      'Making behavior provable — units, integration, mocks, testable design, and E2E checks (distributed soak/CI-at-scale overlaps System Design at the edges).',
+    countLabel: 'TOPICS',
+  },
+  devops: {
+    title: 'DevOps',
+    subtitle:
+      'How software is built, shipped, and operated — CI/CD, git discipline, containers, orchestration, and safe releases (managed VPC/Lambda building blocks stay in Cloud Architecture).',
+    countLabel: 'TOPICS',
+  },
+  algorithms: {
+    title: 'Algorithms & Data Structures',
+    subtitle:
+      'Complexity, core collections, and classic structures — the language of performance before you tune Concurrency or shard databases.',
+    countLabel: 'TOPICS',
+  },
+  'ai-systems': {
+    title: 'AI Systems',
+    subtitle:
+      'Machine learning, deep learning, embeddings, vector search, RAG, and model serving — exploratory analysis, SQL, and viz stay under Data Science.',
+    countLabel: 'TOPICS',
+  },
   'design-patterns': {
     title: 'Design Patterns',
     subtitle:
@@ -36,7 +78,7 @@ const COPY: Record<
   'data-science': {
     title: 'Data Science',
     subtitle:
-      'How you explore, clean, and model data — arrays, statistics, and visualization in Python (not microservice meshes, API versioning, or infra provisioning).',
+      'How you explore, clean, and communicate data — Python, SQL, statistics, visualization, and BI (training models and neural nets live under AI Systems, not here).',
     countLabel: 'TOPICS',
   },
   'database-design': {

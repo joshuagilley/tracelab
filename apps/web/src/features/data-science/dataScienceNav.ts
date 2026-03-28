@@ -16,7 +16,7 @@ export const DATA_SCIENCE_SECTIONS: DataScienceNavSection[] = [
     id: 'python-ds',
     title: 'Python for Data Science',
     blurb:
-      'Python is widely used in data science for data analysis, automation and building machine learning models using popular libraries like NumPy and Pandas.',
+      'Python for analysis and automation with NumPy and Pandas — model training and neural networks live under AI Systems.',
     items: [
       { label: 'Python Variables' },
       { label: 'Python Data Types' },
@@ -53,7 +53,7 @@ export const DATA_SCIENCE_SECTIONS: DataScienceNavSection[] = [
     id: 'preprocessing',
     title: 'Data Preprocessing',
     blurb:
-      'Before analysis or modeling, raw data must be cleaned and transformed into a structured format suitable for accurate results.',
+      'Before analysis or handoff to modeling, raw data must be cleaned and transformed — train/test splits feed ML pipelines (see AI Systems).',
     items: [
       { label: 'Data Cleaning' },
       { label: 'Handling Missing Data' },
@@ -119,7 +119,7 @@ export const DATA_SCIENCE_SECTIONS: DataScienceNavSection[] = [
     id: 'mathematics',
     title: 'Mathematics for Data Science',
     blurb:
-      'Mathematics provides the foundation for understanding how data science and machine learning algorithms work behind the scenes.',
+      'Probability, statistics, and linear algebra for EDA and inference — algorithm mechanics for ML/DL models are covered under AI Systems.',
     items: [
       { label: 'Basic probability: Sample space, Types of events, Probability Rules' },
       { label: 'Conditional Probability' },
@@ -139,48 +139,6 @@ export const DATA_SCIENCE_SECTIONS: DataScienceNavSection[] = [
       { label: 'Linear Mapping' },
       { label: 'Solving systems of linear equations' },
       { label: 'Calculus: Differentiation, Gradient, Chain Rule' },
-    ],
-  },
-  {
-    id: 'machine-learning',
-    title: 'Machine Learning',
-    blurb:
-      'Machine learning focuses on developing algorithms that helps computers to learn from data and make predictions or decisions without explicit programming.',
-    items: [
-      { label: 'Supervised Learning' },
-      { label: 'Unsupervised Learning' },
-      { label: 'Regression Techniques' },
-      { label: 'Gradient Descent' },
-      { label: 'Regularization' },
-      { label: 'Classification Algorithms' },
-      { label: 'Clustering' },
-      { label: 'Dimensionality Reduction' },
-      { label: 'Evaluation Metrics' },
-      { label: 'Cross-validation' },
-      { label: 'Hyperparameter tuning' },
-      { label: 'Tree-Based Models' },
-      { label: 'Ensemble Learning' },
-    ],
-  },
-  {
-    id: 'deep-learning',
-    title: 'Deep Learning',
-    blurb:
-      'Deep learning uses advanced neural networks to solve complex problems in areas like image recognition, natural language processing and speech analysis.',
-    items: [
-      { label: 'Neural Networks' },
-      { label: 'Artificial Neural Networks (ANNs)' },
-      { label: 'Perceptron' },
-      { label: 'Optimization Algorithms' },
-      { label: 'Convolutional Neural Networks (CNN)' },
-      { label: 'Transfer learning' },
-      { label: 'Recurrent Neural Networks (RNN)' },
-      { label: 'LSTM & GRU' },
-      { label: 'Transformers' },
-      { label: 'Seq2Seq' },
-      { label: 'Autoencoders' },
-      { label: 'Generative Adversarial Network (GAN)' },
-      { label: 'Deep Learning Frameworks' },
     ],
   },
 ]

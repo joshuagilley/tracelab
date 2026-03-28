@@ -74,7 +74,8 @@ export const API_DESIGN_SECTIONS: ApiDesignNavSection[] = [
   {
     id: 'security',
     title: 'Security',
-    blurb: 'Identity, authorization, and validating untrusted input at the edge.',
+    blurb:
+      'Identity, authorization, and validating untrusted input at the API edge — XSS, SQL injection, crypto, and secrets depth live under Security.',
     items: [
       { label: 'Authentication (API Keys, JWT)' },
       { label: 'Authorization' },

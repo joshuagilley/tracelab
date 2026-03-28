@@ -1,30 +1,48 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CONCURRENCY_SECTIONS } from '@/features/concurrency/concurrencyNav'
+import type { CurriculumNavSection } from '@/types/curriculumNav'
 import type { Concept } from '@/types/concept'
 import styles from './DesignPatternsSidebarNav.module.css'
 
-function initialOpenState(): Record<string, boolean> {
+function buildInitialOpen(
+  sections: CurriculumNavSection[],
+  defaultOpenSectionIds?: string[],
+): Record<string, boolean> {
   const o: Record<string, boolean> = {}
-  for (const s of CONCURRENCY_SECTIONS) {
+  for (const s of sections) {
     o[s.id] = false
   }
-  o.foundations = true
-  o.synchronization = true
-  o.communication = true
-  o['execution-patterns'] = true
+  const openIds =
+    defaultOpenSectionIds?.filter(Boolean).length ?
+      defaultOpenSectionIds!
+    : sections[0] ? [sections[0].id] : []
+  for (const id of openIds) {
+    o[id] = true
+  }
   return o
 }
 
-interface Props {
+export interface TopicSidebarNavProps {
   concepts: Concept[]
+  sections: CurriculumNavSection[]
+  /** Prefix for stable DOM ids, e.g. "net", "sec" */
+  panelPrefix: string
+  /** Which accordion sections start expanded */
+  defaultOpenSectionIds?: string[]
 }
 
-export default function ConcurrencySidebarNav({ concepts }: Props) {
+export default function TopicSidebarNav({
+  concepts,
+  sections,
+  panelPrefix,
+  defaultOpenSectionIds,
+}: TopicSidebarNavProps) {
   const navigate = useNavigate()
   const bySlug = useMemo(() => Object.fromEntries(concepts.map(c => [c.slug, c])), [concepts])
 
-  const [open, setOpen] = useState<Record<string, boolean>>(initialOpenState)
+  const [open, setOpen] = useState<Record<string, boolean>>(() =>
+    buildInitialOpen(sections, defaultOpenSectionIds),
+  )
 
   const toggle = (id: string) => {
     setOpen(s => ({ ...s, [id]: !s[id] }))
@@ -32,9 +50,9 @@ export default function ConcurrencySidebarNav({ concepts }: Props) {
 
   return (
     <div className={styles.root}>
-      {CONCURRENCY_SECTIONS.map(section => {
+      {sections.map(section => {
         const isOpen = open[section.id] ?? false
-        const panelId = `conc-section-${section.id}`
+        const panelId = `${panelPrefix}-section-${section.id}`
         return (
           <div key={section.id} className={styles.section}>
             <button

@@ -36,11 +36,35 @@ const LIBRARY_LABELS: Record<LabId, string> = {
   'system-design': 'Concept Library',
   'api-design': 'API Design',
   concurrency: 'Concurrency',
+  networking: 'Networking',
+  security: 'Security',
+  'software-architecture': 'Software Architecture',
+  testing: 'Testing',
+  devops: 'DevOps',
+  algorithms: 'Algorithms & Data Structures',
+  'ai-systems': 'AI Systems',
   'design-patterns': 'Design Patterns',
   'data-science': 'Data Science',
   'database-design': 'Database Design',
   'cloud-architecture': 'Cloud Architecture',
 }
+
+/** Lesson detail layouts not implemented yet for these tracks */
+const LABS_AWAITING_LESSON_UI: readonly LabId[] = [
+  'design-patterns',
+  'data-science',
+  'database-design',
+  'cloud-architecture',
+  'api-design',
+  'concurrency',
+  'networking',
+  'security',
+  'software-architecture',
+  'testing',
+  'devops',
+  'algorithms',
+  'ai-systems',
+]
 
 function initialNumpyState(c: LabConceptDetail | null) {
   if (!c?.parameters?.length) {
@@ -523,15 +547,7 @@ export default function ConceptDetailPage() {
     )
   }
 
-  if (
-    lesson &&
-    (labId === 'design-patterns' ||
-      labId === 'data-science' ||
-      labId === 'database-design' ||
-      labId === 'cloud-architecture' ||
-      labId === 'api-design' ||
-      labId === 'concurrency')
-  ) {
+  if (lesson && LABS_AWAITING_LESSON_UI.includes(labId)) {
     return (
       <div className={styles.errorPage}>
         <p>This lesson layout is not available yet.</p>
