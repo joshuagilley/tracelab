@@ -13,8 +13,6 @@ export function computeArray(fn: NumpyFn, n: number): number[] {
     case 'linspace':
       if (len === 1) return [0]
       return Array.from({ length: len }, (_, i) => i / (len - 1))
-    default:
-      return []
   }
 }
 

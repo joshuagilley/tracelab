@@ -155,7 +155,7 @@ export default function CodePanel() {
           ))}
         </div>
         <div className={styles.actions}>
-          <button className={styles.actionBtn} title="Copy code" onClick={() => navigator.clipboard.writeText(code)}>
+          <button className={styles.actionBtn} title="Copy code" onClick={() => { navigator.clipboard.writeText(code).catch(() => {}) }}>
             ⧉
           </button>
         </div>

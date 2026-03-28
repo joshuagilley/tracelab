@@ -13,6 +13,8 @@ export default function MetricsPanel({ isRunning, metrics, hitRate, onHitRateCha
   const [latency, setLatency]       = useState(0)
   const [throughput, setThroughput] = useState(0)
 
+  const { hits, misses, total } = metrics
+
   useEffect(() => {
     if (!isRunning) {
       setLatency(0)
@@ -22,12 +24,12 @@ export default function MetricsPanel({ isRunning, metrics, hitRate, onHitRateCha
     const id = setInterval(() => {
       const hitMs  = 2 + Math.random() * 6
       const missMs = 20 + Math.random() * 40
-      const hr = metrics.total > 0 ? metrics.hits / metrics.total : hitRate
+      const hr = total > 0 ? hits / total : hitRate
       setLatency(Math.round(hr * hitMs + (1 - hr) * missMs))
       setThroughput(Math.round(800 + Math.random() * 600))
     }, 400)
     return () => clearInterval(id)
-  }, [isRunning, metrics, hitRate])
+  }, [isRunning, hits, misses, total, hitRate])
 
   const cacheHitPct = metrics.total > 0
     ? ((metrics.hits / metrics.total) * 100).toFixed(1)

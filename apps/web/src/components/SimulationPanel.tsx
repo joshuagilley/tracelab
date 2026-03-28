@@ -105,9 +105,10 @@ export default function SimulationPanel({ isRunning, hitRate, onMetrics, onToggl
     return () => clearInterval(id)
   }, [isRunning, spawn])
 
-  // Animate packets via rAF
+  // Animate packets via rAF — driven by isRunning only; reads/writes packets via
+  // the setState updater so it always sees the latest state without restarting.
   useEffect(() => {
-    if (!isRunning && packets.length === 0) return
+    if (!isRunning) return
     let last: number | null = null
     let raf: number
 
@@ -123,7 +124,6 @@ export default function SimulationPanel({ isRunning, hitRate, onMetrics, onToggl
           if (np >= 1) {
             const nextIdx = p.segIdx + 1
             if (nextIdx >= p.segments.length) {
-              // Packet completed its journey
               const m = metrics.current
               if (p.type === 'hit') m.hits++
               else m.misses++
@@ -144,7 +144,7 @@ export default function SimulationPanel({ isRunning, hitRate, onMetrics, onToggl
 
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [isRunning, packets.length])
+  }, [isRunning])
 
   // Reset metrics when simulation restarts
   useEffect(() => {

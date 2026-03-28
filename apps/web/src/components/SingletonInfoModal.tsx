@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import styles from './SingletonInfoModal.module.css'
+import styles from './InfoModal.module.css'
 
 interface Props {
   open: boolean

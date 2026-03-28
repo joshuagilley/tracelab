@@ -16,7 +16,7 @@ export default function AppShell({ children }: AppShellProps) {
           <span className={styles.footerLeft}>
             <span className={styles.statusDot} /> TERMINAL CONNECTION: ACTIVE.
           </span>
-          <span className={styles.footerRight}>© 2024 TRACELAB SYSTEMS GROUP.</span>
+          <span className={styles.footerRight}>© {new Date().getFullYear()} TRACELAB SYSTEMS GROUP.</span>
         </footer>
       </div>
     </div>

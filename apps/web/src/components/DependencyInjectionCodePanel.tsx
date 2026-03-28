@@ -51,7 +51,7 @@ export default function DependencyInjectionCodePanel({ files }: Props) {
             type="button"
             className={baseStyles.actionBtn}
             title="Copy code"
-            onClick={() => navigator.clipboard.writeText(code)}
+            onClick={() => { navigator.clipboard.writeText(code).catch(() => {}) }}
           >
             ⧉
           </button>

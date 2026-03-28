@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import type { LabCodeFile } from '@/types/labConcept'
@@ -19,6 +19,10 @@ export default function DynamicCodePanel({ files }: Props) {
 
   const names = Object.keys(map)
   const [active, setActive] = useState(names[0] ?? '')
+
+  useEffect(() => {
+    if (!names.includes(active)) setActive(names[0] ?? '')
+  }, [names, active])
 
   if (!names.length) {
     return <div className={`panel ${styles.panel}`}><div className="panel-header"><span className="panel-label">Code</span></div><p className={styles.empty}>No files</p></div>
@@ -49,7 +53,7 @@ export default function DynamicCodePanel({ files }: Props) {
             type="button"
             className={styles.actionBtn}
             title="Copy code"
-            onClick={() => navigator.clipboard.writeText(code)}
+            onClick={() => { navigator.clipboard.writeText(code).catch(() => {}) }}
           >
             ⧉
           </button>
