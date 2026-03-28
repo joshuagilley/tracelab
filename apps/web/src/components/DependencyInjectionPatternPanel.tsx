@@ -81,8 +81,8 @@ export default function DependencyInjectionPatternPanel({
           </label>
         </div>
 
-        <fieldset className={di.uploaderColumn}>
-          <legend className={di.uploaderLegend}>Inject uploader → bucket + creds</legend>
+        <div className={di.uploaderColumn}>
+          <div className={di.uploaderLegend}>Inject uploader → bucket + creds</div>
           <label className={di.backendOption}>
             <input
               type="radio"
@@ -119,7 +119,7 @@ export default function DependencyInjectionPatternPanel({
               <span className={di.hint}> no remote keys</span>
             </span>
           </label>
-        </fieldset>
+        </div>
 
         <div className={di.metricsInline}>
           <div className={styles.kicker}>Live metrics</div>

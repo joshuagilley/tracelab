@@ -152,6 +152,38 @@
   margin-top: 2px;
 }
 
+/* ─── Library (main grid) ─────────────────────────── */
+.quickNav {
+  flex-shrink: 0;
+  padding: 8px 12px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.libLink {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: background 0.12s, color 0.12s;
+}
+
+.libLink:hover {
+  color: var(--accent);
+  background: var(--bg-elevated);
+}
+
+.libLinkActive {
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
 /* ─── Concept list ────────────────────────────────── */
 .section {
   flex: 1;

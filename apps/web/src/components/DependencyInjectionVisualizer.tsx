@@ -235,8 +235,8 @@ export default function DependencyInjectionVisualizer({
     cx: black.x + 166 + 66,
     cy: midY,
   };
-  const s3Top = { x: 668, y: midY - 118, w: 112, h: 92 };
-  const s3Bot = { x: 668, y: midY + 26, w: 112, h: 92 };
+  const s3Top = { x: 668, y: midY - 122, w: 112, h: 106 };
+  const s3Bot = { x: 668, y: midY + 22, w: 112, h: 106 };
   const mockSink = { x: 712, y: midY };
 
   const activeSftp = storageBackend === "sftp";
@@ -357,13 +357,23 @@ export default function DependencyInjectionVisualizer({
               </text>
               <text
                 x={s3Top.x + s3Top.w / 2}
-                y={s3Top.y + 68}
+                y={s3Top.y + 70}
                 textAnchor="middle"
                 fill="var(--color-info)"
                 fontSize={8}
                 fontFamily="var(--font-mono)"
               >
-                creds: SFTP host key + user
+                creds: SFTP
+              </text>
+              <text
+                x={s3Top.x + s3Top.w / 2}
+                y={s3Top.y + 82}
+                textAnchor="middle"
+                fill="var(--color-info)"
+                fontSize={8}
+                fontFamily="var(--font-mono)"
+              >
+                host key + user
               </text>
             </g>
 
@@ -398,13 +408,23 @@ export default function DependencyInjectionVisualizer({
               </text>
               <text
                 x={s3Bot.x + s3Bot.w / 2}
-                y={s3Bot.y + 68}
+                y={s3Bot.y + 70}
                 textAnchor="middle"
                 fill="var(--color-easy)"
                 fontSize={8}
                 fontFamily="var(--font-mono)"
               >
-                creds: WebDAV token + path
+                creds: WebDAV
+              </text>
+              <text
+                x={s3Bot.x + s3Bot.w / 2}
+                y={s3Bot.y + 82}
+                textAnchor="middle"
+                fill="var(--color-easy)"
+                fontSize={8}
+                fontFamily="var(--font-mono)"
+              >
+                token + path
               </text>
             </g>
 

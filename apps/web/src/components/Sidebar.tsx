@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, NavLink } from 'react-router-dom'
 import { fetchConcepts } from '@/features/concepts/api'
 import { fetchLabConcepts } from '@/features/labs/api'
 import { LAB_OPTIONS, useLab, type LabId } from '@/contexts/lab'
+
+const LIBRARY_LINK_LABEL: Record<LabId, string> = {
+  'system-design': 'Concept library',
+  'design-patterns': 'All patterns',
+  'data-science': 'All topics',
+}
 import DesignPatternsSidebarNav from './DesignPatternsSidebarNav'
 import type { Concept } from '@/types/concept'
 import styles from './Sidebar.module.css'
@@ -94,6 +100,18 @@ export default function Sidebar() {
           <div className={styles.brandVersion}>V2.4.0 OBSIDIAN</div>
         </div>
       </div>
+
+      <nav className={styles.quickNav} aria-label="Library">
+        <NavLink
+          to="/"
+          end
+          className={({ isActive }) =>
+            [styles.libLink, isActive ? styles.libLinkActive : ''].join(' ')
+          }
+        >
+          {LIBRARY_LINK_LABEL[labId]}
+        </NavLink>
+      </nav>
 
       <div className={styles.section}>
         <div className={styles.sectionTitle}>
