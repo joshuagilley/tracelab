@@ -14,7 +14,6 @@ A lightweight interactive learning tool for system design concepts.
 |----------|-------------------------|
 | Frontend | React + TypeScript + Vite |
 | Backend  | Go (net/http)           |
-| Data Science (playground) | Python 3.12 + FastAPI + NumPy (optional service) |
 | Database | MongoDB (optional, not wired yet) |
 
 ## Running Locally
@@ -40,13 +39,11 @@ make api   # Go API on :8080
 make web   # Vite dev server on :5173
 ```
 
-**Full stack with Python playground** (Go proxies `/api/datascience/*` → FastAPI, avoids CORS):
+**Docker (API only)** — then run `make web` for Vite:
 
 ```bash
-make compose-up   # datascience :8090, api :8080 — then run `make web`
+make compose-up   # api :8080
 ```
-
-Unset `DATASCIENCE_SERVICE_URL` on the Go process to disable the proxy (static Data Science lessons still work from embedded JSON).
 
 ## Project Structure
 
@@ -54,8 +51,7 @@ Unset `DATASCIENCE_SERVICE_URL` on the Go process to disable the proxy (static D
 tracelab/
   apps/web/              React + TypeScript frontend
   labs/                  Local sandboxes + system-design code (see labs/CONCEPT.md)
-  services/api/          Go backend + embedded lesson files (present/bad/notes) + optional DS proxy
-  services/datascience/   FastAPI + NumPy (local / Cloud Run playground)
+  services/api/          Go backend + embedded lesson files (present/bad/notes)
   docker-compose.yml
   context/               Design references
   Makefile
@@ -80,7 +76,6 @@ tracelab/
 | GET | /api/sections/database-design/concepts/:slug | Embedded present/bad (Go DDL strings) |
 | GET | /api/sections/cloud-architecture/concepts | Cloud architecture — list |
 | GET | /api/sections/cloud-architecture/concepts/:slug | VPC, S3, SQS, Lambda, etc. |
-| GET | /api/datascience/* | Proxied to Python service when `DATASCIENCE_SERVICE_URL` is set |
 
 ## Sample catalog (see JSON under `services/api/internal/lessons/data/`)
 

@@ -42,8 +42,8 @@ export default function NumericalComputingVisualizer({
 
       <div className={styles.body}>
         <p className={styles.subtitle}>
-          Browser preview of <code>numpy.{numpyFn}</code> with length <code>{length}</code> (no Python in prod).
-          Run <code>make compose-up</code> and hit the Go proxy at <code>/api/datascience/…</code> for a real kernel.
+          In-browser preview of <code>numpy.{numpyFn}</code>-style behavior with length <code>{length}</code> — same
+          shapes as the lesson’s embedded Python, computed locally for the visualizer (no remote kernel).
         </p>
 
         <div className={styles.barRow}>

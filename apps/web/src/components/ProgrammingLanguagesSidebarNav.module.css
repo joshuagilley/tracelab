@@ -1,0 +1,158 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.langSection {
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+}
+
+.langHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 8px;
+  text-align: left;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.langHead:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: var(--bg-elevated);
+}
+
+/* Deeper neutral rows under the programming-languages theme so brand icons pop */
+:global(.lab-theme-programming-languages) .langHead {
+  background: color-mix(in srgb, var(--bg-base) 35%, var(--bg-subtle));
+  border-color: color-mix(in srgb, var(--border) 82%, var(--bg-base));
+}
+
+:global(.lab-theme-programming-languages) .langHead:hover {
+  background: color-mix(in srgb, var(--bg-base) 22%, var(--bg-elevated));
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
+}
+
+.langChevron {
+  font-size: 8px;
+  color: var(--accent);
+  flex-shrink: 0;
+  width: 10px;
+  line-height: 1;
+}
+
+.langTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.langTitle {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+}
+
+.panel {
+  padding: 8px 4px 4px 8px;
+}
+
+.langBlurb {
+  font-size: 10px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  margin: 0 0 10px;
+  padding-right: 4px;
+}
+
+.category {
+  margin-bottom: 10px;
+}
+
+.category:last-child {
+  margin-bottom: 4px;
+}
+
+.categoryTitle {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 4px;
+  padding-left: 2px;
+}
+
+.categoryBlurb {
+  font-size: 9px;
+  line-height: 1.4;
+  color: var(--text-muted);
+  margin: 0 0 6px;
+  padding-left: 2px;
+  padding-right: 4px;
+}
+
+.patternList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.patternRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 11px;
+  transition: background 0.12s;
+}
+
+.patternRow:hover:not(:disabled) {
+  background: var(--bg-elevated);
+}
+
+.patternRow:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.patternLabel {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.patternBadge {
+  flex-shrink: 0;
+}
+
+.soon {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}

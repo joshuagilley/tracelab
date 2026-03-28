@@ -2,13 +2,7 @@
 
 ## `services/api` — Go HTTP API
 
-- **Serves** the web app under **`GET /api/sections/{lab-id}/concepts`** and **`.../concepts/{slug}`** — `lab-id` matches each TraceLab track (see `validSections` in `internal/lessons/handler.go`). Catalog JSON lives in `internal/lessons/data/*.json`; lesson source is embedded from `internal/lessons/embed/{section}/` as **`present.*`** and **`bad.*`** only. Runnable **sandboxes** stay under repo-root **`labs/`**, not in the API image.
-- **Proxies** `/api/datascience/*` → optional Python service when `DATASCIENCE_SERVICE_URL` is set (see `internal/transport/datascience_proxy.go`).
-
-## `services/datascience` — optional Python playground
-
-- **Separate** FastAPI app for **real NumPy execution** (e.g. playground endpoints). Not used to store or serve “lesson” source for the TraceLab UI.
-- **Why it exists:** production can run static lessons from the Go API only; locally you can `docker compose up` to hit Python through the Go reverse proxy.
+- **Serves** the web app under **`GET /api/sections/{lab-id}/concepts`** and **`.../concepts/{slug}`** — `lab-id` matches each TraceLab track (see `validSections` in `internal/lessons/handler.go`). Catalog JSON lives in `internal/lessons/data/*.json`; lesson source is embedded from `internal/lessons/embed/{section}/` as **`present.*`** and **`bad.*`** (and similar per lesson). Runnable **sandboxes** stay under repo-root **`labs/`**, not in the API image.
 
 ## System design
 

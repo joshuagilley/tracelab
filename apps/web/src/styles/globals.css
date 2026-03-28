@@ -135,6 +135,13 @@
   --accent-glow: rgba(34, 211, 238, 0.3);
 }
 
+/* Neutral “ink” accent so colorful language logos read clearly in the sidebar */
+.lab-theme-programming-languages {
+  --accent: #9aa3b5;
+  --accent-dim: rgba(154, 163, 181, 0.14);
+  --accent-glow: rgba(154, 163, 181, 0.22);
+}
+
 /* ─── Reset ──────────────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;

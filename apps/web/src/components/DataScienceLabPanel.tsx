@@ -60,11 +60,10 @@ export default function DataScienceLabPanel({
       </div>
       <div className={styles.divider} />
       <div className={styles.group}>
-        <div className={styles.groupLabel}>STATIC LESSON MODE</div>
+        <div className={styles.groupLabel}>LESSON MODE</div>
         <p className={styles.text}>
-          Values update in the browser only. For real NumPy execution, run{' '}
-          <code>docker compose up</code> and call{' '}
-          <code>/api/datascience/api/playground/numpy-demo</code> through the Go proxy.
+          Sliders drive the chart above; numbers match the embedded lesson’s Python semantics in the code panel,
+          rendered in the browser for TraceLab (no separate Python service).
         </p>
       </div>
     </div>

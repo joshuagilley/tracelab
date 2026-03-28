@@ -45,6 +45,7 @@ const LIBRARY_LABELS: Record<LabId, string> = {
   'low-level-systems': 'Low-Level Systems',
   algorithms: 'Algorithms & Data Structures',
   'ai-systems': 'AI Systems',
+  'programming-languages': 'Programming Languages',
   'design-patterns': 'Design Patterns',
   'data-science': 'Data Science',
   'database-design': 'Database Design',
@@ -66,6 +67,7 @@ const LABS_AWAITING_LESSON_UI: readonly LabId[] = [
   'devops',
   'algorithms',
   'ai-systems',
+  'programming-languages',
 ]
 
 function initialNumpyState(c: LabConceptDetail | null) {

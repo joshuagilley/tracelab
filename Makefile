@@ -6,7 +6,7 @@ labs-sync:
 	@mkdir -p services/api/internal/lessons/embed/data-science
 	cp labs/data-science/requirements.txt services/api/internal/lessons/embed/data-science/requirements.txt
 
-# Docker: Python playground + Go API (Vite: run `make web` separately)
+# Docker: Go API (Vite: run `make web` separately)
 compose-up:
 	docker compose up --build
 

@@ -22,6 +22,7 @@ export type LabId =
   | 'low-level-systems'
   | 'algorithms'
   | 'ai-systems'
+  | 'programming-languages'
   | 'design-patterns'
   | 'data-science'
 
@@ -66,6 +67,11 @@ export const LAB_GROUPS: LabGroup[] = [
       { id: 'data-science', label: 'Data Science', slug: 'data-science' },
       { id: 'algorithms', label: 'Algorithms & Data Structures', slug: 'algorithms' },
       { id: 'ai-systems', label: 'AI Systems', slug: 'ai-systems' },
+      {
+        id: 'programming-languages',
+        label: 'Programming Languages',
+        slug: 'programming-languages',
+      },
     ],
   },
 ]

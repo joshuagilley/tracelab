@@ -9,6 +9,7 @@ import DataScienceSidebarNav from './DataScienceSidebarNav'
 import DatabaseDesignSidebarNav from './DatabaseDesignSidebarNav'
 import CloudArchitectureSidebarNav from './CloudArchitectureSidebarNav'
 import ApiDesignSidebarNav from './ApiDesignSidebarNav'
+import ProgrammingLanguagesSidebarNav from './ProgrammingLanguagesSidebarNav'
 import type { Concept } from '@/types/concept'
 import styles from './Sidebar.module.css'
 
@@ -24,6 +25,7 @@ const LIBRARY_LINK_LABEL: Record<LabId, string> = {
   'low-level-systems': 'All topics',
   algorithms: 'All topics',
   'ai-systems': 'All topics',
+  'programming-languages': 'All topics',
   'design-patterns': 'All patterns',
   'data-science': 'All topics',
   'database-design': 'All lessons',
@@ -98,10 +100,14 @@ export default function Sidebar() {
     topicNav = <DatabaseDesignSidebarNav concepts={concepts} />
   } else if (labId === 'cloud-architecture') {
     topicNav = <CloudArchitectureSidebarNav concepts={concepts} />
+  } else if (labId === 'programming-languages') {
+    topicNav = <ProgrammingLanguagesSidebarNav concepts={concepts} />
   }
 
   const sidebarSectionLabel =
-    labId === 'design-patterns' ? 'BY CATEGORY' : 'BY TOPIC'
+    labId === 'design-patterns' ? 'BY CATEGORY'
+    : labId === 'programming-languages' ? 'BY LANGUAGE'
+    : 'BY TOPIC'
 
   return (
     <aside className={styles.sidebar}>

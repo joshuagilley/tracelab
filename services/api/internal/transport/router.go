@@ -25,9 +25,6 @@ func NewRouter() http.Handler {
 	// GET /api/sections/{lab-id}/concepts[/{slug}] — lab-id matches LabId in the web app
 	mux.Handle("/api/sections/", lessonHandler)
 
-	// Optional proxy to Python datascience container (same origin for browser)
-	mux.Handle("/api/datascience/", datascienceProxy())
-
 	return withCORS(mux)
 }
 

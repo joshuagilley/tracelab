@@ -75,6 +75,12 @@ const COPY: Record<
       'Machine learning, deep learning, embeddings, vector search, RAG, and model serving — exploratory analysis, SQL, and viz stay under Data Science.',
     countLabel: 'TOPICS',
   },
+  'programming-languages': {
+    title: 'Programming Languages',
+    subtitle:
+      'Language-specific mental models — how each language executes, types data, and fits in real systems (not syntax drills; concurrency depth stays under Concurrency, memory detail under Low-Level Systems).',
+    countLabel: 'TOPICS',
+  },
   'design-patterns': {
     title: 'Design Patterns',
     subtitle:

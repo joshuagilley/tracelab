@@ -1,19 +1,8 @@
-# Local full stack: Go API (proxies to Python) + Data Science playground + Vite is separate (npm run dev).
+# Local: Go API only (Vite: run `make web` separately).
 services:
-  datascience:
-    build: ./services/datascience
-    ports:
-      - "8090:8080"
-    environment:
-      TRACELAB_MODE: playground
-
   api:
     build:
       context: .
       dockerfile: services/api/Dockerfile
     ports:
       - "8080:8080"
-    environment:
-      DATASCIENCE_SERVICE_URL: http://datascience:8080
-    depends_on:
-      - datascience

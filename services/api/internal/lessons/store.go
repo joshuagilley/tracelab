@@ -57,6 +57,9 @@ var algorithmsCode embed.FS
 //go:embed embed/ai-systems
 var aiSystemsCode embed.FS
 
+//go:embed embed/programming-languages
+var programmingLanguagesCode embed.FS
+
 // MemoryStore loads lessons from embedded JSON and hydrates code from embed/{section}/.
 type MemoryStore struct {
 	bySection map[string][]Lesson
@@ -87,6 +90,7 @@ func NewMemoryStore() (*MemoryStore, error) {
 		{"data/low-level-systems.json", "low-level-systems", lowLevelSystemsCode},
 		{"data/algorithms.json", "algorithms", algorithmsCode},
 		{"data/ai-systems.json", "ai-systems", aiSystemsCode},
+		{"data/programming-languages.json", "programming-languages", programmingLanguagesCode},
 	}
 
 	for _, e := range entries {
