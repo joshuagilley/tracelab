@@ -11,14 +11,24 @@
     "vizType": "numerical",
     "codeFiles": [
       {
-        "name": "arrays.py",
+        "name": "present.py",
         "lang": "python",
-        "code": "import numpy as np\n\n# --- Array creation (pick one in the simulator) ---\n# np.ones(n)      — vector of 1.0\n# np.zeros(n)     — vector of 0.0\n# np.arange(n)    — 0, 1, …, n-1\n# np.linspace(0, 1, n) — n evenly spaced points in [0, 1]\n\nn = 8\na = np.ones(n)\n\nprint(\"shape:\", a.shape)\nprint(\"dtype:\", a.dtype)\nprint(\"values:\", a)\nprint(\"sum:\", a.sum(), \"mean:\", a.mean())"
+        "embed": "numerical-computing/present.py"
+      },
+      {
+        "name": "bad.py",
+        "lang": "python",
+        "embed": "numerical-computing/bad.py"
+      },
+      {
+        "name": "demo/main.py",
+        "lang": "python",
+        "embed": "numerical-computing/demo/main.py"
       },
       {
         "name": "notes.md",
         "lang": "markdown",
-        "code": "## NumPy in TraceLab\n\n- **Production** serves this lesson from **static JSON** (no Python execution).\n- **Local dev**: run `docker compose up datascience` and hit `/api/datascience/api/playground/numpy-demo` via the Go proxy to execute real NumPy."
+        "embed": "numerical-computing/notes.md"
       }
     ],
     "parameters": [

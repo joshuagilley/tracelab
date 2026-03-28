@@ -87,3 +87,45 @@ func TestHydrateDesignPatternsDependencyInjection(t *testing.T) {
 		t.Fatal("expected present.go, bad.go, and demo/main.go in code files")
 	}
 }
+
+func TestHydrateDataScienceNumericalComputing(t *testing.T) {
+	s, err := NewMemoryStore()
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err := s.Get("data-science", "numerical-computing")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(c.CodeFiles) != 4 {
+		t.Fatalf("code files: got %d want 4", len(c.CodeFiles))
+	}
+	var sawPresent, sawBad, sawDemo, sawNotes bool
+	for _, f := range c.CodeFiles {
+		switch f.Name {
+		case "present.py":
+			sawPresent = true
+			if !strings.Contains(f.Code, "make_array") {
+				t.Fatal("expected make_array in present.py")
+			}
+		case "bad.py":
+			sawBad = true
+			if !strings.Contains(f.Code, "make_ones_bad") {
+				t.Fatal("expected make_ones_bad in bad.py")
+			}
+		case "demo/main.py":
+			sawDemo = true
+			if !strings.Contains(f.Code, "import numpy") {
+				t.Fatal("expected numpy import in demo")
+			}
+		case "notes.md":
+			sawNotes = true
+			if !strings.Contains(f.Code, "TraceLab") {
+				t.Fatal("expected TraceLab in notes.md")
+			}
+		}
+	}
+	if !sawPresent || !sawBad || !sawDemo || !sawNotes {
+		t.Fatal("expected present.py, bad.py, demo/main.py, and notes.md")
+	}
+}

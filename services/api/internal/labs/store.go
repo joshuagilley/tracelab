@@ -15,6 +15,9 @@ var embeddedFiles embed.FS
 //go:embed embed/design-patterns
 var designPatternsCode embed.FS
 
+//go:embed embed/data-science
+var dataScienceCode embed.FS
+
 // MemoryStore loads lab concepts from embedded JSON files.
 type MemoryStore struct {
 	byLab map[string][]LabConcept
@@ -42,8 +45,13 @@ func NewMemoryStore() (*MemoryStore, error) {
 		if err := json.Unmarshal(raw, &list); err != nil {
 			return nil, fmt.Errorf("labs: parse %s: %w", e.file, err)
 		}
-		if e.lab == "design-patterns" {
-			if err := hydrateDesignPatternsCode(&list); err != nil {
+		switch e.lab {
+		case "design-patterns":
+			if err := hydrateLabCodeFromEmbed(designPatternsCode, "embed/design-patterns", &list); err != nil {
+				return nil, err
+			}
+		case "data-science":
+			if err := hydrateLabCodeFromEmbed(dataScienceCode, "embed/data-science", &list); err != nil {
 				return nil, err
 			}
 		}
@@ -57,7 +65,7 @@ func NewMemoryStore() (*MemoryStore, error) {
 	return &MemoryStore{byLab: byLab, index: index}, nil
 }
 
-func hydrateDesignPatternsCode(list *[]LabConcept) error {
+func hydrateLabCodeFromEmbed(fs embed.FS, root string, list *[]LabConcept) error {
 	for i := range *list {
 		for j := range (*list)[i].CodeFiles {
 			cf := &(*list)[i].CodeFiles[j]
@@ -71,9 +79,9 @@ func hydrateDesignPatternsCode(list *[]LabConcept) error {
 			if strings.HasPrefix(p, "..") || strings.HasPrefix(p, "/") {
 				return fmt.Errorf("labs: invalid embed path %q", cf.Embed)
 			}
-			b, err := designPatternsCode.ReadFile(path.Join("embed/design-patterns", p))
+			b, err := fs.ReadFile(path.Join(root, p))
 			if err != nil {
-				return fmt.Errorf("labs: read embed design-patterns/%s: %w", p, err)
+				return fmt.Errorf("labs: read embed %s/%s: %w", root, p, err)
 			}
 			cf.Code = string(b)
 		}

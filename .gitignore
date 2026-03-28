@@ -10,6 +10,15 @@ apps/web/dist/
 .env
 .env.local
 
+# Python (local venvs after `pip install -r requirements.txt`, bytecode)
+**/.venv/
+**/venv/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+
 # OS
 .DS_Store
 Thumbs.db

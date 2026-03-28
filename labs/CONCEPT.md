@@ -1,29 +1,30 @@
 # Adding and iterating on lab concepts
 
-TraceLab serves **design-pattern concepts** from the Go API as JSON, but the **Go source shown in the UI** is maintained as real files you can edit, run, and test locally. This document describes the layout and the path from experiment to “published” lesson.
+TraceLab serves **design-pattern** and **data-science** concepts from the Go API as JSON; **source shown in the UI** is maintained as real files under `labs/<lab>/concepts/` you can edit, run, and test locally. This document describes layout and workflow.
 
 ## Repository layout
 
 | Location | Purpose |
 |----------|---------|
-| `labs/<lab>/sandbox/` | **Scratch space** — throwaway `main` packages, tests, spikes, and notes. Nothing here is embedded or served. |
-| `labs/<lab>/concepts/<slug>/present.go` | **Canonical presentation source** — the code learners see in the code panel (and what ships in the API after sync / Docker). |
-| `labs/.../concepts/<slug>/bad.go` (optional) | **Contrast / anti-pattern** — e.g. `//go:build ignore` so it is not compiled with `present.go`; listed as a second `codeFiles` embed for side-by-side UI toggles. |
-| `services/api/internal/labs/embed/design-patterns/` | **Synced copy** — Go’s `embed` must live under `services/api`; `make labs-sync` copies `labs/design-patterns/concepts/` here so `go run` / `go test` work locally. **Commit this tree** so clones and editors work without extra steps; it should always match `labs/` after you finish editing. |
-| `services/api/internal/labs/data/design-patterns.json` | **Metadata** — title, summary, slug, `vizType`, tags, and **references** to presentation files (`embed` paths), not huge inline code strings for Go. |
-
-**Data Science** (`data-science` lab): lesson snippets and parameters still live in `services/api/internal/labs/data/data-science.json` (Python/markdown inline). The same sandbox idea applies under `labs/data-science/sandbox/` if you want a scratch area; wiring `present.py` through embed can follow the same pattern later.
+| `labs/<lab>/sandbox/` | **Scratch space** — throwaway packages, tests, spikes, and notes. Nothing here is embedded or served. |
+| `labs/system-design/concepts/<slug>/` | **System design** — runnable Go that matches lessons (e.g. caching LRU + `demo/main.go`). Not embedded in the API yet; keep in sync with the UI code panel if both exist. |
+| `labs/design-patterns/concepts/<slug>/present.go` | **Canonical Go** for design-pattern lessons — synced into the API embed tree. |
+| `labs/data-science/concepts/<slug>/present.py` | **Canonical Python** for data-science lessons — same embed pattern as Go (e.g. `numerical-computing/present.py`, `bad.py`, `demo/main.py`, `notes.md`). |
+| `labs/.../concepts/<slug>/bad.*` (optional) | **Contrast / anti-pattern** — listed as a second `codeFiles` embed for side-by-side UI toggles where supported. |
+| `services/api/internal/labs/embed/design-patterns/` | **Synced copy** — `make labs-sync` copies `labs/design-patterns/concepts/` here. **Commit** so clones work without extra steps. |
+| `services/api/internal/labs/embed/data-science/` | **Synced copy** — `make labs-sync` copies `labs/data-science/concepts/` here. **Commit** alongside `labs/`. |
+| `services/api/internal/labs/data/design-patterns.json` | **Metadata** — `codeFiles` use `"embed": "<slug>/present.go"` (no inline `code`). |
+| `services/api/internal/labs/data/data-science.json` | **Metadata** — parameters + `codeFiles` with `"embed": "<slug>/present.py"` etc. (no inline `code`). |
 
 ## End-to-end workflow
 
-1. **Create a concept folder** (example for design patterns):
-   - `labs/design-patterns/concepts/<slug>/present.go` — valid Go package (name it for teaching; it does not need to be `import`ed by the API).
-   - Use `labs/design-patterns/sandbox/` for experiments (e.g. a small `main` that imports your draft API).
+1. **Create a concept folder**
+   - Design patterns: `labs/design-patterns/concepts/<slug>/present.go`, optional `bad.go`, `demo/main.go`.
+   - Data science: `labs/data-science/concepts/<slug>/present.py`, optional `bad.py`, `demo/main.py`, `notes.md`.
 
-2. **Register the concept** in `services/api/internal/labs/data/design-patterns.json`:
-   - Add an object with `id`, `title`, `slug`, `summary`, `difficulty`, `tags`, `status`, `labKind`, `vizType`, and `codeFiles`.
-   - For Go, use a **file entry** with `"embed": "<slug>/present.go"` and **omit** inline `"code"` (the server reads the file at startup and fills `code` for the client).
-   - Wire the **frontend** if needed: new `vizType` values are handled in `ConceptDetailPage` / visualizers.
+2. **Register the concept** in the matching JSON under `services/api/internal/labs/data/`:
+   - Each `codeFile` uses `"embed": "<slug>/filename"` relative to that lab’s embed root.
+   - Wire the **frontend** if needed: new `vizType` values in `ConceptDetailPage` / visualizers.
 
 3. **Sync and verify locally**:
    ```bash
@@ -32,21 +33,21 @@ TraceLab serves **design-pattern concepts** from the Go API as JSON, but the **G
    ```
    Or use `make api` / `make dev` (they run `labs-sync` first).
 
-4. **Docker / CI**: the API image is built from the **repository root** (`docker build -f services/api/Dockerfile .`). The Dockerfile copies `labs/design-patterns/concepts/` into the embed path, so the image always reflects the `labs/` tree.
+4. **Docker / CI**: `docker build -f services/api/Dockerfile .` copies both `labs/design-patterns/concepts/` and `labs/data-science/concepts/` into the embed paths.
 
-5. **Before you merge**: run `make labs-sync` and commit both `labs/design-patterns/concepts/` and `services/api/internal/labs/embed/design-patterns/` so they stay identical.
+5. **Before you merge**: run `make labs-sync` and commit `labs/**/concepts/` **and** `services/api/internal/labs/embed/design-patterns/` **and** `services/api/internal/labs/embed/data-science/` so they stay identical.
 
 ## Rules of thumb
 
-- **`present.go`** should be short, readable, and aligned with the visualization — not a full production module.
-- **Sandbox** is for noise: benchmarks, alternate designs, failing tests. Promote only what you want learners to read into `present.go`.
-- **Embeddable paths** are relative to `embed/design-patterns/` in the API, e.g. `singleton/present.go`. No `..` or absolute paths.
-- If you add **multiple files** later, extend `codeFiles` with additional entries and add more files under `concepts/<slug>/` (the store already supports multiple `CodeFile` rows; each can have its own `embed` path).
+- **`present.*`** should be short, readable, and aligned with the visualization — not a full production module.
+- **Sandbox** is for noise: benchmarks, alternate designs, failing tests. Promote only what you want learners to read into `present.*`.
+- **Embeddable paths** are relative to `embed/<lab>/` in the API, e.g. `singleton/present.go`, `numerical-computing/present.py`. No `..` or absolute paths.
+- Extend `codeFiles` with more entries and files under `concepts/<slug>/` as needed.
 
 ## Quick reference commands
 
 ```bash
-# After editing any labs/design-patterns/concepts/**/present.go
+# After editing labs/design-patterns/concepts/** or labs/data-science/concepts/**
 make labs-sync
 
 # Full monorepo build (runs labs-sync)

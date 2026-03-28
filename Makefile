@@ -1,10 +1,12 @@
 .PHONY: dev api web install build clean compose-up compose-down labs-sync
 
-# Copy lab-authored Go into the API embed tree (Go embed must live under services/api).
-# Run after editing labs/design-patterns/concepts/**/present.go before building the API.
+# Copy lab-authored sources into the API embed tree (Go embed must live under services/api).
+# Run after editing labs/design-patterns/concepts/** or labs/data-science/concepts/** before building the API.
 labs-sync:
 	@mkdir -p services/api/internal/labs/embed/design-patterns
+	@mkdir -p services/api/internal/labs/embed/data-science
 	rsync -a labs/design-patterns/concepts/ services/api/internal/labs/embed/design-patterns/
+	rsync -a labs/data-science/concepts/ services/api/internal/labs/embed/data-science/
 
 # Docker: Python playground + Go API (Vite: run `make web` separately)
 compose-up:

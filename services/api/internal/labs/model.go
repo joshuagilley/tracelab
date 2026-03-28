@@ -18,9 +18,9 @@ type LabConcept struct {
 type CodeFile struct {
 	Name string `json:"name"`
 	Lang string `json:"lang"`
-	// Code is either set inline in JSON (e.g. data-science) or filled from Embed for design-patterns.
+	// Code is filled from Embed at load time for design-patterns and data-science labs.
 	Code string `json:"code,omitempty"`
-	// Embed is a path relative to internal/labs/embed/design-patterns/ (e.g. singleton/present.go).
+	// Embed is a path relative to internal/labs/embed/{lab}/ (e.g. singleton/present.go, numerical-computing/present.py).
 	Embed string `json:"embed,omitempty"`
 }
 

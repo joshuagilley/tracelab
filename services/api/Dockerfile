@@ -1,5 +1,5 @@
 # Build from repository root: docker build -f services/api/Dockerfile .
-# Copies lab-authored Go from labs/design-patterns/concepts/ into the embed tree.
+# Copies lab-authored sources from labs/*/concepts/ into the embed tree.
 
 # ── Build stage ────────────────────────────────────
 FROM golang:1.22-alpine AS builder
@@ -11,6 +11,7 @@ RUN go mod download
 
 COPY services/api/ ./
 COPY labs/design-patterns/concepts/ internal/labs/embed/design-patterns/
+COPY labs/data-science/concepts/ internal/labs/embed/data-science/
 
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -o server ./cmd/server
 
