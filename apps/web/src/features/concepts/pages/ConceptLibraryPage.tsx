@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { fetchSectionConcepts } from '@/features/sections/api'
-import { useLab } from '@/contexts/lab'
+import { useLab, type LabId } from '@/contexts/lab'
 import ConceptCard from '../components/ConceptCard'
 import type { Concept } from '@/types/concept'
 import styles from './ConceptLibraryPage.module.css'
 
-const COPY: Record<string, { title: string; subtitle: string; countLabel: string }> = {
+const COPY: Record<
+  LabId,
+  { title: string; subtitle: string; countLabel: string }
+> = {
   'system-design': {
     title: 'Concept Library',
     subtitle: 'Select a system design concept to open an interactive lesson.',
@@ -24,6 +27,12 @@ const COPY: Record<string, { title: string; subtitle: string; countLabel: string
   'database-design': {
     title: 'Database Design',
     subtitle: 'How data is modeled, stored, queried, and scaled — one diagram, one code sample, one takeaway per topic.',
+    countLabel: 'LESSONS',
+  },
+  'cloud-architecture': {
+    title: 'Cloud Architecture',
+    subtitle:
+      'Networking, compute, storage, and distributed systems in the cloud — fundamentals through advanced patterns.',
     countLabel: 'LESSONS',
   },
 }

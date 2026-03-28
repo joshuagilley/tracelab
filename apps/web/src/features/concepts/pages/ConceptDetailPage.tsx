@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { fetchSectionLesson } from '@/features/sections/api'
-import { useLab } from '@/contexts/lab'
+import { useLab, type LabId } from '@/contexts/lab'
 import SimulationPanel, { type SimMetrics } from '@/components/SimulationPanel'
 import MetricsPanel from '@/components/MetricsPanel'
 import DynamicCodePanel from '@/components/DynamicCodePanel'
@@ -16,6 +16,7 @@ import DependencyInjectionPatternPanel from '@/components/DependencyInjectionPat
 import DependencyInjectionCodePanel from '@/components/DependencyInjectionCodePanel'
 import DataScienceLabPanel from '@/components/DataScienceLabPanel'
 import DatabaseDesignLessonPanel from '@/components/DatabaseDesignLessonPanel'
+import CloudArchitectureLessonPanel from '@/components/CloudArchitectureLessonPanel'
 import type { LabConceptDetail } from '@/types/labConcept'
 import type { NumpyFn } from '@/lib/numpyDemo'
 import styles from './ConceptDetailPage.module.css'
@@ -29,6 +30,14 @@ const DEFAULT_SINGLETON_STATS: SingletonStats = {
 const DEFAULT_DI_STATS: DIStats = { uploadsCompleted: 0, putCalls: 0, wires: 0 }
 const MIN_WIDTH = 260
 const MAX_WIDTH = 680
+
+const LIBRARY_LABELS: Record<LabId, string> = {
+  'system-design': 'Concept Library',
+  'design-patterns': 'Design Patterns',
+  'data-science': 'Data Science',
+  'database-design': 'Database Design',
+  'cloud-architecture': 'Cloud Architecture',
+}
 
 function initialNumpyState(c: LabConceptDetail | null) {
   if (!c?.parameters?.length) {
@@ -143,14 +152,7 @@ export default function ConceptDetailPage() {
     )
   }
 
-  const libraryLabel =
-    labId === 'system-design'
-      ? 'Concept Library'
-      : labId === 'design-patterns'
-        ? 'Design Patterns'
-        : labId === 'data-science'
-          ? 'Data Science'
-          : 'Database Design'
+  const libraryLabel = LIBRARY_LABELS[labId]
 
   if (labId === 'system-design' && lesson) {
     return (
@@ -392,6 +394,48 @@ export default function ConceptDetailPage() {
     )
   }
 
+  if (labId === 'cloud-architecture' && lesson && lesson.vizType === 'cloud-lesson') {
+    return (
+      <div className={styles.page}>
+        <div className={styles.pageHeader}>
+          <div className={styles.breadcrumb}>
+            <Link to="/" className={styles.breadcrumbLink}>
+              {libraryLabel}
+            </Link>
+            <span className={styles.breadcrumbSep}>›</span>
+            <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
+          </div>
+          {difficulty && (
+            <span className={`badge badge--${difficulty}`}>{difficulty}</span>
+          )}
+        </div>
+
+        <div
+          className={styles.mainArea}
+          style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
+        >
+          <div className={styles.leftCol}>
+            <div className={`${styles.center} ${styles.centerGrow}`}>
+              <CloudArchitectureLessonPanel summary={lesson.summary} slug={lesson.slug} />
+            </div>
+          </div>
+
+          <div
+            className={styles.dragHandle}
+            onMouseDown={handleDragStart}
+            title="Drag to resize"
+          >
+            <div className={styles.dragDots} />
+          </div>
+
+          <div className={styles.right}>
+            <DynamicCodePanel files={lesson.codeFiles ?? []} />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (labId === 'database-design' && lesson?.vizType === 'db-lesson') {
     return (
       <div className={styles.page}>
@@ -436,7 +480,10 @@ export default function ConceptDetailPage() {
 
   if (
     lesson &&
-    (labId === 'design-patterns' || labId === 'data-science' || labId === 'database-design')
+    (labId === 'design-patterns' ||
+      labId === 'data-science' ||
+      labId === 'database-design' ||
+      labId === 'cloud-architecture')
   ) {
     return (
       <div className={styles.errorPage}>

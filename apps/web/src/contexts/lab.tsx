@@ -8,7 +8,12 @@ import {
   type ReactNode,
 } from 'react'
 
-export type LabId = 'system-design' | 'design-patterns' | 'data-science' | 'database-design'
+export type LabId =
+  | 'system-design'
+  | 'design-patterns'
+  | 'data-science'
+  | 'database-design'
+  | 'cloud-architecture'
 
 export interface LabOption {
   id: LabId
@@ -21,6 +26,7 @@ export const LAB_OPTIONS: LabOption[] = [
   { id: 'design-patterns', label: 'Design Patterns', slug: 'design-patterns' },
   { id: 'data-science', label: 'Data Science', slug: 'data-science' },
   { id: 'database-design', label: 'Database Design', slug: 'database-design' },
+  { id: 'cloud-architecture', label: 'Cloud Architecture', slug: 'cloud-architecture' },
 ]
 
 const STORAGE_KEY = 'tracelab-lab'

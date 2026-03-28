@@ -101,6 +101,32 @@ func TestHydrateDesignPatternsDependencyInjection(t *testing.T) {
 	}
 }
 
+func TestHydrateCloudArchitectureVPC(t *testing.T) {
+	s, err := NewMemoryStore()
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err := s.Get("cloud-architecture", "vpc")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(c.CodeFiles) != 2 {
+		t.Fatalf("code files: got %d want 2", len(c.CodeFiles))
+	}
+	for _, f := range c.CodeFiles {
+		switch f.Name {
+		case "present.go":
+			if !strings.Contains(f.Code, "10.0.0.0/16") {
+				t.Fatal("expected VPC CIDR in present.go")
+			}
+		case "bad.go":
+			if !strings.Contains(f.Code, "Anti-pattern") {
+				t.Fatal("expected Anti-pattern in bad.go")
+			}
+		}
+	}
+}
+
 func TestHydrateDatabaseDesignPrimaryKeys(t *testing.T) {
 	s, err := NewMemoryStore()
 	if err != nil {

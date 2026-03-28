@@ -69,6 +69,12 @@
   --accent-glow: rgba(91, 156, 245, 0.32);
 }
 
+.lab-theme-cloud-architecture {
+  --accent: #b565e8;
+  --accent-dim: rgba(181, 101, 232, 0.16);
+  --accent-glow: rgba(181, 101, 232, 0.32);
+}
+
 /* ─── Reset ──────────────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
