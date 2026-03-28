@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, NavLink } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { fetchSectionConcepts } from '@/features/sections/api'
 import { LAB_OPTIONS, useLab, type LabId } from '@/contexts/lab'
 
@@ -10,6 +10,7 @@ const LIBRARY_LINK_LABEL: Record<LabId, string> = {
 }
 import DesignPatternsSidebarNav from './DesignPatternsSidebarNav'
 import SystemDesignSidebarNav from './SystemDesignSidebarNav'
+import DataScienceSidebarNav from './DataScienceSidebarNav'
 import type { Concept } from '@/types/concept'
 import styles from './Sidebar.module.css'
 
@@ -24,7 +25,6 @@ export default function Sidebar() {
   const [concepts, setConcepts] = useState<Concept[]>([])
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
   const { labId, setLabId, current } = useLab()
 
   useEffect(() => {
@@ -111,32 +111,15 @@ export default function Sidebar() {
         <div className={styles.sectionTitle}>
           {labId === 'system-design' && 'BY TOPIC'}
           {labId === 'design-patterns' && 'BY CATEGORY'}
-          {labId === 'data-science' && 'TOPICS'}
+          {labId === 'data-science' && 'BY TOPIC'}
         </div>
         {labId === 'design-patterns' ? (
           <DesignPatternsSidebarNav concepts={concepts} />
         ) : labId === 'system-design' ? (
           <SystemDesignSidebarNav concepts={concepts} />
-        ) : (
-          <div className={styles.conceptList}>
-            {concepts.map(c => (
-              <button
-                key={c.id}
-                className={styles.conceptItem}
-                onClick={() => {
-                  if (c.status === 'available') navigate(`/concept/${c.slug}`)
-                }}
-                disabled={c.status !== 'available'}
-              >
-                <div className={styles.conceptTop}>
-                  <span className={styles.conceptTitle}>{c.title}</span>
-                  <span className={`badge badge--${c.difficulty}`}>{c.difficulty}</span>
-                </div>
-                <div className={styles.conceptSummary}>{c.summary}</div>
-              </button>
-            ))}
-          </div>
-        )}
+        ) : labId === 'data-science' ? (
+          <DataScienceSidebarNav concepts={concepts} />
+        ) : null}
       </div>
     </aside>
   )
