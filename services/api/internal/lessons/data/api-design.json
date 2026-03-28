@@ -1,0 +1,41 @@
+[
+  {
+    "id": "api-1",
+    "title": "Rate Limiting",
+    "slug": "rate-limiting",
+    "summary": "Protect your API with token-bucket or sliding-window limits: return 429 when clients exceed quotas instead of melting your service.",
+    "difficulty": "medium",
+    "tags": ["http", "reliability", "middleware"],
+    "status": "available",
+    "labKind": "api-design",
+    "vizType": "api-lesson",
+    "codeFiles": [
+      { "name": "present.go", "lang": "go", "embed": "rate-limiting/present.go" },
+      { "name": "bad.go", "lang": "go", "embed": "rate-limiting/bad.go" }
+    ]
+  },
+  {
+    "id": "api-2",
+    "title": "Retries & Backoff",
+    "slug": "retries",
+    "summary": "Exponential backoff and jitter for client retries — avoid retry storms while still recovering from transient failures.",
+    "difficulty": "easy",
+    "tags": ["http", "resilience"],
+    "status": "coming-soon",
+    "labKind": "api-design",
+    "vizType": "api-lesson",
+    "codeFiles": []
+  },
+  {
+    "id": "api-3",
+    "title": "Circuit Breaker",
+    "slug": "circuit-breaker",
+    "summary": "Stop calling a failing downstream from every request — open the circuit, fail fast, and half-open to probe recovery.",
+    "difficulty": "medium",
+    "tags": ["http", "resilience", "patterns"],
+    "status": "coming-soon",
+    "labKind": "api-design",
+    "vizType": "api-lesson",
+    "codeFiles": []
+  }
+]

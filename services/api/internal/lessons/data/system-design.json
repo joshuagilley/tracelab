@@ -23,18 +23,6 @@
     ]
   },
   {
-    "id": "2",
-    "title": "Rate Limiting",
-    "slug": "rate-limiting",
-    "summary": "Control the rate of incoming requests using token bucket and sliding window algorithms to protect your services from overload.",
-    "difficulty": "medium",
-    "tags": ["traffic", "protection", "algorithms"],
-    "status": "available",
-    "labKind": "system-design",
-    "vizType": "",
-    "codeFiles": []
-  },
-  {
     "id": "3",
     "title": "Load Balancing",
     "slug": "load-balancing",
@@ -42,30 +30,6 @@
     "difficulty": "medium",
     "tags": ["scalability", "traffic", "distribution"],
     "status": "available",
-    "labKind": "system-design",
-    "vizType": "",
-    "codeFiles": []
-  },
-  {
-    "id": "4",
-    "title": "Retries & Backoff",
-    "slug": "retries",
-    "summary": "Build resilient systems with exponential backoff and jitter to handle transient failures gracefully.",
-    "difficulty": "easy",
-    "tags": ["resilience", "fault-tolerance"],
-    "status": "coming-soon",
-    "labKind": "system-design",
-    "vizType": "",
-    "codeFiles": []
-  },
-  {
-    "id": "5",
-    "title": "Circuit Breaker",
-    "slug": "circuit-breaker",
-    "summary": "Prevent cascading failures by stopping requests to unhealthy services and allowing gradual recovery.",
-    "difficulty": "medium",
-    "tags": ["resilience", "fault-tolerance", "patterns"],
-    "status": "coming-soon",
     "labKind": "system-design",
     "vizType": "",
     "codeFiles": []

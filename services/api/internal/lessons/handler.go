@@ -18,10 +18,12 @@ func NewHandler(store *MemoryStore) *Handler {
 
 var validSections = map[string]struct{}{
 	"system-design":      {},
+	"api-design":         {},
 	"design-patterns":    {},
 	"data-science":       {},
 	"database-design":    {},
 	"cloud-architecture": {},
+	"concurrency":        {},
 }
 
 // ServeHTTP handles GET /api/sections/{section}/concepts and .../concepts/{slug}.

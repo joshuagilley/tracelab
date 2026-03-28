@@ -68,6 +68,10 @@ tracelab/
 | GET | /health | Health check |
 | GET | /api/sections/system-design/concepts | System design — list |
 | GET | /api/sections/system-design/concepts/:slug | System design — detail (embedded present/bad) |
+| GET | /api/sections/api-design/concepts | API design — list |
+| GET | /api/sections/api-design/concepts/:slug | Rate limits, retries, circuit breaker at HTTP boundary |
+| GET | /api/sections/concurrency/concepts | Concurrency — list (in-process execution curriculum) |
+| GET | /api/sections/concurrency/concepts/:slug | Goroutines, pools, channels (lessons as added) |
 | GET | /api/sections/design-patterns/concepts | Design patterns — list |
 | GET | /api/sections/design-patterns/concepts/:slug | Singleton, DI, etc. |
 | GET | /api/sections/data-science/concepts | Data science — list |
@@ -78,15 +82,8 @@ tracelab/
 | GET | /api/sections/cloud-architecture/concepts/:slug | VPC, S3, SQS, Lambda, etc. |
 | GET | /api/datascience/* | Proxied to Python service when `DATASCIENCE_SERVICE_URL` is set |
 
-## Concepts
+## Sample catalog (see JSON under `services/api/internal/lessons/data/`)
 
-| Concept        | Difficulty | Status      |
-|----------------|------------|-------------|
-| Caching        | Easy       | Available   |
-| Rate Limiting  | Medium     | Available   |
-| Load Balancing | Medium     | Available   |
-| Retries        | Easy       | Coming Soon |
-| Circuit Breaker| Medium     | Coming Soon |
-| Pub/Sub        | Medium     | Coming Soon |
-| Sharding       | Hard       | Coming Soon |
-| Queues         | Medium     | Coming Soon |
+**System design** (macro): Caching, Load Balancing, Pub/Sub, Sharding, Message Queues, …
+
+**API design** (HTTP surface): Rate Limiting (lesson with middleware sketch), Retries, Circuit Breaker, …

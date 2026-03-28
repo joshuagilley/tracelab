@@ -2,7 +2,7 @@
 
 ## `services/api` — Go HTTP API
 
-- **Serves** the web app under one route family: **`GET /api/sections/{system-design|design-patterns|data-science|database-design|cloud-architecture}/concepts`** and **`.../concepts/{slug}`**. Catalog JSON lives in `internal/lessons/data/*.json`; lesson source is embedded from `internal/lessons/embed/{section}/` as **`present.*`** and **`bad.*`** only. Runnable **sandboxes** stay under repo-root **`labs/`**, not in the API image.
+- **Serves** the web app under one route family: **`GET /api/sections/{system-design|api-design|concurrency|design-patterns|data-science|database-design|cloud-architecture}/concepts`** and **`.../concepts/{slug}`**. Catalog JSON lives in `internal/lessons/data/*.json`; lesson source is embedded from `internal/lessons/embed/{section}/` as **`present.*`** and **`bad.*`** only. Runnable **sandboxes** stay under repo-root **`labs/`**, not in the API image.
 - **Proxies** `/api/datascience/*` → optional Python service when `DATASCIENCE_SERVICE_URL` is set (see `internal/transport/datascience_proxy.go`).
 
 ## `services/datascience` — optional Python playground

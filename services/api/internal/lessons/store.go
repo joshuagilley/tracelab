@@ -27,6 +27,12 @@ var databaseDesignCode embed.FS
 //go:embed embed/cloud-architecture
 var cloudArchitectureCode embed.FS
 
+//go:embed embed/api-design
+var apiDesignCode embed.FS
+
+//go:embed embed/concurrency
+var concurrencyCode embed.FS
+
 // MemoryStore loads lessons from embedded JSON and hydrates code from embed/{section}/.
 type MemoryStore struct {
 	bySection map[string][]Lesson
@@ -47,6 +53,8 @@ func NewMemoryStore() (*MemoryStore, error) {
 		{"data/data-science.json", "data-science", dataScienceCode},
 		{"data/database-design.json", "database-design", databaseDesignCode},
 		{"data/cloud-architecture.json", "cloud-architecture", cloudArchitectureCode},
+		{"data/api-design.json", "api-design", apiDesignCode},
+		{"data/concurrency.json", "concurrency", concurrencyCode},
 	}
 
 	for _, e := range entries {

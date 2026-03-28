@@ -10,10 +10,12 @@ import {
 
 export type LabId =
   | 'system-design'
-  | 'design-patterns'
-  | 'data-science'
+  | 'api-design'
+  | 'concurrency'
   | 'database-design'
   | 'cloud-architecture'
+  | 'design-patterns'
+  | 'data-science'
 
 export interface LabOption {
   id: LabId
@@ -23,10 +25,12 @@ export interface LabOption {
 
 export const LAB_OPTIONS: LabOption[] = [
   { id: 'system-design', label: 'System Design', slug: 'system-design' },
-  { id: 'design-patterns', label: 'Design Patterns', slug: 'design-patterns' },
-  { id: 'data-science', label: 'Data Science', slug: 'data-science' },
+  { id: 'api-design', label: 'API Design', slug: 'api-design' },
+  { id: 'concurrency', label: 'Concurrency', slug: 'concurrency' },
   { id: 'database-design', label: 'Database Design', slug: 'database-design' },
   { id: 'cloud-architecture', label: 'Cloud Architecture', slug: 'cloud-architecture' },
+  { id: 'design-patterns', label: 'Design Patterns', slug: 'design-patterns' },
+  { id: 'data-science', label: 'Data Science', slug: 'data-science' },
 ]
 
 const STORAGE_KEY = 'tracelab-lab'

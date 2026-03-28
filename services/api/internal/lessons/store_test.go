@@ -101,6 +101,32 @@ func TestHydrateDesignPatternsDependencyInjection(t *testing.T) {
 	}
 }
 
+func TestHydrateAPIDesignRateLimiting(t *testing.T) {
+	s, err := NewMemoryStore()
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err := s.Get("api-design", "rate-limiting")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(c.CodeFiles) != 2 {
+		t.Fatalf("code files: got %d want 2", len(c.CodeFiles))
+	}
+	for _, f := range c.CodeFiles {
+		switch f.Name {
+		case "present.go":
+			if !strings.Contains(f.Code, "StatusTooManyRequests") {
+				t.Fatal("expected 429 handling in present.go")
+			}
+		case "bad.go":
+			if !strings.Contains(f.Code, "Anti-patterns") {
+				t.Fatal("expected Anti-patterns in bad.go")
+			}
+		}
+	}
+}
+
 func TestHydrateCloudArchitectureVPC(t *testing.T) {
 	s, err := NewMemoryStore()
 	if err != nil {

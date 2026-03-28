@@ -83,11 +83,11 @@ export const SYSTEM_DESIGN_SECTIONS: SystemDesignNavSection[] = [
   {
     id: 'load-balancing',
     title: 'Load Balancing',
-    blurb: 'Traffic distribution techniques in system design.',
+    blurb:
+      'Traffic distribution across instances and regions. CPU threads, goroutines, and in-process parallelism belong under Concurrency.',
     items: [
       { label: 'Load Balancer', slug: 'load-balancing' },
       { label: 'Load Balancing Algorithms', slug: 'load-balancing' },
-      { label: 'Concurrency and Parallelism' },
       { label: 'Stateless Vs Stateful Load Balancing' },
       { label: 'Load Balancing vs. Failover' },
       { label: 'Consistent Hashing' },
@@ -96,7 +96,8 @@ export const SYSTEM_DESIGN_SECTIONS: SystemDesignNavSection[] = [
   {
     id: 'latency-caching',
     title: 'Latency, Throughput and Caching',
-    blurb: 'Performance optimization metrics and caching strategies.',
+    blurb:
+      'System-wide SLOs, edge caching, and pipeline throughput. Per-service worker saturation and lock contention are covered under Concurrency.',
     items: [
       { label: 'Latency and Throughput' },
       { label: 'Caching in System Design', slug: 'caching' },
@@ -107,21 +108,17 @@ export const SYSTEM_DESIGN_SECTIONS: SystemDesignNavSection[] = [
     ],
   },
   {
-    id: 'api-mq-rate',
-    title: 'API Gateway, Message Queues & Rate Limiting',
+    id: 'messaging',
+    title: 'Message Queues & Async Handoffs',
     blurb:
-      'Focuses on orchestrating communication, queuing messages, and limiting traffic in scalable systems.',
-    items: [
-      { label: 'API Gateway' },
-      { label: 'Message Queues', slug: 'queues' },
-      { label: 'Rate Limiting', slug: 'rate-limiting' },
-      { label: 'Rate Limiting Algorithm', slug: 'rate-limiting' },
-    ],
+      'Durable buffers and pub/sub between services — decoupling producers from consumers. HTTP ingress, gateways, and real-time client APIs live under API Design.',
+    items: [{ label: 'Message Queues', slug: 'queues' }],
   },
   {
     id: 'protocols',
-    title: 'Protocols, CDN, Proxies & WebSockets',
-    blurb: 'Networking, caching, and real-time communication fundamentals.',
+    title: 'Protocols, CDN & Proxies',
+    blurb:
+      'L3–L7 plumbing, DNS, and edge caching for systems. Client-facing long-poll, WebSocket, and gateway routing patterns are covered under API Design.',
     items: [
       { label: 'Communication Protocols' },
       { label: 'Domain Name System' },
@@ -130,8 +127,6 @@ export const SYSTEM_DESIGN_SECTIONS: SystemDesignNavSection[] = [
       { label: 'Content Delivery Network(CDN)' },
       { label: 'Proxies in System Design' },
       { label: 'Forward Proxy vs Reverse Proxy' },
-      { label: 'Long Polling and Short Polling' },
-      { label: 'Websockets' },
     ],
   },
   {
@@ -143,8 +138,6 @@ export const SYSTEM_DESIGN_SECTIONS: SystemDesignNavSection[] = [
       { label: 'Introduction' },
       { label: 'Event Sourcing Pattern' },
       { label: 'Event Sourcing Vs Event Streaming' },
-      { label: 'Event-Driven APIs in Microservice Architectures' },
-      { label: 'Error Handling in Event-Driven Architecture' },
       {
         label:
           'Restore State in an Event-Based, Message-Driven Microservice Architecture on Failure Scenario',
@@ -158,23 +151,21 @@ export const SYSTEM_DESIGN_SECTIONS: SystemDesignNavSection[] = [
   },
   {
     id: 'testing',
-    title: 'Testing',
-    blurb: 'Testing methods and deployment pipelines to build robust systems.',
+    title: 'Testing at System Scale',
+    blurb:
+      'Validating a distributed system end-to-end. Unit and typical integration tests are general engineering; contract and consumer tests for HTTP APIs live under API Design.',
     items: [
-      { label: 'Unit Testing' },
-      { label: 'Integration Testing' },
-      { label: 'System Design' },
-      { label: 'CI/CD Pipeline' },
+      { label: 'End-to-End & Soak Testing' },
+      { label: 'CI/CD for Distributed Systems' },
     ],
   },
   {
     id: 'security',
     title: 'Security Measures',
     blurb:
-      'Explains authentication, authorization, encryption, and disaster recovery in system design.',
+      'Platform-wide posture: encryption in transit, SDLC, and recovery. API keys, JWT, OAuth, and request authorization models are under API Design.',
     items: [
       { label: 'Security Measures in System Design' },
-      { label: 'Authentication and Authorization' },
       { label: 'Secure Socket Layer (SSL) and Transport Layer Security (TLS)' },
       { label: 'Secure Software Development Life Cycle (SSDLC)' },
       { label: 'Data Backup and Disaster Recovery' },

@@ -4,7 +4,9 @@ import { fetchSectionConcepts } from '@/features/sections/api'
 import { LAB_OPTIONS, useLab, type LabId } from '@/contexts/lab'
 
 const LIBRARY_LINK_LABEL: Record<LabId, string> = {
-  'system-design': 'Concept library',
+  'system-design': 'System design',
+  'api-design': 'All APIs',
+  'concurrency': 'All topics',
   'design-patterns': 'All patterns',
   'data-science': 'All topics',
   'database-design': 'All lessons',
@@ -15,6 +17,8 @@ import SystemDesignSidebarNav from './SystemDesignSidebarNav'
 import DataScienceSidebarNav from './DataScienceSidebarNav'
 import DatabaseDesignSidebarNav from './DatabaseDesignSidebarNav'
 import CloudArchitectureSidebarNav from './CloudArchitectureSidebarNav'
+import ApiDesignSidebarNav from './ApiDesignSidebarNav'
+import ConcurrencySidebarNav from './ConcurrencySidebarNav'
 import type { Concept } from '@/types/concept'
 import styles from './Sidebar.module.css'
 
@@ -114,6 +118,8 @@ export default function Sidebar() {
       <div className={styles.section}>
         <div className={styles.sectionTitle}>
           {labId === 'system-design' && 'BY TOPIC'}
+          {labId === 'api-design' && 'BY TOPIC'}
+          {labId === 'concurrency' && 'BY TOPIC'}
           {labId === 'design-patterns' && 'BY CATEGORY'}
           {labId === 'data-science' && 'BY TOPIC'}
           {labId === 'database-design' && 'BY TOPIC'}
@@ -123,6 +129,10 @@ export default function Sidebar() {
           <DesignPatternsSidebarNav concepts={concepts} />
         ) : labId === 'system-design' ? (
           <SystemDesignSidebarNav concepts={concepts} />
+        ) : labId === 'api-design' ? (
+          <ApiDesignSidebarNav concepts={concepts} />
+        ) : labId === 'concurrency' ? (
+          <ConcurrencySidebarNav concepts={concepts} />
         ) : labId === 'data-science' ? (
           <DataScienceSidebarNav concepts={concepts} />
         ) : labId === 'database-design' ? (

@@ -51,6 +51,12 @@
   --accent-glow: rgba(61, 232, 160, 0.28);
 }
 
+.lab-theme-api-design {
+  --accent: #f59e0b;
+  --accent-dim: rgba(245, 158, 11, 0.16);
+  --accent-glow: rgba(245, 158, 11, 0.3);
+}
+
 .lab-theme-design-patterns {
   --accent: #f0a040;
   --accent-dim: rgba(240, 160, 64, 0.14);
@@ -73,6 +79,12 @@
   --accent: #b565e8;
   --accent-dim: rgba(181, 101, 232, 0.16);
   --accent-glow: rgba(181, 101, 232, 0.32);
+}
+
+.lab-theme-concurrency {
+  --accent: #2dd4bf;
+  --accent-dim: rgba(45, 212, 191, 0.14);
+  --accent-glow: rgba(45, 212, 191, 0.3);
 }
 
 /* ─── Reset ──────────────────────────────────────────────────── */

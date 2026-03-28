@@ -22,7 +22,7 @@ func NewRouter() http.Handler {
 		json.NewEncoder(w).Encode(map[string]string{"status": "ok", "service": "tracelab-api"})
 	})
 
-	// GET /api/sections/{system-design|design-patterns|data-science}/concepts[/{slug}]
+	// GET /api/sections/{lab-id}/concepts[/{slug}] — lab-id matches LabId in the web app
 	mux.Handle("/api/sections/", lessonHandler)
 
 	// Optional proxy to Python datascience container (same origin for browser)

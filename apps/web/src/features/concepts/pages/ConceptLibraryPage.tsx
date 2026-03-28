@@ -10,29 +10,45 @@ const COPY: Record<
   { title: string; subtitle: string; countLabel: string }
 > = {
   'system-design': {
-    title: 'Concept Library',
-    subtitle: 'Select a system design concept to open an interactive lesson.',
+    title: 'System Design',
+    subtitle:
+      'How multiple services and data stores connect and scale together — load balancers, durable queues, caching, and failure domains (not the HTTP contract of a single service, and not goroutine-level execution; see Concurrency).',
     countLabel: 'CONCEPTS',
+  },
+  'api-design': {
+    title: 'API Design',
+    subtitle:
+      'How one service exposes functionality to callers — endpoints, contracts, HTTP rate limits, and resilience at the boundary (not cross-service topology; in-process pools and locks live under Concurrency).',
+    countLabel: 'TOPICS',
+  },
+  concurrency: {
+    title: 'Concurrency',
+    subtitle:
+      'Parallel execution, coordination, and shared state inside one service — goroutines, channels, locks, and pools (the layer between `go processJob()` in a handler and macro-scale queues in System Design).',
+    countLabel: 'TOPICS',
   },
   'design-patterns': {
     title: 'Design Patterns',
-    subtitle: 'Classic object-oriented patterns with code and structure diagrams.',
+    subtitle:
+      'How types and objects collaborate inside a program — creational, structural, and behavioral patterns in code (not datacenter layout, cloud IAM, or REST resource modeling).',
     countLabel: 'PATTERNS',
   },
   'data-science': {
     title: 'Data Science',
-    subtitle: 'Numerical and analytical concepts — static lessons in production; Python playground via Docker.',
+    subtitle:
+      'How you explore, clean, and model data — arrays, statistics, and visualization in Python (not microservice meshes, API versioning, or infra provisioning).',
     countLabel: 'TOPICS',
   },
   'database-design': {
     title: 'Database Design',
-    subtitle: 'How data is modeled, stored, queried, and scaled — one diagram, one code sample, one takeaway per topic.',
+    subtitle:
+      'How data is shaped, constrained, and accessed in storage — schemas, keys, indexes, replication, and scaling the database (not VPC routing, HTTP handlers, or goroutine pools).',
     countLabel: 'LESSONS',
   },
   'cloud-architecture': {
     title: 'Cloud Architecture',
     subtitle:
-      'Networking, compute, storage, and distributed systems in the cloud — fundamentals through advanced patterns.',
+      'How workloads run on provider-managed building blocks — networks, compute, object storage, IAM, and observability in the cloud (not SQL normalization, OO patterns, or pandas workflows).',
     countLabel: 'LESSONS',
   },
 }

@@ -17,6 +17,7 @@ import DependencyInjectionCodePanel from '@/components/DependencyInjectionCodePa
 import DataScienceLabPanel from '@/components/DataScienceLabPanel'
 import DatabaseDesignLessonPanel from '@/components/DatabaseDesignLessonPanel'
 import CloudArchitectureLessonPanel from '@/components/CloudArchitectureLessonPanel'
+import ApiDesignLessonPanel from '@/components/ApiDesignLessonPanel'
 import type { LabConceptDetail } from '@/types/labConcept'
 import type { NumpyFn } from '@/lib/numpyDemo'
 import styles from './ConceptDetailPage.module.css'
@@ -33,6 +34,8 @@ const MAX_WIDTH = 680
 
 const LIBRARY_LABELS: Record<LabId, string> = {
   'system-design': 'Concept Library',
+  'api-design': 'API Design',
+  concurrency: 'Concurrency',
   'design-patterns': 'Design Patterns',
   'data-science': 'Data Science',
   'database-design': 'Database Design',
@@ -190,6 +193,48 @@ export default function ConceptDetailPage() {
                 hitRate={hitRate}
                 onHitRateChange={setHitRate}
               />
+            </div>
+          </div>
+
+          <div
+            className={styles.dragHandle}
+            onMouseDown={handleDragStart}
+            title="Drag to resize"
+          >
+            <div className={styles.dragDots} />
+          </div>
+
+          <div className={styles.right}>
+            <DynamicCodePanel files={lesson.codeFiles ?? []} />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (labId === 'api-design' && lesson && lesson.vizType === 'api-lesson') {
+    return (
+      <div className={styles.page}>
+        <div className={styles.pageHeader}>
+          <div className={styles.breadcrumb}>
+            <Link to="/" className={styles.breadcrumbLink}>
+              {libraryLabel}
+            </Link>
+            <span className={styles.breadcrumbSep}>›</span>
+            <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
+          </div>
+          {difficulty && (
+            <span className={`badge badge--${difficulty}`}>{difficulty}</span>
+          )}
+        </div>
+
+        <div
+          className={styles.mainArea}
+          style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
+        >
+          <div className={styles.leftCol}>
+            <div className={`${styles.center} ${styles.centerGrow}`}>
+              <ApiDesignLessonPanel summary={lesson.summary} slug={lesson.slug} />
             </div>
           </div>
 
@@ -483,7 +528,9 @@ export default function ConceptDetailPage() {
     (labId === 'design-patterns' ||
       labId === 'data-science' ||
       labId === 'database-design' ||
-      labId === 'cloud-architecture')
+      labId === 'cloud-architecture' ||
+      labId === 'api-design' ||
+      labId === 'concurrency')
   ) {
     return (
       <div className={styles.errorPage}>
