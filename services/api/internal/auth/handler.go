@@ -7,9 +7,11 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/tracelab/api/internal/config"
@@ -22,6 +24,9 @@ const (
 	stateCookieTTL   = 10 * time.Minute
 	sessionTTL       = 30 * 24 * time.Hour
 )
+
+// Log once when we infer SameSite=None from host mismatch (split web/API deploy).
+var loggedCrossSiteAuto sync.Once
 
 type Handler struct {
 	cfg   *config.Config
@@ -73,7 +78,7 @@ func (h *Handler) githubStart(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "state", http.StatusInternalServerError)
 		return
 	}
-	http.SetCookie(w, h.stateCookie(state))
+	http.SetCookie(w, h.stateCookie(r, state))
 	authURL := h.oauth.AuthCodeURL(state, oauth2.AccessTypeOnline)
 	http.Redirect(w, r, authURL, http.StatusFound)
 }
@@ -111,7 +116,7 @@ func (h *Handler) githubCallback(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, h.cfg.FrontendOrigin+"/?auth_error=invalid_state", http.StatusFound)
 		return
 	}
-	http.SetCookie(w, h.clearCookie(oauthStateCookie))
+	http.SetCookie(w, h.clearCookie(r, oauthStateCookie))
 
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 	defer cancel()
@@ -159,7 +164,7 @@ func (h *Handler) githubCallback(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, h.cfg.FrontendOrigin+"/?auth_error=session", http.StatusFound)
 		return
 	}
-	sessCookie := h.sessionCookie(jwtStr)
+	sessCookie := h.sessionCookie(r, jwtStr)
 	http.SetCookie(w, sessCookie)
 	log.Printf("auth/github/callback: session cookie set mongo_id=%s SameSite=%v Secure=%v",
 		u.ID.Hex(), sessCookie.SameSite, sessCookie.Secure)
@@ -246,13 +251,13 @@ func (h *Handler) logout(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	http.SetCookie(w, h.clearCookie(CookieName))
+	http.SetCookie(w, h.clearCookie(r, CookieName))
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 }
 
-func (h *Handler) sessionCookie(value string) *http.Cookie {
-	same, secure := h.cookieAttrs()
+func (h *Handler) sessionCookie(r *http.Request, value string) *http.Cookie {
+	same, secure := h.cookieAttrsFor(r)
 	return &http.Cookie{
 		Name:     CookieName,
 		Value:    value,
@@ -264,8 +269,8 @@ func (h *Handler) sessionCookie(value string) *http.Cookie {
 	}
 }
 
-func (h *Handler) stateCookie(value string) *http.Cookie {
-	same, secure := h.cookieAttrs()
+func (h *Handler) stateCookie(r *http.Request, value string) *http.Cookie {
+	same, secure := h.cookieAttrsFor(r)
 	return &http.Cookie{
 		Name:     oauthStateCookie,
 		Value:    value,
@@ -277,8 +282,8 @@ func (h *Handler) stateCookie(value string) *http.Cookie {
 	}
 }
 
-func (h *Handler) clearCookie(name string) *http.Cookie {
-	same, secure := h.cookieAttrs()
+func (h *Handler) clearCookie(r *http.Request, name string) *http.Cookie {
+	same, secure := h.cookieAttrsFor(r)
 	return &http.Cookie{
 		Name:     name,
 		Value:    "",
@@ -290,13 +295,42 @@ func (h *Handler) clearCookie(name string) *http.Cookie {
 	}
 }
 
-// cookieAttrs: Lax + Secure for https same-site-ish setups; None + Secure when SPA and API are on different hosts.
-func (h *Handler) cookieAttrs() (http.SameSite, bool) {
+// cookieAttrsFor picks SameSite/Secure. Cross-origin credentialed fetch from the SPA (web → API) only sends cookies
+// when SameSite=None and Secure. Lax is wrong for two Cloud Run hostnames even if AUTH_COOKIE_CROSS_SITE is unset.
+func (h *Handler) cookieAttrsFor(r *http.Request) (http.SameSite, bool) {
 	if h.cfg.AuthCookieCrossSite {
+		return http.SameSiteNoneMode, true
+	}
+	fh := originHost(h.cfg.FrontendOrigin)
+	rh := hostOnly(r.Host)
+	if fh != "" && rh != "" && fh != rh {
+		loggedCrossSiteAuto.Do(func() {
+			log.Printf("auth: cross-host session cookies (API host %q vs FRONTEND_ORIGIN host %q): SameSite=None; Secure", rh, fh)
+		})
 		return http.SameSiteNoneMode, true
 	}
 	secure := strings.HasPrefix(h.cfg.FrontendOrigin, "https://")
 	return http.SameSiteLaxMode, secure
+}
+
+func hostOnly(hostport string) string {
+	hostport = strings.TrimSpace(hostport)
+	if hostport == "" {
+		return ""
+	}
+	host, _, err := net.SplitHostPort(hostport)
+	if err != nil {
+		return strings.ToLower(hostport)
+	}
+	return strings.ToLower(host)
+}
+
+func originHost(origin string) string {
+	u, err := url.Parse(strings.TrimSpace(origin))
+	if err != nil || u.Host == "" {
+		return ""
+	}
+	return hostOnly(u.Host)
 }
 
 func randomState() (string, error) {
