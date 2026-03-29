@@ -14,7 +14,7 @@ A lightweight interactive learning tool for system design concepts.
 |----------|-------------------------|
 | Frontend | React + TypeScript + Vite |
 | Backend  | Go (net/http)           |
-| Database | MongoDB (optional, not wired yet) |
+| Database | MongoDB (users + future progress; see `.env.example`) |
 
 ## Running Locally
 
@@ -28,6 +28,7 @@ A lightweight interactive learning tool for system design concepts.
 # Install frontend dependencies
 make install
 
+# Optional: copy .env.example → .env and fill in secrets (Mongo, GitHub OAuth, JWT)
 # Start both API and web in parallel
 make dev
 ```
@@ -35,9 +36,11 @@ make dev
 Or run individually:
 
 ```bash
-make api   # Go API on :8080
+make api   # Go API on :8080 — loads repo-root `.env` if present (exports vars for Go)
 make web   # Vite dev server on :5173
 ```
+
+You no longer need to run `set -a && source .env && set +a` by hand; `make api` and `make dev` do that when `.env` exists.
 
 **Docker (API only)** — then run `make web` for Vite:
 
@@ -62,6 +65,10 @@ tracelab/
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | /health | Health check |
+| GET | /api/auth/github | Start GitHub OAuth (redirect) |
+| GET | /api/auth/github/callback | OAuth callback (redirect + session cookie) |
+| GET | /api/auth/me | Current user JSON (`user` or `null`) |
+| POST | /api/auth/logout | Clear session |
 | GET | /api/sections/system-design/concepts | System design — list |
 | GET | /api/sections/system-design/concepts/:slug | System design — detail (embedded present/bad) |
 | GET | /api/sections/api-design/concepts | API design — list |

@@ -51,5 +51,12 @@
 }
 
 .footerRight {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   color: var(--text-muted);
+}
+
+.footerCopyright {
+  flex-shrink: 0;
 }

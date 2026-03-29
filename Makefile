@@ -1,5 +1,8 @@
 .PHONY: dev api web install build clean compose-up compose-down labs-sync
 
+# Bash so `api` can `source .env` (GitHub OAuth, Mongo, JWT, etc.)
+SHELL := /bin/bash
+
 # Optional: copy data-science Python pins into the API embed tree (reference only; not a codeFile).
 # Lesson sources (present/bad) live under services/api/internal/lessons/embed/ — edit there.
 labs-sync:
@@ -25,7 +28,7 @@ dev:
 
 api: labs-sync
 	@echo "Starting Go API on :8080"
-	cd services/api && go run ./cmd/server
+	@bash -c 'if [[ -f "$(CURDIR)/.env" ]]; then echo "(loading $(CURDIR)/.env)"; set -a && source "$(CURDIR)/.env" && set +a; fi; cd "$(CURDIR)/services/api" && exec go run ./cmd/server'
 
 web:
 	@echo "Starting Vite dev server on :5173"

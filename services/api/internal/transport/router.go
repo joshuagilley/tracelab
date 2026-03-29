@@ -1,14 +1,19 @@
 package transport
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
+	"github.com/tracelab/api/internal/auth"
+	"github.com/tracelab/api/internal/config"
 	"github.com/tracelab/api/internal/lessons"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func NewRouter() http.Handler {
+func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 	lessonStore, err := lessons.NewMemoryStore()
 	if err != nil {
 		log.Fatalf("lessons store: %v", err)
@@ -22,16 +27,41 @@ func NewRouter() http.Handler {
 		json.NewEncoder(w).Encode(map[string]string{"status": "ok", "service": "tracelab-api"})
 	})
 
-	// GET /api/sections/{lab-id}/concepts[/{slug}] — lab-id matches LabId in the web app
+	if cfg.AuthConfigured() && mongoClient != nil {
+		coll := mongoClient.Database(cfg.MongoDBName).Collection(cfg.UsersColl)
+		store := auth.NewUserStore(coll)
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		if err := store.EnsureIndexes(ctx); err != nil {
+			log.Printf("auth: ensure indexes: %v", err)
+		}
+		cancel()
+		auth.NewHandler(cfg, store).Register(mux)
+	} else {
+		if !cfg.AuthConfigured() {
+			log.Printf("auth: not fully configured (GitHub OAuth + Mongo + JWT); /api/auth/* returns stubs")
+		} else {
+			log.Printf("auth: Mongo client unavailable; /api/auth/* returns stubs")
+		}
+		auth.MountStub(mux)
+	}
+
 	mux.Handle("/api/sections/", lessonHandler)
 
-	return withCORS(mux)
+	return withCORS(cfg, mux)
 }
 
-func withCORS(next http.Handler) http.Handler {
+func withCORS(cfg *config.Config, next http.Handler) http.Handler {
+	allowed := cfg.CORSAllowedOrigins()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+		origin := r.Header.Get("Origin")
+		for _, o := range allowed {
+			if origin == o {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+				w.Header().Set("Access-Control-Allow-Credentials", "true")
+				break
+			}
+		}
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == http.MethodOptions {
