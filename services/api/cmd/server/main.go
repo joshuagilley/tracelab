@@ -25,9 +25,7 @@ func main() {
 		c, err := db.Connect(ctx, cfg.MongoURI)
 		cancel()
 		if err != nil {
-			// Do not exit: Cloud Run requires the process to listen on PORT; a bad URI,
-			// Atlas IP allowlist, or network blip would otherwise fail every deploy.
-			log.Printf("mongo: connect failed (lessons still served; auth user store offline): %v", err)
+			log.Printf("mongo: connect failed (auth store offline): %v", err)
 		} else {
 			mongoClient = c
 			defer func() {

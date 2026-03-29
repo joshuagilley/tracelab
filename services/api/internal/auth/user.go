@@ -13,14 +13,14 @@ import (
 
 // User is stored in MongoDB (collection name from config, default "Users").
 type User struct {
-	ID          primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	GitHubID    int64              `json:"githubId" bson:"github_id"`
-	Login       string             `json:"login" bson:"login"`
-	Name        string             `json:"name,omitempty" bson:"name,omitempty"`
-	AvatarURL   string             `json:"avatarUrl,omitempty" bson:"avatar_url,omitempty"`
-	Email       string             `json:"email,omitempty" bson:"email,omitempty"`
-	CreatedAt   time.Time          `json:"createdAt" bson:"created_at"`
-	UpdatedAt   time.Time          `json:"updatedAt" bson:"updated_at"`
+	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	GitHubID  int64              `json:"githubId" bson:"github_id"`
+	Login     string             `json:"login" bson:"login"`
+	Name      string             `json:"name,omitempty" bson:"name,omitempty"`
+	AvatarURL string             `json:"avatarUrl,omitempty" bson:"avatar_url,omitempty"`
+	Email     string             `json:"email,omitempty" bson:"email,omitempty"`
+	CreatedAt time.Time          `json:"createdAt" bson:"created_at"`
+	UpdatedAt time.Time          `json:"updatedAt" bson:"updated_at"`
 }
 
 type UserStore struct {
@@ -59,10 +59,9 @@ func (s *UserStore) UpsertFromGitHub(ctx context.Context, ghID int64, login, nam
 	var out User
 	err := s.coll.FindOneAndUpdate(ctx, filter, update, opts).Decode(&out)
 	if err != nil {
-		log.Printf("auth/store: UpsertFromGitHub failed github_id=%d login=%q: %v", ghID, login, err)
+		log.Printf("auth: upsert user github_id=%d: %v", ghID, err)
 		return nil, err
 	}
-	log.Printf("auth/store: UpsertFromGitHub ok github_id=%d mongo_id=%s login=%q coll=%s", ghID, out.ID.Hex(), login, s.coll.Name())
 	return &out, nil
 }
 
@@ -71,7 +70,7 @@ func (s *UserStore) ByID(ctx context.Context, id primitive.ObjectID) (*User, err
 	err := s.coll.FindOne(ctx, bson.M{"_id": id}).Decode(&u)
 	if err != nil {
 		if err != mongo.ErrNoDocuments {
-			log.Printf("auth/store: ByID failed mongo_id=%s: %v", id.Hex(), err)
+			log.Printf("auth: load user id=%s: %v", id.Hex(), err)
 		}
 		return nil, err
 	}

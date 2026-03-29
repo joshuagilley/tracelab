@@ -2,15 +2,9 @@ package auth
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
-	"encoding/json"
-	"io"
 	"log"
-	"net"
 	"net/http"
 	"net/url"
-	"strings"
 	"sync"
 	"time"
 
@@ -19,19 +13,11 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const (
-	oauthStateCookie = "oauth_state"
-	stateCookieTTL   = 10 * time.Minute
-	sessionTTL       = 30 * 24 * time.Hour
-)
-
-// Log once when we infer SameSite=None from host mismatch (split web/API deploy).
-var loggedCrossSiteAuto sync.Once
-
 type Handler struct {
-	cfg   *config.Config
-	users *UserStore
-	oauth *oauth2.Config
+	cfg          *config.Config
+	users        *UserStore
+	oauth        *oauth2.Config
+	crossSiteLog sync.Once
 }
 
 func NewHandler(cfg *config.Config, users *UserStore) *Handler {
@@ -48,29 +34,18 @@ func NewHandler(cfg *config.Config, users *UserStore) *Handler {
 	return &Handler{cfg: cfg, users: users, oauth: o}
 }
 
-func (h *Handler) authDisabled(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusServiceUnavailable)
-	_ = json.NewEncoder(w).Encode(map[string]string{
-		"error": "auth_not_configured",
-		"hint":  hintMissingEnv,
-	})
-}
-
 func (h *Handler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("/api/auth/github", h.githubStart)
 	mux.HandleFunc("/api/auth/github/callback", h.githubCallback)
-	mux.HandleFunc("/api/auth/me", h.me)
+	mux.HandleFunc("/api/auth/me", h.currentUser)
 	mux.HandleFunc("/api/auth/logout", h.logout)
 }
 
 func (h *Handler) githubStart(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	if !requireMethod(w, r, http.MethodGet) {
 		return
 	}
-	if h.users == nil {
-		h.authDisabled(w)
+	if !h.requireAuthStore(w) {
 		return
 	}
 	state, err := randomState()
@@ -79,300 +54,114 @@ func (h *Handler) githubStart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.SetCookie(w, h.stateCookie(r, state))
-	authURL := h.oauth.AuthCodeURL(state, oauth2.AccessTypeOnline)
-	http.Redirect(w, r, authURL, http.StatusFound)
-}
-
-type githubUser struct {
-	ID        int64  `json:"id"`
-	Login     string `json:"login"`
-	Name      string `json:"name"`
-	AvatarURL string `json:"avatar_url"`
-	Email     string `json:"email"`
+	http.Redirect(w, r, h.oauth.AuthCodeURL(state, oauth2.AccessTypeOnline), http.StatusFound)
 }
 
 func (h *Handler) githubCallback(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	if !requireMethod(w, r, http.MethodGet) {
 		return
 	}
-	if h.users == nil {
-		h.authDisabled(w)
+	if !h.requireAuthStore(w) {
 		return
 	}
-	q := r.URL.Query()
-	if errMsg := q.Get("error"); errMsg != "" {
-		http.Redirect(w, r, h.cfg.FrontendOrigin+"/?auth_error="+url.QueryEscape(errMsg), http.StatusFound)
+	authCode, ok := h.validateOAuthCallback(w, r)
+	if !ok {
 		return
 	}
-	state := q.Get("state")
-	code := q.Get("code")
-	if code == "" || state == "" {
-		http.Redirect(w, r, h.cfg.FrontendOrigin+"/?auth_error=missing_code", http.StatusFound)
-		return
-	}
-	sc, err := r.Cookie(oauthStateCookie)
-	if err != nil || sc.Value == "" || sc.Value != state {
-		http.Redirect(w, r, h.cfg.FrontendOrigin+"/?auth_error=invalid_state", http.StatusFound)
-		return
-	}
-	http.SetCookie(w, h.clearCookie(r, oauthStateCookie))
 
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 	defer cancel()
 
-	tok, err := h.oauth.Exchange(ctx, code)
-	if err != nil {
-		log.Printf("auth/github/callback: token exchange failed: %v", err)
-		http.Redirect(w, r, h.cfg.FrontendOrigin+"/?auth_error=token_exchange", http.StatusFound)
+	gu, errCode := h.fetchGitHubIdentityFromCode(ctx, authCode)
+	if errCode != "" {
+		h.redirectAuthError(w, r, errCode)
 		return
-	}
-	client := h.oauth.Client(ctx, tok)
-	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.github.com/user", nil)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Printf("auth/github/callback: GET /user request failed: %v", err)
-		http.Redirect(w, r, h.cfg.FrontendOrigin+"/?auth_error=github_user", http.StatusFound)
-		return
-	}
-	defer resp.Body.Close()
-	body, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
-	if resp.StatusCode != http.StatusOK {
-		log.Printf("auth/github/callback: GET /user status=%d body_len=%d", resp.StatusCode, len(body))
-		http.Redirect(w, r, h.cfg.FrontendOrigin+"/?auth_error=github_api", http.StatusFound)
-		return
-	}
-	var gu githubUser
-	if err := json.Unmarshal(body, &gu); err != nil || gu.ID == 0 {
-		log.Printf("auth/github/callback: parse github user: err=%v github_id=%d", err, gu.ID)
-		http.Redirect(w, r, h.cfg.FrontendOrigin+"/?auth_error=parse_user", http.StatusFound)
-		return
-	}
-	log.Printf("auth/github/callback: github user ok id=%d login=%q", gu.ID, gu.Login)
-	if gu.Email == "" {
-		gu.Email = h.fetchPrimaryGitHubEmail(ctx, client)
 	}
 
 	u, err := h.users.UpsertFromGitHub(ctx, gu.ID, gu.Login, gu.Name, gu.AvatarURL, gu.Email)
 	if err != nil {
-		http.Redirect(w, r, h.cfg.FrontendOrigin+"/?auth_error=db", http.StatusFound)
+		h.redirectAuthError(w, r, "db")
 		return
 	}
-	jwtStr, err := signSession(h.cfg.JWTSecret, u.ID, sessionTTL)
-	if err != nil {
-		log.Printf("auth/github/callback: sign session failed mongo_id=%s: %v", u.ID.Hex(), err)
-		http.Redirect(w, r, h.cfg.FrontendOrigin+"/?auth_error=session", http.StatusFound)
+	if err := h.startSession(w, r, u.ID); err != nil {
+		h.redirectAuthError(w, r, "session")
 		return
 	}
-	sessCookie := h.sessionCookie(r, jwtStr)
-	http.SetCookie(w, sessCookie)
-	log.Printf("auth/github/callback: session cookie set mongo_id=%s SameSite=%v Secure=%v",
-		u.ID.Hex(), sessCookie.SameSite, sessCookie.Secure)
 	http.Redirect(w, r, h.cfg.FrontendOrigin+"/", http.StatusFound)
 }
 
-func (h *Handler) fetchPrimaryGitHubEmail(ctx context.Context, client *http.Client) string {
-	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.github.com/user/emails", nil)
-	resp, err := client.Do(req)
-	if err != nil {
-		return ""
+func (h *Handler) validateOAuthCallback(w http.ResponseWriter, r *http.Request) (string, bool) {
+	q := r.URL.Query()
+	if errMsg := q.Get("error"); errMsg != "" {
+		h.redirectAuthError(w, r, errMsg)
+		return "", false
 	}
-	defer resp.Body.Close()
-	body, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
-	var emails []struct {
-		Email    string `json:"email"`
-		Primary  bool   `json:"primary"`
-		Verified bool   `json:"verified"`
+	state := q.Get("state")
+	code := q.Get("code")
+	if code == "" || state == "" {
+		h.redirectAuthError(w, r, "missing_code")
+		return "", false
 	}
-	if json.Unmarshal(body, &emails) != nil {
-		return ""
+	sc, err := r.Cookie(oauthStateCookie)
+	if err != nil || sc.Value == "" || sc.Value != state {
+		h.redirectAuthError(w, r, "invalid_state")
+		return "", false
 	}
-	for _, e := range emails {
-		if e.Primary && e.Verified {
-			return e.Email
-		}
-	}
-	for _, e := range emails {
-		if e.Verified {
-			return e.Email
-		}
-	}
-	return ""
+	http.SetCookie(w, h.clearCookie(r, oauthStateCookie))
+	return code, true
 }
 
-func (h *Handler) me(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+func (h *Handler) redirectAuthError(w http.ResponseWriter, r *http.Request, code string) {
+	target := h.cfg.FrontendOrigin + "/?auth_error=" + url.QueryEscape(code)
+	http.Redirect(w, r, target, http.StatusFound)
+}
+
+func (h *Handler) requireAuthStore(w http.ResponseWriter) bool {
+	if h.users != nil {
+		return true
+	}
+	writeAuthNotConfigured(w)
+	return false
+}
+
+func (h *Handler) currentUser(w http.ResponseWriter, r *http.Request) {
+	if !requireMethod(w, r, http.MethodGet) {
 		return
 	}
-	if h.users == nil {
-		h.authDisabled(w)
+	if !h.requireAuthStore(w) {
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
 	c, err := r.Cookie(CookieName)
 	if err != nil || c.Value == "" {
-		_ = json.NewEncoder(w).Encode(map[string]any{"user": nil})
+		writeJSON(w, http.StatusOK, meResponse{User: nil})
 		return
 	}
 	uid, err := parseSession(h.cfg.JWTSecret, c.Value)
 	if err != nil {
-		log.Printf("auth/me: session cookie present but JWT invalid: %v", err)
-		_ = json.NewEncoder(w).Encode(map[string]any{"user": nil})
+		http.SetCookie(w, h.clearCookie(r, CookieName))
+		writeJSON(w, http.StatusOK, meResponse{User: nil})
 		return
 	}
 	u, err := h.users.ByID(r.Context(), uid)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			log.Printf("auth/me: JWT ok but no Mongo user for mongo_id=%s", uid.Hex())
-			_ = json.NewEncoder(w).Encode(map[string]any{"user": nil})
+			writeJSON(w, http.StatusOK, meResponse{User: nil})
 			return
 		}
-		log.Printf("auth/me: ByID error mongo_id=%s: %v", uid.Hex(), err)
+		log.Printf("auth: /me load user: %v", err)
 		http.Error(w, "db", http.StatusInternalServerError)
 		return
 	}
-	_ = json.NewEncoder(w).Encode(map[string]any{"user": publicUser(u)})
-}
-
-func publicUser(u *User) map[string]any {
-	return map[string]any{
-		"id":        u.ID.Hex(),
-		"githubId":  u.GitHubID,
-		"login":     u.Login,
-		"name":      u.Name,
-		"avatarUrl": u.AvatarURL,
-	}
+	writeJSON(w, http.StatusOK, meResponse{User: userToPublicDTO(u)})
 }
 
 func (h *Handler) logout(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost && r.Method != http.MethodGet {
-		w.Header().Set("Allow", "GET, POST")
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	if !requireMethod(w, r, http.MethodPost) {
+		return
+	}
+	if !h.requireAuthStore(w) {
 		return
 	}
 	http.SetCookie(w, h.clearCookie(r, CookieName))
-	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]bool{"ok": true})
-}
-
-func (h *Handler) sessionCookie(r *http.Request, value string) *http.Cookie {
-	same, secure := h.cookieAttrsFor(r)
-	return &http.Cookie{
-		Name:     CookieName,
-		Value:    value,
-		Path:     "/",
-		MaxAge:   int(sessionTTL.Seconds()),
-		HttpOnly: true,
-		SameSite: same,
-		Secure:   secure,
-	}
-}
-
-func (h *Handler) stateCookie(r *http.Request, value string) *http.Cookie {
-	same, secure := h.cookieAttrsFor(r)
-	return &http.Cookie{
-		Name:     oauthStateCookie,
-		Value:    value,
-		Path:     "/",
-		MaxAge:   int(stateCookieTTL.Seconds()),
-		HttpOnly: true,
-		SameSite: same,
-		Secure:   secure,
-	}
-}
-
-func (h *Handler) clearCookie(r *http.Request, name string) *http.Cookie {
-	same, secure := h.cookieAttrsFor(r)
-	return &http.Cookie{
-		Name:     name,
-		Value:    "",
-		Path:     "/",
-		MaxAge:   -1,
-		HttpOnly: true,
-		SameSite: same,
-		Secure:   secure,
-	}
-}
-
-// cookieAttrsFor picks SameSite/Secure. Cross-origin credentialed fetch from the SPA (web → API) only sends cookies
-// when SameSite=None and Secure. Lax is wrong for two Cloud Run hostnames even if AUTH_COOKIE_CROSS_SITE is unset.
-func (h *Handler) cookieAttrsFor(r *http.Request) (http.SameSite, bool) {
-	if h.cfg.AuthCookieCrossSite {
-		return http.SameSiteNoneMode, true
-	}
-	fh := originHost(h.cfg.FrontendOrigin)
-	rh := hostOnly(r.Host)
-	if fh != "" && rh != "" && fh != rh {
-		loggedCrossSiteAuto.Do(func() {
-			log.Printf("auth: cross-host session cookies (API host %q vs FRONTEND_ORIGIN host %q): SameSite=None; Secure", rh, fh)
-		})
-		return http.SameSiteNoneMode, true
-	}
-	secure := strings.HasPrefix(h.cfg.FrontendOrigin, "https://")
-	return http.SameSiteLaxMode, secure
-}
-
-func hostOnly(hostport string) string {
-	hostport = strings.TrimSpace(hostport)
-	if hostport == "" {
-		return ""
-	}
-	host, _, err := net.SplitHostPort(hostport)
-	if err != nil {
-		return strings.ToLower(hostport)
-	}
-	return strings.ToLower(host)
-}
-
-func originHost(origin string) string {
-	u, err := url.Parse(strings.TrimSpace(origin))
-	if err != nil || u.Host == "" {
-		return ""
-	}
-	return hostOnly(u.Host)
-}
-
-func randomState() (string, error) {
-	b := make([]byte, 16)
-	if _, err := rand.Read(b); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(b), nil
-}
-
-const (
-	hintMissingEnv = "Set MONGO_DB_URI, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, OAUTH_CALLBACK_URL, AUTH_JWT_SECRET on the API service (Cloud Run → tracelab-api → Variables & secrets)."
-	hintMongoDown  = "OAuth env may be set, but MongoDB is not connected. Check MONGO_DB_URI, Atlas Network Access (allow Cloud Run egress), and API logs for mongo: connect failed."
-)
-
-// HintMongoDown is the API JSON hint when env is complete but Mongo never connected.
-func HintMongoDown() string { return hintMongoDown }
-
-// MountStub registers JSON 503 handlers when auth deps are missing.
-func MountStub(mux *http.ServeMux) {
-	MountStubWithReason(mux, "auth_not_configured", hintMissingEnv)
-}
-
-// MountStubWithReason uses a specific error code and hint (e.g. mongo down vs missing env).
-func MountStubWithReason(mux *http.ServeMux, errCode, hint string) {
-	stub := func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusServiceUnavailable)
-		_ = json.NewEncoder(w).Encode(map[string]string{
-			"error": errCode,
-			"hint":  hint,
-		})
-	}
-	mux.HandleFunc("/api/auth/github", stub)
-	mux.HandleFunc("/api/auth/github/callback", stub)
-	mux.HandleFunc("/api/auth/me", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(map[string]any{"user": nil})
-	})
-	mux.HandleFunc("/api/auth/logout", stub)
+	writeJSON(w, http.StatusOK, logoutResponse{OK: true})
 }

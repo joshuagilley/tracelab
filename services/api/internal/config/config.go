@@ -9,9 +9,9 @@ import (
 type Config struct {
 	Addr string
 
-	MongoURI       string
-	MongoDBName    string
-	UsersColl      string
+	MongoURI    string
+	MongoDBName string
+	UsersColl   string
 
 	GitHubClientID     string
 	GitHubClientSecret string
@@ -47,16 +47,16 @@ func Load() *Config {
 	}
 
 	return &Config{
-		Addr:               ":" + port,
-		MongoURI:           strings.TrimSpace(os.Getenv("MONGO_DB_URI")),
-		MongoDBName:        firstNonEmpty(os.Getenv("MONGO_DB_NAME"), "tracelab"),
-		UsersColl:          firstNonEmpty(os.Getenv("USERS_COLLECTION"), "Users"),
-		GitHubClientID:     strings.TrimSpace(os.Getenv("GITHUB_CLIENT_ID")),
-		GitHubClientSecret: strings.TrimSpace(os.Getenv("GITHUB_CLIENT_SECRET")),
-		OAuthCallbackURL:   trimTrailingSlash(strings.TrimSpace(os.Getenv("OAUTH_CALLBACK_URL"))),
-		FrontendOrigin:     trimTrailingSlash(strings.TrimSpace(frontend)),
-		CORSExtraOrigins:   extra,
-		JWTSecret:          strings.TrimSpace(os.Getenv("AUTH_JWT_SECRET")),
+		Addr:                ":" + port,
+		MongoURI:            strings.TrimSpace(os.Getenv("MONGO_DB_URI")),
+		MongoDBName:         firstNonEmpty(os.Getenv("MONGO_DB_NAME"), "tracelab"),
+		UsersColl:           firstNonEmpty(os.Getenv("USERS_COLLECTION"), "Users"),
+		GitHubClientID:      strings.TrimSpace(os.Getenv("GITHUB_CLIENT_ID")),
+		GitHubClientSecret:  strings.TrimSpace(os.Getenv("GITHUB_CLIENT_SECRET")),
+		OAuthCallbackURL:    trimTrailingSlash(strings.TrimSpace(os.Getenv("OAUTH_CALLBACK_URL"))),
+		FrontendOrigin:      trimTrailingSlash(strings.TrimSpace(frontend)),
+		CORSExtraOrigins:    extra,
+		JWTSecret:           strings.TrimSpace(os.Getenv("AUTH_JWT_SECRET")),
 		AuthCookieCrossSite: strings.EqualFold(strings.TrimSpace(os.Getenv("AUTH_COOKIE_CROSS_SITE")), "true"),
 	}
 }
@@ -101,16 +101,15 @@ func (c *Config) AuthConfigured() bool {
 		c.JWTSecret != ""
 }
 
-// LogAuthEnvDiagnostics logs which auth-related env vars are non-empty (never logs secret values).
+// LogAuthEnvDiagnostics logs which auth env vars are set (no secret values).
 func (c *Config) LogAuthEnvDiagnostics() {
-	log.Printf("auth env: MONGO_DB_URI set=%v GITHUB_CLIENT_ID set=%v GITHUB_CLIENT_SECRET set=%v OAUTH_CALLBACK_URL set=%v AUTH_JWT_SECRET set=%v",
+	log.Printf("auth: env mongo=%v github_id=%v github_secret=%v oauth_callback=%v jwt=%v | frontend=%q callback=%q",
 		c.MongoURI != "",
 		c.GitHubClientID != "",
 		c.GitHubClientSecret != "",
 		c.OAuthCallbackURL != "",
 		c.JWTSecret != "",
+		c.FrontendOrigin,
+		c.OAuthCallbackURL,
 	)
-	if c.OAuthCallbackURL != "" {
-		log.Printf("auth env: OAUTH_CALLBACK_URL=%q FRONTEND_ORIGIN=%q", c.OAuthCallbackURL, c.FrontendOrigin)
-	}
 }

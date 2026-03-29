@@ -17,7 +17,6 @@ export async function logout(): Promise<void> {
   })
 }
 
-/** Full-page navigation to GitHub OAuth (same origin via Vite proxy in dev). */
 export function githubLoginHref(): string {
   const base = API_BASE.replace(/\/$/, '')
   return `${base}/auth/github`

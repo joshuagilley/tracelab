@@ -32,19 +32,16 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 		store := auth.NewUserStore(coll)
 		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 		if err := store.EnsureIndexes(ctx); err != nil {
-			log.Printf("auth: ensure indexes failed db=%q coll=%q: %v", cfg.MongoDBName, cfg.UsersColl, err)
-		} else {
-			log.Printf("auth: user indexes ok db=%q coll=%q", cfg.MongoDBName, cfg.UsersColl)
+			log.Printf("auth: user indexes failed db=%q coll=%q: %v", cfg.MongoDBName, cfg.UsersColl, err)
 		}
 		cancel()
 		auth.NewHandler(cfg, store).Register(mux)
 	} else {
-		cfg.LogAuthEnvDiagnostics()
 		if !cfg.AuthConfigured() {
-			log.Printf("auth: missing one or more env vars (see log line auth env: …); /api/auth/* returns stubs")
+			log.Printf("auth: disabled (incomplete env); /api/auth/* stubs")
 			auth.MountStub(mux)
 		} else {
-			log.Printf("auth: env OK but Mongo not connected — fix DB; /api/auth/* returns stubs until mongo connects")
+			log.Printf("auth: disabled (mongo unavailable); /api/auth/* stubs")
 			auth.MountStubWithReason(mux, "auth_store_unavailable", auth.HintMongoDown())
 		}
 	}
