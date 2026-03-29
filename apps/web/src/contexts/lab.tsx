@@ -20,6 +20,7 @@ export type LabId =
   | 'testing'
   | 'devops'
   | 'low-level-systems'
+  | 'operating-systems'
   | 'algorithms'
   | 'ai-systems'
   | 'programming-languages'
@@ -58,6 +59,7 @@ export const LAB_GROUPS: LabGroup[] = [
       { id: 'testing', label: 'Testing', slug: 'testing' },
       { id: 'devops', label: 'DevOps', slug: 'devops' },
       { id: 'low-level-systems', label: 'Low-Level Systems', slug: 'low-level-systems' },
+      { id: 'operating-systems', label: 'Operating Systems', slug: 'operating-systems' },
     ],
   },
   {

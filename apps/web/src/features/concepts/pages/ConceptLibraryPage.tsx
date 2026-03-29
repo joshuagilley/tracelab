@@ -63,6 +63,12 @@ const COPY: Record<
       'What your code is really doing — memory, pointers, the CPU, syscalls, and the OS in C (`present.c` / `bad.c`), with almost no runtime magic. Goroutines and channels stay under Concurrency; distributed design under System Design.',
     countLabel: 'TOPICS',
   },
+  'operating-systems': {
+    title: 'Operating Systems',
+    subtitle:
+      'How the machine runs your code — processes, memory, scheduling, files, and the shell — as interactive simulations tied to real services (latency, leaks, queues, pipelines). C and syscall depth stay under Low-Level Systems; Go concurrency under Concurrency.',
+    countLabel: 'MODULES',
+  },
   algorithms: {
     title: 'Algorithms & Data Structures',
     subtitle:

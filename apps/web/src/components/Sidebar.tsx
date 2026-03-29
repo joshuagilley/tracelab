@@ -22,6 +22,7 @@ const LIBRARY_LINK_LABEL: Record<LabId, string> = {
   testing: 'All topics',
   devops: 'All topics',
   'low-level-systems': 'All topics',
+  'operating-systems': 'All topics',
   algorithms: 'All topics',
   'ai-systems': 'All topics',
   'programming-languages': 'All topics',
@@ -40,6 +41,7 @@ const TOPIC_CURRICULUM_IDS = new Set<LabId>([
   'testing',
   'devops',
   'low-level-systems',
+  'operating-systems',
   'algorithms',
   'ai-systems',
 ])

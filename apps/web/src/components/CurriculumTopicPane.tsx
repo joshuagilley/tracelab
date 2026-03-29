@@ -7,6 +7,10 @@ import {
   LOW_LEVEL_SYSTEMS_DEFAULT_OPEN,
   LOW_LEVEL_SYSTEMS_SECTIONS,
 } from '@/features/low-level-systems/lowLevelSystemsNav'
+import {
+  OPERATING_SYSTEMS_DEFAULT_OPEN,
+  OPERATING_SYSTEMS_SECTIONS,
+} from '@/features/operating-systems/operatingSystemsNav'
 import { NETWORKING_DEFAULT_OPEN, NETWORKING_SECTIONS } from '@/features/networking/networkingNav'
 import { SECURITY_DEFAULT_OPEN, SECURITY_SECTIONS } from '@/features/security/securityNav'
 import {
@@ -93,6 +97,16 @@ export default function CurriculumTopicPane({ labId, concepts, completedSlugs }:
           sections={LOW_LEVEL_SYSTEMS_SECTIONS}
           panelPrefix="lls"
           defaultOpenSectionIds={[...LOW_LEVEL_SYSTEMS_DEFAULT_OPEN]}
+          completedSlugs={completedSlugs}
+        />
+      )
+    case 'operating-systems':
+      return (
+        <TopicSidebarNav
+          concepts={concepts}
+          sections={OPERATING_SYSTEMS_SECTIONS}
+          panelPrefix="os"
+          defaultOpenSectionIds={[...OPERATING_SYSTEMS_DEFAULT_OPEN]}
           completedSlugs={completedSlugs}
         />
       )

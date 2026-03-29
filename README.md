@@ -78,6 +78,8 @@ Lesson metadata ships as `{lab-id}.json` next to each feature (e.g. `apps/web/sr
 
 **API design** (HTTP surface): Rate Limiting (lesson with middleware sketch), Retries, Circuit Breaker, …
 
+**Operating systems** (simulations): Processes & threads, memory, scheduling, file systems, shell — see `docs/os-section.md` and `features/operating-systems/operating-systems.json`.
+
 ---
 
 ## Developer guide: adding or extending a concept

@@ -13,6 +13,7 @@ import designPatterns from '@/features/design-patterns/design-patterns.json'
 import devops from '@/features/devops/devops.json'
 import lowLevelSystems from '@/features/low-level-systems/low-level-systems.json'
 import networking from '@/features/networking/networking.json'
+import operatingSystems from '@/features/operating-systems/operating-systems.json'
 import programmingLanguages from '@/features/programming-languages/programming-languages.json'
 import security from '@/features/security/security.json'
 import softwareArchitecture from '@/features/software-architecture/software-architecture.json'
@@ -39,6 +40,7 @@ const BY_SECTION: Record<LabId, LessonCatalogRow[]> = {
   devops: devops as LessonCatalogRow[],
   'low-level-systems': lowLevelSystems as LessonCatalogRow[],
   networking: networking as LessonCatalogRow[],
+  'operating-systems': operatingSystems as LessonCatalogRow[],
   'programming-languages': programmingLanguages as LessonCatalogRow[],
   security: security as LessonCatalogRow[],
   'software-architecture': softwareArchitecture as LessonCatalogRow[],
