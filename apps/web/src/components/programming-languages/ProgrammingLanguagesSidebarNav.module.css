@@ -217,3 +217,10 @@
   color: var(--text-muted);
   flex-shrink: 0;
 }
+
+.filterEmpty {
+  margin: 8px 4px 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}

@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
 import {
   PROGRAMMING_LANGUAGES,
   PROGRAMMING_LANGUAGES_DEFAULT_OPEN,
 } from '@/features/programming-languages/programmingLanguagesNav'
 import { LanguageLogo } from '@/features/programming-languages/LanguageLogo'
 import { countSectionNavProgress } from '@/features/concepts/navSectionProgress'
+import { filterProgrammingLanguages } from '@/lib/navCurriculumFilter'
 import type { Concept } from '@/types/concept'
 import styles from './ProgrammingLanguagesSidebarNav.module.css'
 
@@ -27,16 +29,29 @@ interface Props {
 
 export default function ProgrammingLanguagesSidebarNav({ concepts, completedSlugs }: Props) {
   const navigate = useNavigate()
+  const { publishedOnly } = useCurriculumVisibility()
   const bySlug = useMemo(() => Object.fromEntries(concepts.map(c => [c.slug, c])), [concepts])
+  const visibleLangs = useMemo(
+    () => filterProgrammingLanguages(PROGRAMMING_LANGUAGES, bySlug, publishedOnly),
+    [bySlug, publishedOnly],
+  )
   const [open, setOpen] = useState<Record<string, boolean>>(initialOpenLangs)
 
   const toggle = (id: string) => {
     setOpen(s => ({ ...s, [id]: !s[id] }))
   }
 
+  if (visibleLangs.length === 0) {
+    return (
+      <p className={styles.filterEmpty} role="status">
+        No published topics in this library yet.
+      </p>
+    )
+  }
+
   return (
     <div className={styles.root}>
-      {PROGRAMMING_LANGUAGES.map(lang => {
+      {visibleLangs.map(lang => {
         const isOpen = open[lang.id] ?? false
         const panelId = `pl-lang-${lang.id}`
         const flatItems = lang.categories.flatMap(c => c.items)

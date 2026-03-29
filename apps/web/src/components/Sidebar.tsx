@@ -1,7 +1,13 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useLabCurriculumProgress } from '@/contexts/labCurriculumProgress'
+import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
 import { LAB_GROUPS, useLab, type LabId } from '@/contexts/lab'
+import {
+  filterLabGroupsForPublishedOnly,
+  firstPublishedLabId,
+  labHasPublishedConcepts,
+} from '@/lib/labPickerFilter'
 import CurriculumTopicPane from './CurriculumTopicPane'
 import DesignPatternsSidebarNav from './design-patterns/DesignPatternsSidebarNav'
 import SystemDesignSidebarNav from './system-design/SystemDesignSidebarNav'
@@ -54,10 +60,23 @@ function BrandGridIcon() {
 }
 
 export default function Sidebar() {
-  const { concepts, completedSlugs } = useLabCurriculumProgress()
+  const { publishedOnly, setPublishedOnly } = useCurriculumVisibility()
+  const { concepts, completedSlugs, labTotals } = useLabCurriculumProgress()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const { labId, setLabId, current } = useLab()
+
+  const visibleLabGroups = useMemo(
+    () => (publishedOnly ? filterLabGroupsForPublishedOnly(LAB_GROUPS) : LAB_GROUPS),
+    [publishedOnly],
+  )
+
+  useEffect(() => {
+    if (!publishedOnly) return
+    if (labHasPublishedConcepts(labId)) return
+    const next = firstPublishedLabId(LAB_GROUPS)
+    if (next && next !== labId) setLabId(next)
+  }, [publishedOnly, labId, setLabId])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -101,6 +120,9 @@ export default function Sidebar() {
     : labId === 'programming-languages' ? 'BY LANGUAGE'
     : 'BY TOPIC'
 
+  const { completed: labDone, total: labTotal } = labTotals
+  const labPct = labTotal > 0 ? Math.round((labDone / labTotal) * 100) : 0
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.brand} ref={menuRef}>
@@ -109,48 +131,96 @@ export default function Sidebar() {
         </div>
         <div className={styles.brandText}>
           <div className={styles.brandTrace}>TraceLab</div>
-          <button
-            type="button"
-            className={styles.labTrigger}
-            onClick={() => setMenuOpen(o => !o)}
-            aria-expanded={menuOpen}
-            aria-haspopup="listbox"
-          >
-            <span className={styles.labLabel}>{current.label}</span>
-            <span className={[styles.chevron, menuOpen ? styles.chevronOpen : ''].join(' ')} aria-hidden>
-              ▼
-            </span>
-          </button>
-          {menuOpen && (
-            <ul className={styles.labMenu} role="listbox">
-              {LAB_GROUPS.map(group => (
-                <li key={group.heading} className={styles.labMenuGroup}>
-                  <div className={styles.labMenuHeading} role="presentation">
-                    {group.heading}
-                  </div>
-                  <ul className={styles.labMenuSublist}>
-                    {group.options.map(opt => (
-                      <li key={opt.id}>
-                        <button
-                          type="button"
-                          role="option"
-                          aria-selected={opt.id === labId}
-                          className={[
-                            styles.labOption,
-                            opt.id === labId ? styles.labOptionActive : '',
-                          ].join(' ')}
-                          onClick={() => selectLab(opt.id)}
-                        >
-                          {opt.label}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
-            </ul>
+          <div className={styles.brandPickerBlock}>
+            <button
+              type="button"
+              className={styles.labTrigger}
+              onClick={() => setMenuOpen(o => !o)}
+              aria-expanded={menuOpen}
+              aria-haspopup="listbox"
+            >
+              <span className={styles.labLabel}>{current.label}</span>
+              <span className={[styles.chevron, menuOpen ? styles.chevronOpen : ''].join(' ')} aria-hidden>
+                ▼
+              </span>
+            </button>
+            {menuOpen && (
+              <ul className={styles.labMenu} role="listbox">
+                {visibleLabGroups.length === 0 ? (
+                  <li className={styles.labMenuEmpty} role="presentation">
+                    No libraries with published lessons yet.
+                  </li>
+                ) : (
+                  visibleLabGroups.map(group => (
+                    <li key={group.heading} className={styles.labMenuGroup}>
+                      <div className={styles.labMenuHeading} role="presentation">
+                        {group.heading}
+                      </div>
+                      <ul className={styles.labMenuSublist}>
+                        {group.options.map(opt => (
+                          <li key={opt.id}>
+                            <button
+                              type="button"
+                              role="option"
+                              aria-selected={opt.id === labId}
+                              className={[
+                                styles.labOption,
+                                opt.id === labId ? styles.labOptionActive : '',
+                              ].join(' ')}
+                              onClick={() => selectLab(opt.id)}
+                            >
+                              {opt.label}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))
+                )}
+              </ul>
+            )}
+          </div>
+          {labTotal > 0 && (
+            <div
+              className={styles.labProgressWrap}
+              title={`${labDone} of ${labTotal} published topics marked done in ${current.label}`}
+            >
+              <div className={styles.labProgressRow}>
+                <span className={styles.labProgressCaption}>Library progress</span>
+                <span className={styles.labProgressStat}>
+                  {labDone}/{labTotal}
+                </span>
+              </div>
+              <div
+                className={styles.labProgressTrack}
+                role="progressbar"
+                aria-valuenow={labDone}
+                aria-valuemin={0}
+                aria-valuemax={labTotal}
+                aria-label={`${labDone} of ${labTotal} topics complete in ${current.label}`}
+              >
+                <div className={styles.labProgressFill} style={{ width: `${labPct}%` }} />
+              </div>
+            </div>
           )}
-          <div className={styles.brandVersion}>V2.4.0 OBSIDIAN</div>
+          <div
+            className={styles.curriculumToggleWrap}
+            title="Hide upcoming topics and libraries with no published lessons yet (sidebar + lab menu + library grid)"
+          >
+            <span className={styles.curriculumToggleLabel} id="curriculum-published-only-label">
+              Published only
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={publishedOnly}
+              aria-labelledby="curriculum-published-only-label"
+              className={[styles.curriculumSwitch, publishedOnly ? styles.curriculumSwitchOn : ''].join(' ')}
+              onClick={() => setPublishedOnly(!publishedOnly)}
+            >
+              <span className={styles.curriculumSwitchThumb} aria-hidden />
+            </button>
+          </div>
         </div>
       </div>
 

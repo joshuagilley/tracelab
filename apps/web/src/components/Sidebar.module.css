@@ -55,6 +55,11 @@
   gap: 2px;
 }
 
+.brandPickerBlock {
+  position: relative;
+  width: 100%;
+}
+
 .brandTrace {
   font-size: 10px;
   font-weight: 600;
@@ -86,6 +91,9 @@
   font-weight: 600;
   line-height: 1.2;
   transition: color 0.15s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chevron {
@@ -119,6 +127,14 @@
   z-index: 50;
   max-height: min(70vh, 520px);
   overflow-y: auto;
+}
+
+.labMenuEmpty {
+  list-style: none;
+  padding: 10px 12px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-muted);
 }
 
 .labMenuGroup {
@@ -172,14 +188,6 @@
   color: var(--accent);
 }
 
-.brandVersion {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: var(--text-muted);
-  letter-spacing: 0.06em;
-  margin-top: 2px;
-}
-
 /* ─── Library (main grid) ─────────────────────────── */
 .quickNav {
   flex-shrink: 0;
@@ -210,6 +218,120 @@
 .libLinkActive {
   color: var(--accent);
   background: var(--accent-dim);
+}
+
+.labProgressWrap {
+  width: 100%;
+  padding: 6px 0 8px;
+}
+
+.labProgressRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.labProgressCaption {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+
+.labProgressStat {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  opacity: 0.9;
+}
+
+.labProgressTrack {
+  height: 3px;
+  border-radius: 2px;
+  width: 100%;
+  background: color-mix(in srgb, var(--border) 85%, transparent);
+  overflow: hidden;
+}
+
+.labProgressFill {
+  height: 100%;
+  min-width: 0;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 88%, transparent),
+    var(--accent)
+  );
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 35%, transparent);
+  transition: width 0.28s ease;
+}
+
+.curriculumToggleWrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 0 2px;
+  margin-top: 0;
+  border-top: 1px solid var(--border-dim);
+}
+
+.curriculumToggleLabel {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.curriculumSwitch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.curriculumSwitch:hover {
+  border-color: var(--text-muted);
+}
+
+.curriculumSwitchOn {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+
+.curriculumSwitchThumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  transition: transform 0.15s, background 0.15s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.curriculumSwitchOn .curriculumSwitchThumb {
+  transform: translateX(16px);
+  background: var(--accent);
 }
 
 /* ─── Concept list ────────────────────────────────── */

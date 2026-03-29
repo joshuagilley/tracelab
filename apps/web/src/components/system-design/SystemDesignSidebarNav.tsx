@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
+import { filterCurriculumSections } from '@/lib/navCurriculumFilter'
 import { SYSTEM_DESIGN_SECTIONS } from '@/features/system-design/systemDesignNav'
 import type { Concept } from '@/types/concept'
 import SectionNavHead from '@/components/sidebar/SectionNavHead'
@@ -20,7 +22,12 @@ interface Props {
 
 export default function SystemDesignSidebarNav({ concepts, completedSlugs }: Props) {
   const navigate = useNavigate()
+  const { publishedOnly } = useCurriculumVisibility()
   const bySlug = useMemo(() => Object.fromEntries(concepts.map(c => [c.slug, c])), [concepts])
+  const visibleSections = useMemo(
+    () => filterCurriculumSections(SYSTEM_DESIGN_SECTIONS, bySlug, publishedOnly),
+    [bySlug, publishedOnly],
+  )
 
   const [open, setOpen] = useState<Record<string, boolean>>(initialOpenState)
 
@@ -28,9 +35,17 @@ export default function SystemDesignSidebarNav({ concepts, completedSlugs }: Pro
     setOpen(s => ({ ...s, [id]: !s[id] }))
   }
 
+  if (visibleSections.length === 0) {
+    return (
+      <p className={styles.filterEmpty} role="status">
+        No published topics in this library yet.
+      </p>
+    )
+  }
+
   return (
     <div className={styles.root}>
-      {SYSTEM_DESIGN_SECTIONS.map(section => {
+      {visibleSections.map(section => {
         const isOpen = open[section.id] ?? false
         const panelId = `sd-section-${section.id}`
         return (

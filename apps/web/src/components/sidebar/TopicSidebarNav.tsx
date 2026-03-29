@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
+import { filterCurriculumSections } from '@/lib/navCurriculumFilter'
 import type { CurriculumNavSection } from '@/types/curriculumNav'
 import type { Concept } from '@/types/concept'
 import SectionNavHead from '@/components/sidebar/SectionNavHead'
@@ -39,7 +41,12 @@ export default function TopicSidebarNav({
   completedSlugs,
 }: TopicSidebarNavProps) {
   const navigate = useNavigate()
+  const { publishedOnly } = useCurriculumVisibility()
   const bySlug = useMemo(() => Object.fromEntries(concepts.map(c => [c.slug, c])), [concepts])
+  const visibleSections = useMemo(
+    () => filterCurriculumSections(sections, bySlug, publishedOnly),
+    [sections, bySlug, publishedOnly],
+  )
 
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
     buildInitialOpen(sections, defaultOpenSectionIds),
@@ -49,9 +56,17 @@ export default function TopicSidebarNav({
     setOpen(s => ({ ...s, [id]: !s[id] }))
   }
 
+  if (visibleSections.length === 0) {
+    return (
+      <p className={styles.filterEmpty} role="status">
+        No published topics in this library yet.
+      </p>
+    )
+  }
+
   return (
     <div className={styles.root}>
-      {sections.map(section => {
+      {visibleSections.map(section => {
         const isOpen = open[section.id] ?? false
         const panelId = `${panelPrefix}-section-${section.id}`
         return (

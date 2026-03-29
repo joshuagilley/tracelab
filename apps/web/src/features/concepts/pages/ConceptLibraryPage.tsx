@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
 import { fetchSectionConcepts } from '@/features/sections/api'
 import { useLab, type LabId } from '@/contexts/lab'
 import ConceptCard from '../components/ConceptCard'
@@ -115,11 +116,17 @@ const COPY: Record<
 
 export default function ConceptLibraryPage() {
   const { labId } = useLab()
+  const { publishedOnly } = useCurriculumVisibility()
   const [concepts, setConcepts] = useState<Concept[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   const { title, subtitle, countLabel } = COPY[labId] ?? COPY['system-design']
+
+  const displayedConcepts = useMemo(
+    () => (publishedOnly ? concepts.filter(c => c.status === 'available') : concepts),
+    [concepts, publishedOnly],
+  )
 
   useEffect(() => {
     setLoading(true)
@@ -149,7 +156,7 @@ export default function ConceptLibraryPage() {
         <div className={styles.statusBadge}>
           <span className={`dot ${!loading && !error ? 'live' : ''}`} />
           <span className="panel-label">
-            {loading ? 'LOADING…' : error ? 'API OFFLINE' : `${concepts.length} ${countLabel}`}
+            {loading ? 'LOADING…' : error ? 'API OFFLINE' : `${displayedConcepts.length} ${countLabel}`}
           </span>
         </div>
       </div>
@@ -160,12 +167,20 @@ export default function ConceptLibraryPage() {
         </div>
       )}
 
-      {!loading && !error && (
+      {!loading && !error && displayedConcepts.length > 0 && (
         <div className={styles.grid}>
-          {concepts.map(c => (
+          {displayedConcepts.map(c => (
             <ConceptCard key={c.id} concept={c} />
           ))}
         </div>
+      )}
+
+      {!loading && !error && displayedConcepts.length === 0 && (
+        <p className={styles.filterEmpty}>
+          {publishedOnly
+            ? 'No published topics in this library yet. Turn off “Published only” in the sidebar to see upcoming topics.'
+            : 'No topics in this library yet.'}
+        </p>
       )}
 
       {loading && (
