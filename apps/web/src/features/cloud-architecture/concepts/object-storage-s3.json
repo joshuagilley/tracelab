@@ -1,0 +1,16 @@
+{
+  "codeFiles": [
+    {
+      "name": "present.go",
+      "lang": "go",
+      "role": "present",
+      "code": "package objectstorage\n\nconst Outline = `\nGood object-storage posture (S3-style):\n\n  • Bucket is private; Block Public Access enabled\n  • Application role: s3:GetObject + s3:PutObject scoped to prefix \"uploads/{tenant}/*\"\n  • Versioning ON for recovery; lifecycle rule → IA/Glacier for old versions\n  • Sensitive downloads via short-lived pre-signed URLs, not public ACLs\n`\n"
+    },
+    {
+      "name": "bad.go",
+      "lang": "go",
+      "role": "bad",
+      "code": "package objectstorage\n\nconst BadOutline = `\nAnti-pattern bucket policy excerpt:\n\n  \"Principal\": \"*\"\n  \"Action\": \"s3:GetObject\"\n  \"Resource\": \"arn:aws:s3:::customer-uploads/*\"\n\nAnyone on the internet can crawl your customer-uploads bucket.\nAlso common: long-lived access keys committed to git for \"quick demos\".\n`\n"
+    }
+  ]
+}

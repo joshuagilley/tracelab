@@ -5,13 +5,23 @@
     "slug": "pointers",
     "summary": "A pointer stores the memory address of another variable. Use & to take an address, * to read or write through that address.",
     "difficulty": "easy",
-    "tags": ["c", "memory", "pointers"],
+    "tags": [
+      "c",
+      "memory",
+      "pointers"
+    ],
     "status": "available",
     "labKind": "low-level-systems",
-    "vizType": "low-level-lesson",
+    "vizType": "lesson",
     "codeFiles": [
-      { "name": "present.c", "lang": "c" },
-      { "name": "bad.c", "lang": "c" }
+      {
+        "name": "present.c",
+        "lang": "c"
+      },
+      {
+        "name": "bad.c",
+        "lang": "c"
+      }
     ]
   }
 ]

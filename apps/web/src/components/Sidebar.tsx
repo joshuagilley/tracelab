@@ -9,13 +9,15 @@ import {
   labHasPublishedConcepts,
 } from '@/lib/labPickerFilter'
 import CurriculumTopicPane from './CurriculumTopicPane'
-import DesignPatternsSidebarNav from './design-patterns/DesignPatternsSidebarNav'
-import SystemDesignSidebarNav from './system-design/SystemDesignSidebarNav'
-import DataScienceSidebarNav from './data-science/DataScienceSidebarNav'
-import DatabaseDesignSidebarNav from './database-design/DatabaseDesignSidebarNav'
-import CloudArchitectureSidebarNav from './cloud-architecture/CloudArchitectureSidebarNav'
-import ApiDesignSidebarNav from './api-design/ApiDesignSidebarNav'
-import ProgrammingLanguagesSidebarNav from './programming-languages/ProgrammingLanguagesSidebarNav'
+import TopicSidebarNav from './sidebar/TopicSidebarNav'
+import ProgrammingLanguagesSidebarNav from './sidebar/ProgrammingLanguagesSidebarNav'
+import { SYSTEM_DESIGN_SECTIONS } from '@/features/system-design/systemDesignNav'
+import { API_DESIGN_SECTIONS } from '@/features/api-design/apiDesignNav'
+import { DESIGN_PATTERN_SECTIONS } from '@/features/design-patterns/designPatternNav'
+import { DATA_SCIENCE_SECTIONS } from '@/features/data-science/dataScienceNav'
+import { DATABASE_DESIGN_SECTIONS } from '@/features/database-design/databaseDesignNav'
+import { CLOUD_ARCHITECTURE_SECTIONS } from '@/features/cloud-architecture/cloudArchitectureNav'
+import type { CurriculumNavSection } from '@/types/curriculumNav'
 import styles from './Sidebar.module.css'
 
 const LIBRARY_LINK_LABEL: Record<LabId, string> = {
@@ -38,7 +40,7 @@ const LIBRARY_LINK_LABEL: Record<LabId, string> = {
   'cloud-architecture': 'All lessons',
 }
 
-/** Accordion curriculum driven by `TopicSidebarNav` + feature nav files */
+/** Labs whose nav is driven by CurriculumTopicPane (section-based accordion from feature nav files). */
 const TOPIC_CURRICULUM_IDS = new Set<LabId>([
   'concurrency',
   'networking',
@@ -51,6 +53,16 @@ const TOPIC_CURRICULUM_IDS = new Set<LabId>([
   'algorithms',
   'ai-systems',
 ])
+
+/** Labs using the shared TopicSidebarNav — sections + stable DOM id prefix, nothing more. */
+const TOPIC_NAV_REGISTRY: Partial<Record<LabId, { sections: CurriculumNavSection[]; panelPrefix: string }>> = {
+  'system-design':    { sections: SYSTEM_DESIGN_SECTIONS,    panelPrefix: 'sd'     },
+  'api-design':       { sections: API_DESIGN_SECTIONS,       panelPrefix: 'apid'   },
+  'design-patterns':  { sections: DESIGN_PATTERN_SECTIONS,   panelPrefix: 'dp'     },
+  'data-science':     { sections: DATA_SCIENCE_SECTIONS,     panelPrefix: 'ds-nav' },
+  'database-design':  { sections: DATABASE_DESIGN_SECTIONS,  panelPrefix: 'dbd'    },
+  'cloud-architecture': { sections: CLOUD_ARCHITECTURE_SECTIONS, panelPrefix: 'ca' },
+}
 
 function BrandGridIcon() {
   const cells = Array.from({ length: 36 }, (_, i) => (
@@ -94,23 +106,21 @@ export default function Sidebar() {
     setMenuOpen(false)
   }
 
+  const topicNavEntry = TOPIC_NAV_REGISTRY[labId]
   let topicNav: ReactNode = null
-  if (labId === 'design-patterns') {
-    topicNav = <DesignPatternsSidebarNav concepts={concepts} completedSlugs={completedSlugs} />
-  } else if (labId === 'system-design') {
-    topicNav = <SystemDesignSidebarNav concepts={concepts} completedSlugs={completedSlugs} />
-  } else if (labId === 'api-design') {
-    topicNav = <ApiDesignSidebarNav concepts={concepts} completedSlugs={completedSlugs} />
+  if (topicNavEntry) {
+    topicNav = (
+      <TopicSidebarNav
+        concepts={concepts}
+        sections={topicNavEntry.sections}
+        panelPrefix={topicNavEntry.panelPrefix}
+        completedSlugs={completedSlugs}
+      />
+    )
   } else if (TOPIC_CURRICULUM_IDS.has(labId)) {
     topicNav = (
       <CurriculumTopicPane labId={labId} concepts={concepts} completedSlugs={completedSlugs} />
     )
-  } else if (labId === 'data-science') {
-    topicNav = <DataScienceSidebarNav concepts={concepts} completedSlugs={completedSlugs} />
-  } else if (labId === 'database-design') {
-    topicNav = <DatabaseDesignSidebarNav concepts={concepts} completedSlugs={completedSlugs} />
-  } else if (labId === 'cloud-architecture') {
-    topicNav = <CloudArchitectureSidebarNav concepts={concepts} completedSlugs={completedSlugs} />
   } else if (labId === 'programming-languages') {
     topicNav = <ProgrammingLanguagesSidebarNav concepts={concepts} completedSlugs={completedSlugs} />
   }

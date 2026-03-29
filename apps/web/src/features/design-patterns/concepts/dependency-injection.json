@@ -1,0 +1,80 @@
+{
+  "parameters": [
+    {
+      "id": "handlerCount",
+      "type": "slider",
+      "label": "CONCURRENT HANDLERS",
+      "min": 1,
+      "max": 8,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "id": "spawnIntervalMs",
+      "type": "slider",
+      "label": "SPAWN INTERVAL",
+      "min": 150,
+      "max": 1200,
+      "step": 50,
+      "default": 450,
+      "unit": "ms"
+    },
+    {
+      "id": "stressMode",
+      "type": "toggle",
+      "label": "Stress mode",
+      "defaultBool": false
+    },
+    {
+      "id": "storageBackend",
+      "type": "select",
+      "label": "STORAGE BACKEND",
+      "options": [
+        "sftp",
+        "webdav",
+        "mock"
+      ],
+      "defaultOption": "sftp"
+    },
+    {
+      "id": "emphasizeIface",
+      "type": "toggle",
+      "label": "Highlight ObjectUploader interface",
+      "defaultBool": true
+    }
+  ],
+  "metricGroups": [
+    {
+      "label": "LIVE METRICS",
+      "metrics": [
+        {
+          "id": "uploadsCompleted",
+          "label": "Uploads completed",
+          "accent": true
+        },
+        {
+          "id": "putCalls",
+          "label": "Put() calls"
+        },
+        {
+          "id": "wires",
+          "label": "Backend wires"
+        }
+      ]
+    }
+  ],
+  "codeFiles": [
+    {
+      "name": "present.go",
+      "lang": "go",
+      "role": "present",
+      "code": "package archive\n\nimport \"context\"\n\ntype ObjectUploader interface {\n\tPut(ctx context.Context, key string, data []byte) error\n}\n\ntype IngestService struct {\n\tuploader ObjectUploader\n}\n\nfunc NewIngestService(u ObjectUploader) *IngestService {\n\treturn &IngestService{uploader: u}\n}\n\nfunc (s *IngestService) SaveExport(ctx context.Context, name string, payload []byte) error {\n\treturn s.uploader.Put(ctx, \"exports/\"+name, payload)\n}\n\ntype NoopUploader struct{}\n\nfunc (NoopUploader) Put(ctx context.Context, key string, data []byte) error {\n\treturn nil\n}\n"
+    },
+    {
+      "name": "bad.go",
+      "lang": "go",
+      "role": "bad",
+      "code": "//go:build ignore\n\n// Anti-pattern: same nominal IngestService + SaveExport as present.go, but no IngestDeps or ObjectUploader.\n// One config struct owns every transport’s keys; SaveExport switches on mode instead of delegating to an injected uploader.\npackage archivebad\n\nimport \"context\"\n\ntype SprawlConfig struct {\n\tMode string // \"sftp\" | \"webdav\" | \"mock\"\n\n\tSFTPHost, SFTPUser, SFTPKey string\n\tWebURL, WebToken            string\n\tMockLastKey                 string\n}\n\ntype IngestService struct {\n\tcfg SprawlConfig\n}\n\nfunc NewIngestService(cfg SprawlConfig) *IngestService {\n\treturn &IngestService{cfg: cfg}\n}\n\nfunc (s *IngestService) SaveExport(ctx context.Context, name string, payload []byte) error {\n\tkey := \"exports/\" + name\n\tswitch s.cfg.Mode {\n\tcase \"mock\":\n\t\ts.cfg.MockLastKey = key\n\t\treturn nil\n\tcase \"webdav\":\n\t\treturn putWebDAV(ctx, key, payload, s.cfg.WebURL, s.cfg.WebToken)\n\tdefault:\n\t\treturn putSFTP(ctx, key, payload, s.cfg.SFTPHost, s.cfg.SFTPUser, s.cfg.SFTPKey)\n\t}\n}\n\nfunc putSFTP(ctx context.Context, key string, data []byte, host, user, pem string) error {\n\t_ = ctx\n\t_ = key\n\t_ = data\n\t_ = host\n\t_ = user\n\t_ = pem\n\treturn nil\n}\n\nfunc putWebDAV(ctx context.Context, key string, data []byte, url, token string) error {\n\t_ = ctx\n\t_ = key\n\t_ = data\n\t_ = url\n\t_ = token\n\treturn nil\n}\n"
+    }
+  ]
+}

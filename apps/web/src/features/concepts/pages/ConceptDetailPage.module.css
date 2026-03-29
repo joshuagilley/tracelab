@@ -211,6 +211,13 @@
   overflow: hidden;
 }
 
+/* Generic viz path: side-by-side ParametersPanel + MetricsPanel */
+.bottomPanels {
+  display: flex;
+  height: 100%;
+  gap: 0;
+}
+
 /* Dependency injection: bottom strip is only as tall as its content (singleton-style), not flex-grown */
 .bottomLabPanel {
   flex: 0 0 auto;

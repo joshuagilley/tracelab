@@ -1,6 +1,7 @@
 import type { Concept } from '@/types/concept'
 import type { LabId } from '@/contexts/lab'
-import type { LabConceptDetail, LabParameter } from '@/types/labConcept'
+import type { LabConceptDetail } from '@/types/labConcept'
+import { CONCEPT_DETAIL_REGISTRY } from './conceptDetailRegistry'
 
 import aiSystems from '@/features/ai-systems/ai-systems.json'
 import algorithms from '@/features/algorithms/algorithms.json'
@@ -20,12 +21,11 @@ import softwareArchitecture from '@/features/software-architecture/software-arch
 import systemDesign from '@/features/system-design/system-design.json'
 import testing from '@/features/testing/testing.json'
 
-/** One row from catalog JSON (code file bodies filled later via `attachLessonSourceCode`). */
+/** One row from a lab catalog JSON — lightweight list metadata only. */
 export interface LessonCatalogRow extends Concept {
   labKind: string
   vizType: string
   codeFiles: { name: string; lang: string }[]
-  parameters?: LabParameter[]
 }
 
 const BY_SECTION: Record<LabId, LessonCatalogRow[]> = {
@@ -72,6 +72,10 @@ export function getCatalogConcepts(section: LabId): Concept[] {
 export function getCatalogLesson(section: LabId, slug: string): LabConceptDetail | null {
   const row = indexFor(section).get(slug)
   if (!row) return null
+
+  // Per-concept detail JSON takes precedence over anything inline in the catalog.
+  const detail = CONCEPT_DETAIL_REGISTRY[section]?.[slug]
+
   return {
     id: row.id,
     title: row.title,
@@ -82,7 +86,16 @@ export function getCatalogLesson(section: LabId, slug: string): LabConceptDetail
     status: row.status,
     labKind: row.labKind,
     vizType: row.vizType,
-    codeFiles: row.codeFiles.map(f => ({ name: f.name, lang: f.lang, code: '' })),
-    parameters: row.parameters,
+    codeFiles: detail?.codeFiles
+      ? detail.codeFiles.map(f => ({
+          name: f.name,
+          lang: f.lang,
+          code: f.code,
+          role: f.role as 'present' | 'bad' | 'exercise' | undefined,
+        }))
+      : row.codeFiles.map(f => ({ name: f.name, lang: f.lang, code: '' })),
+    parameters: detail?.parameters,
+    metricGroups: detail?.metricGroups,
+    practice: detail?.practice,
   }
 }

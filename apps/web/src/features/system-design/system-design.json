@@ -9,16 +9,7 @@
     "status": "available",
     "labKind": "system-design",
     "vizType": "caching",
-    "codeFiles": [
-      {
-        "name": "present.go",
-        "lang": "go"
-      },
-      {
-        "name": "bad.go",
-        "lang": "go"
-      }
-    ]
+    "codeFiles": []
   },
   {
     "id": "3",

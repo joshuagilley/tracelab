@@ -1,0 +1,16 @@
+{
+  "codeFiles": [
+    {
+      "name": "present.go",
+      "lang": "go",
+      "role": "present",
+      "code": "package serverless\n\nconst Outline = `\nGood Lambda habits:\n\n  • Handler reads configuration from env populated by IaC (ARN of secret, not value)\n  • At cold start: fetch secret once, cache in /tmp if allowed by threat model\n  • IAM role: least privilege — invoke one queue, read one parameter\n  • Idempotency key from event id for downstream writes\n  • Timeout and memory sized from p99 measurements, not defaults\n`\n"
+    },
+    {
+      "name": "bad.go",
+      "lang": "go",
+      "role": "bad",
+      "code": "package serverless\n\nconst BadOutline = `\nAnti-pattern handler (illustrative):\n\n  const apiKey = \"sk-live-1234567890\" // committed to repo / env var in console screenshot\n  http.Get(\"https://api.vendor.com/charge?key=\" + apiKey)\n\nAlso common:\n  • 15-minute timeout with synchronous calls to flaky HTTP APIs\n  • Full VPC attachment for a function that only needs S3 — cold starts explode\n`\n"
+    }
+  ]
+}

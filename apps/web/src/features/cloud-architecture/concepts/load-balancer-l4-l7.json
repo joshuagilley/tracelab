@@ -1,0 +1,16 @@
+{
+  "codeFiles": [
+    {
+      "name": "present.go",
+      "lang": "go",
+      "role": "present",
+      "code": "package loadbalancer\n\nconst Outline = `\nL4 (network) load balancer\n  • Balances TCP/UDP connections with minimal inspection\n  • Fast, generic — use when you do not need HTTP routing\n\nL7 (application) load balancer\n  • Understands HTTP(S): host header, path, cookies\n  • TLS termination at the edge, health checks on /healthz\n\nTypical stack:\n  Client --TLS--> ALB (L7) --plain HTTP--> targets in private subnets\n  Health: HTTP GET /ready → 200 or drain instance\n`\n"
+    },
+    {
+      "name": "bad.go",
+      "lang": "go",
+      "role": "bad",
+      "code": "package loadbalancer\n\nconst BadOutline = `\nAnti-pattern: DNS round-robin to three public IPs with no health checks\n\n  • One crashed node still receives ~33% of traffic → user-facing errors\n  • No TLS termination — each app implements certs inconsistently\n  • Sticky sessions via client-side hacks instead of managed cookies\n\nUse a real LB with targets, health checks, and optional L7 rules.\n`\n"
+    }
+  ]
+}

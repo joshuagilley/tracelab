@@ -5,13 +5,23 @@
     "slug": "vpc",
     "summary": "A VPC is your private network boundary in the cloud: carve CIDR space, split public vs private subnets, and route traffic deliberately instead of exposing every resource to the internet.",
     "difficulty": "easy",
-    "tags": ["networking", "vpc", "aws"],
+    "tags": [
+      "networking",
+      "vpc",
+      "aws"
+    ],
     "status": "available",
     "labKind": "cloud-architecture",
-    "vizType": "cloud-lesson",
+    "vizType": "lesson",
     "codeFiles": [
-      { "name": "present.go", "lang": "go" },
-      { "name": "bad.go", "lang": "go" }
+      {
+        "name": "present.go",
+        "lang": "go"
+      },
+      {
+        "name": "bad.go",
+        "lang": "go"
+      }
     ]
   },
   {
@@ -20,13 +30,22 @@
     "slug": "public-private-subnets",
     "summary": "Public subnets talk to the internet via an IGW; private subnets reach out through NAT (or not at all). Workloads that do not need inbound internet belong in private space.",
     "difficulty": "easy",
-    "tags": ["networking", "subnets"],
+    "tags": [
+      "networking",
+      "subnets"
+    ],
     "status": "available",
     "labKind": "cloud-architecture",
-    "vizType": "cloud-lesson",
+    "vizType": "lesson",
     "codeFiles": [
-      { "name": "present.go", "lang": "go" },
-      { "name": "bad.go", "lang": "go" }
+      {
+        "name": "present.go",
+        "lang": "go"
+      },
+      {
+        "name": "bad.go",
+        "lang": "go"
+      }
     ]
   },
   {
@@ -35,13 +54,22 @@
     "slug": "load-balancer-l4-l7",
     "summary": "L4 balances TCP/UDP streams; L7 (HTTP) can route by host/path and terminate TLS. Pick the layer that matches what your app understands.",
     "difficulty": "easy",
-    "tags": ["networking", "load-balancing"],
+    "tags": [
+      "networking",
+      "load-balancing"
+    ],
     "status": "available",
     "labKind": "cloud-architecture",
-    "vizType": "cloud-lesson",
+    "vizType": "lesson",
     "codeFiles": [
-      { "name": "present.go", "lang": "go" },
-      { "name": "bad.go", "lang": "go" }
+      {
+        "name": "present.go",
+        "lang": "go"
+      },
+      {
+        "name": "bad.go",
+        "lang": "go"
+      }
     ]
   },
   {
@@ -50,13 +78,22 @@
     "slug": "object-storage-s3",
     "summary": "Object storage is flat buckets + keys — great for assets, backups, and data lakes. Lock down access with IAM and bucket policies, not public ACLs.",
     "difficulty": "easy",
-    "tags": ["storage", "s3"],
+    "tags": [
+      "storage",
+      "s3"
+    ],
     "status": "available",
     "labKind": "cloud-architecture",
-    "vizType": "cloud-lesson",
+    "vizType": "lesson",
     "codeFiles": [
-      { "name": "present.go", "lang": "go" },
-      { "name": "bad.go", "lang": "go" }
+      {
+        "name": "present.go",
+        "lang": "go"
+      },
+      {
+        "name": "bad.go",
+        "lang": "go"
+      }
     ]
   },
   {
@@ -65,13 +102,23 @@
     "slug": "queue-sqs",
     "summary": "Queues buffer work between producers and consumers, absorb spikes, and let you scale workers independently — pair with a DLQ so poison messages do not block the line forever.",
     "difficulty": "easy",
-    "tags": ["messaging", "sqs", "async"],
+    "tags": [
+      "messaging",
+      "sqs",
+      "async"
+    ],
     "status": "available",
     "labKind": "cloud-architecture",
-    "vizType": "cloud-lesson",
+    "vizType": "lesson",
     "codeFiles": [
-      { "name": "present.go", "lang": "go" },
-      { "name": "bad.go", "lang": "go" }
+      {
+        "name": "present.go",
+        "lang": "go"
+      },
+      {
+        "name": "bad.go",
+        "lang": "go"
+      }
     ]
   },
   {
@@ -80,13 +127,23 @@
     "slug": "serverless-lambda",
     "summary": "Functions run on managed compute in response to events. Keep handlers small, idempotent, and load secrets from a vault — never bake credentials into the bundle.",
     "difficulty": "easy",
-    "tags": ["compute", "lambda", "serverless"],
+    "tags": [
+      "compute",
+      "lambda",
+      "serverless"
+    ],
     "status": "available",
     "labKind": "cloud-architecture",
-    "vizType": "cloud-lesson",
+    "vizType": "lesson",
     "codeFiles": [
-      { "name": "present.go", "lang": "go" },
-      { "name": "bad.go", "lang": "go" }
+      {
+        "name": "present.go",
+        "lang": "go"
+      },
+      {
+        "name": "bad.go",
+        "lang": "go"
+      }
     ]
   }
 ]

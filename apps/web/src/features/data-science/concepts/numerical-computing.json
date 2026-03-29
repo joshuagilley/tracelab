@@ -1,0 +1,46 @@
+{
+  "parameters": [
+    {
+      "id": "numpy_fn",
+      "type": "select",
+      "label": "NUMPY FUNCTION",
+      "options": [
+        "ones",
+        "zeros",
+        "arange",
+        "linspace"
+      ],
+      "defaultOption": "ones"
+    },
+    {
+      "id": "array_len",
+      "type": "slider",
+      "label": "ARRAY LENGTH",
+      "min": 4,
+      "max": 32,
+      "step": 1,
+      "default": 8
+    }
+  ],
+  "metricGroups": [],
+  "codeFiles": [
+    {
+      "name": "present.py",
+      "lang": "python",
+      "role": "present",
+      "code": "\"\"\"\nGood: NumPy vectorized array creation (TraceLab Numerical Computing lesson).\n\nPick a routine and length — the UI simulator mirrors this logic in the browser.\n\"\"\"\n\nfrom __future__ import annotations\n\nimport numpy as np\n\n\ndef make_array(fn_name: str, n: int) -> np.ndarray:\n    \"\"\"Create a 1-D array of length n using the named NumPy factory.\"\"\"\n    n = max(1, min(64, int(n)))\n    if fn_name == \"ones\":\n        return np.ones(n)\n    if fn_name == \"zeros\":\n        return np.zeros(n)\n    if fn_name == \"arange\":\n        return np.arange(n, dtype=np.float64)\n    if fn_name == \"linspace\":\n        return np.linspace(0.0, 1.0, n)\n    return np.ones(n)\n\n\ndef summarize(a: np.ndarray) -> None:\n    print(\"shape:\", a.shape)\n    print(\"dtype:\", a.dtype)\n    print(\"values:\", a)\n    print(\"sum:\", float(a.sum()), \"mean:\", float(a.mean()))\n\n\nif __name__ == \"__main__\":\n    a = make_array(\"ones\", 8)\n    summarize(a)\n"
+    },
+    {
+      "name": "bad.py",
+      "lang": "python",
+      "role": "bad",
+      "code": "\"\"\"\nContrast: naive Python patterns — fine for tiny n, wrong tool for numeric work.\n\nPrefer ndarray factories and vectorized ops in ``present.py``.\n\"\"\"\n\nfrom __future__ import annotations\n\n\ndef make_ones_bad(n: int) -> list[float]:\n    \"\"\"Simulate 'ones' with repeated append — lots of Python overhead vs np.ones.\"\"\"\n    out: list[float] = []\n    for _ in range(max(0, n)):\n        out.append(1.0)\n    return out\n\n\ndef stats_bad(values: list[float]) -> tuple[float, float]:\n    \"\"\"Manual sum/mean — reimplements what ``ndarray.sum`` / ``mean`` do in C.\"\"\"\n    if not values:\n        return 0.0, 0.0\n    total = 0.0\n    for x in values:\n        total += x\n    return total, total / len(values)\n"
+    },
+    {
+      "name": "requirements.txt",
+      "lang": "text",
+      "role": "exercise",
+      "code": "numpy>=1.26,<3\n"
+    }
+  ]
+}

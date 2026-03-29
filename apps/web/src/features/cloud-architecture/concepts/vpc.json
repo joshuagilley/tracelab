@@ -1,0 +1,16 @@
+{
+  "codeFiles": [
+    {
+      "name": "present.go",
+      "lang": "go",
+      "role": "present",
+      "code": "package vpc\n\n// Outline documents a minimal healthy VPC layout (illustrative; not provider-specific API calls).\nconst Outline = `\nVPC 10.0.0.0/16\n├── public-1a   10.0.1.0/24   route 0.0.0.0/0 → Internet Gateway\n├── public-1b   10.0.2.0/24   (second AZ for HA load balancer)\n├── private-app 10.0.10.0/24  default route → NAT Gateway (lives in public)\n└── private-db  10.0.20.0/24  NO 0.0.0.0/0 route — only SG access from private-app\n\nRules of thumb:\n• Put databases and internal APIs in private subnets.\n• NAT gives outbound-only internet for patches; inbound stays closed.\n• Use separate subnets per tier so route tables stay simple.\n`\n"
+    },
+    {
+      "name": "bad.go",
+      "lang": "go",
+      "role": "bad",
+      "code": "package vpc\n\n// BadOutline is an anti-pattern: one flat subnet and everything reachable from the internet.\nconst BadOutline = `\nAnti-pattern: one flat subnet, everything reachable from the internet.\n\nVPC 10.0.0.0/8   # absurdly large, no segmentation\n└── subnet-all   10.0.0.0/24\n    ├── web + API + workers + database + cache (all mixed)\n    └── SecurityGroup: 0.0.0.0/0 allow ALL ports \"for now\"\n\nWhy this hurts:\n• Blast radius: compromise one host → lateral movement everywhere.\n• You cannot reason about routes or compliance boundaries.\n• Scaling one tier forces touching the whole network layout.\n`\n"
+    }
+  ]
+}
