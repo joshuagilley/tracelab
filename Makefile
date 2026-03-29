@@ -3,11 +3,10 @@
 # Bash so `api` can `source .env` (GitHub OAuth, Mongo, JWT, etc.)
 SHELL := /bin/bash
 
-# Optional: copy data-science Python pins into the API embed tree (reference only; not a codeFile).
-# Lesson sources (present/bad) live under services/api/internal/lessons/embed/ — edit there.
+# Optional: copy data-science Python pins next to the numerical-computing lesson sources in the web app.
 labs-sync:
-	@mkdir -p services/api/internal/lessons/embed/data-science
-	cp labs/data-science/requirements.txt services/api/internal/lessons/embed/data-science/requirements.txt
+	@mkdir -p apps/web/src/components/data-science/numerical-computing/numerical-computing
+	cp labs/data-science/requirements.txt apps/web/src/components/data-science/numerical-computing/numerical-computing/requirements.txt
 
 # Docker: Go API (Vite: run `make web` separately)
 compose-up:

@@ -10,8 +10,8 @@
     "labKind": "cloud-architecture",
     "vizType": "cloud-lesson",
     "codeFiles": [
-      { "name": "present.go", "lang": "go", "embed": "vpc/present.go" },
-      { "name": "bad.go", "lang": "go", "embed": "vpc/bad.go" }
+      { "name": "present.go", "lang": "go" },
+      { "name": "bad.go", "lang": "go" }
     ]
   },
   {
@@ -25,8 +25,8 @@
     "labKind": "cloud-architecture",
     "vizType": "cloud-lesson",
     "codeFiles": [
-      { "name": "present.go", "lang": "go", "embed": "public-private-subnets/present.go" },
-      { "name": "bad.go", "lang": "go", "embed": "public-private-subnets/bad.go" }
+      { "name": "present.go", "lang": "go" },
+      { "name": "bad.go", "lang": "go" }
     ]
   },
   {
@@ -40,8 +40,8 @@
     "labKind": "cloud-architecture",
     "vizType": "cloud-lesson",
     "codeFiles": [
-      { "name": "present.go", "lang": "go", "embed": "load-balancer-l4-l7/present.go" },
-      { "name": "bad.go", "lang": "go", "embed": "load-balancer-l4-l7/bad.go" }
+      { "name": "present.go", "lang": "go" },
+      { "name": "bad.go", "lang": "go" }
     ]
   },
   {
@@ -55,8 +55,8 @@
     "labKind": "cloud-architecture",
     "vizType": "cloud-lesson",
     "codeFiles": [
-      { "name": "present.go", "lang": "go", "embed": "object-storage-s3/present.go" },
-      { "name": "bad.go", "lang": "go", "embed": "object-storage-s3/bad.go" }
+      { "name": "present.go", "lang": "go" },
+      { "name": "bad.go", "lang": "go" }
     ]
   },
   {
@@ -70,8 +70,8 @@
     "labKind": "cloud-architecture",
     "vizType": "cloud-lesson",
     "codeFiles": [
-      { "name": "present.go", "lang": "go", "embed": "queue-sqs/present.go" },
-      { "name": "bad.go", "lang": "go", "embed": "queue-sqs/bad.go" }
+      { "name": "present.go", "lang": "go" },
+      { "name": "bad.go", "lang": "go" }
     ]
   },
   {
@@ -85,8 +85,8 @@
     "labKind": "cloud-architecture",
     "vizType": "cloud-lesson",
     "codeFiles": [
-      { "name": "present.go", "lang": "go", "embed": "serverless-lambda/present.go" },
-      { "name": "bad.go", "lang": "go", "embed": "serverless-lambda/bad.go" }
+      { "name": "present.go", "lang": "go" },
+      { "name": "bad.go", "lang": "go" }
     ]
   }
 ]

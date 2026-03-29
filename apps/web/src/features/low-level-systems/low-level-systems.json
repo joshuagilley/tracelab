@@ -10,8 +10,8 @@
     "labKind": "low-level-systems",
     "vizType": "low-level-lesson",
     "codeFiles": [
-      { "name": "present.c", "lang": "c", "embed": "pointers/present.c" },
-      { "name": "bad.c", "lang": "c", "embed": "pointers/bad.c" }
+      { "name": "present.c", "lang": "c" },
+      { "name": "bad.c", "lang": "c" }
     ]
   }
 ]

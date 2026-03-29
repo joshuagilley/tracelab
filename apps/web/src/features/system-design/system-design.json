@@ -12,13 +12,11 @@
     "codeFiles": [
       {
         "name": "present.go",
-        "lang": "go",
-        "embed": "caching/present.go"
+        "lang": "go"
       },
       {
         "name": "bad.go",
-        "lang": "go",
-        "embed": "caching/bad.go"
+        "lang": "go"
       }
     ]
   },

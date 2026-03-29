@@ -1,5 +1,5 @@
 # Build from repository root: docker build -f services/api/Dockerfile .
-# Lesson files (present/bad per topic) live in services/api/internal/lessons/embed/ and are committed.
+# Lesson source snippets (present/bad) ship from the web app; API serves JSON metadata only.
 
 # ── Build stage ────────────────────────────────────
 FROM golang:1.25-alpine AS builder

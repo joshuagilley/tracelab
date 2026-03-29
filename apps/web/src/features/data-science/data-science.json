@@ -12,13 +12,11 @@
     "codeFiles": [
       {
         "name": "present.py",
-        "lang": "python",
-        "embed": "numerical-computing/present.py"
+        "lang": "python"
       },
       {
         "name": "bad.py",
-        "lang": "python",
-        "embed": "numerical-computing/bad.py"
+        "lang": "python"
       }
     ],
     "parameters": [

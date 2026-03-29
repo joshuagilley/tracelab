@@ -10,8 +10,8 @@
     "labKind": "api-design",
     "vizType": "api-lesson",
     "codeFiles": [
-      { "name": "present.go", "lang": "go", "embed": "rate-limiting/present.go" },
-      { "name": "bad.go", "lang": "go", "embed": "rate-limiting/bad.go" }
+      { "name": "present.go", "lang": "go" },
+      { "name": "bad.go", "lang": "go" }
     ]
   },
   {

@@ -2,7 +2,7 @@
 """
 Local NumPy sandbox — not served by the Go API.
 
-Canonical lesson snippets: services/api/internal/lessons/embed/data-science/numerical-computing/
+Canonical lesson snippets: apps/web/src/components/data-science/numerical-computing/numerical-computing/
 
 From lab root::
 

@@ -69,22 +69,10 @@ tracelab/
 | GET | /api/auth/github/callback | OAuth callback (redirect + session cookie) |
 | GET | /api/auth/me | Current user JSON (`user` or `null`) |
 | POST | /api/auth/logout | Clear session |
-| GET | /api/sections/system-design/concepts | System design — list |
-| GET | /api/sections/system-design/concepts/:slug | System design — detail (embedded present/bad) |
-| GET | /api/sections/api-design/concepts | API design — list |
-| GET | /api/sections/api-design/concepts/:slug | Rate limits, retries, circuit breaker at HTTP boundary |
-| GET | /api/sections/concurrency/concepts | Concurrency — list (in-process execution curriculum) |
-| GET | /api/sections/concurrency/concepts/:slug | Goroutines, pools, channels (lessons as added) |
-| GET | /api/sections/design-patterns/concepts | Design patterns — list |
-| GET | /api/sections/design-patterns/concepts/:slug | Singleton, DI, etc. |
-| GET | /api/sections/data-science/concepts | Data science — list |
-| GET | /api/sections/data-science/concepts/:slug | Numerical Computing, etc. |
-| GET | /api/sections/database-design/concepts | Database design — list |
-| GET | /api/sections/database-design/concepts/:slug | Embedded present/bad (Go DDL strings) |
-| GET | /api/sections/cloud-architecture/concepts | Cloud architecture — list |
-| GET | /api/sections/cloud-architecture/concepts/:slug | VPC, S3, SQS, Lambda, etc. |
 
-## Sample catalog (see JSON under `services/api/internal/lessons/data/`)
+Lesson metadata ships as `{lab-id}.json` next to each feature (e.g. `apps/web/src/features/system-design/system-design.json`); `present`/`bad` sources live under `components/…`.
+
+## Sample catalog (per-lab JSON under `apps/web/src/features/<lab>/`)
 
 **System design** (macro): Caching, Load Balancing, Pub/Sub, Sharding, Message Queues, …
 

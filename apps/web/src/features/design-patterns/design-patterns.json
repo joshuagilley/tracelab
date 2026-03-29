@@ -12,13 +12,11 @@
     "codeFiles": [
       {
         "name": "present.go",
-        "lang": "go",
-        "embed": "singleton/present.go"
+        "lang": "go"
       },
       {
         "name": "bad.go",
-        "lang": "go",
-        "embed": "singleton/bad.go"
+        "lang": "go"
       }
     ]
   },
@@ -35,13 +33,11 @@
     "codeFiles": [
       {
         "name": "present.go",
-        "lang": "go",
-        "embed": "dependency-injection/present.go"
+        "lang": "go"
       },
       {
         "name": "bad.go",
-        "lang": "go",
-        "embed": "dependency-injection/bad.go"
+        "lang": "go"
       }
     ]
   }

@@ -10,17 +10,10 @@ import (
 	"github.com/tracelab/api/internal/auth"
 	"github.com/tracelab/api/internal/conceptprogress"
 	"github.com/tracelab/api/internal/config"
-	"github.com/tracelab/api/internal/lessons"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
-	lessonStore, err := lessons.NewMemoryStore()
-	if err != nil {
-		log.Fatalf("lessons store: %v", err)
-	}
-	lessonHandler := lessons.NewHandler(lessonStore)
-
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -54,8 +47,6 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 			auth.MountStubWithReason(mux, "auth_store_unavailable", auth.HintMongoDown())
 		}
 	}
-
-	mux.Handle("/api/sections/", lessonHandler)
 
 	return withCORS(cfg, mux)
 }
