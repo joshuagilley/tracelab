@@ -26,14 +26,24 @@ func requireMethods(w http.ResponseWriter, r *http.Request, methods ...string) b
 	return false
 }
 
-func writeJSON(w http.ResponseWriter, status int, v any) {
+// RequireMethod is the exported variant for handlers outside this package.
+func RequireMethod(w http.ResponseWriter, r *http.Request, method string) bool {
+	return requireMethod(w, r, method)
+}
+
+// RequireMethods is the exported variant for handlers outside this package.
+func RequireMethods(w http.ResponseWriter, r *http.Request, methods ...string) bool {
+	return requireMethods(w, r, methods...)
+}
+
+func WriteJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(v)
 }
 
 func writeAuthNotConfigured(w http.ResponseWriter) {
-	writeJSON(w, http.StatusServiceUnavailable, map[string]string{
+	WriteJSON(w, http.StatusServiceUnavailable, map[string]string{
 		"error": "auth_not_configured",
 		"hint":  hintMissingEnv,
 	})

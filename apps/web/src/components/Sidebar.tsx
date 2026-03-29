@@ -1,6 +1,12 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import { fetchSectionConcepts } from '@/features/sections/api'
+import {
+  fetchLabConceptProgress,
+  TRACELAB_CONCEPT_PROGRESS_EVENT,
+} from '@/features/concepts/conceptProgressApi'
+import { completedSlugsForLab } from '@/features/concepts/conceptSectionExpectations'
+import { useAuth } from '@/contexts/auth'
 import { LAB_GROUPS, useLab, type LabId } from '@/contexts/lab'
 import CurriculumTopicPane from './CurriculumTopicPane'
 import DesignPatternsSidebarNav from './DesignPatternsSidebarNav'
@@ -54,9 +60,11 @@ function BrandGridIcon() {
 
 export default function Sidebar() {
   const [concepts, setConcepts] = useState<Concept[]>([])
+  const [progressBySlug, setProgressBySlug] = useState<Record<string, string[]>>({})
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const { labId, setLabId, current } = useLab()
+  const { user } = useAuth()
 
   useEffect(() => {
     const load = async () => {
@@ -68,6 +76,36 @@ export default function Sidebar() {
     }
     load()
   }, [labId])
+
+  const reloadLabProgress = useCallback(async () => {
+    if (!user) {
+      setProgressBySlug({})
+      return
+    }
+    try {
+      setProgressBySlug(await fetchLabConceptProgress(labId))
+    } catch {
+      setProgressBySlug({})
+    }
+  }, [user, labId])
+
+  useEffect(() => {
+    void reloadLabProgress()
+  }, [reloadLabProgress])
+
+  useEffect(() => {
+    const onUpdate = (e: Event) => {
+      const ce = e as CustomEvent<{ labId?: LabId }>
+      if (ce.detail?.labId === labId) void reloadLabProgress()
+    }
+    window.addEventListener(TRACELAB_CONCEPT_PROGRESS_EVENT, onUpdate)
+    return () => window.removeEventListener(TRACELAB_CONCEPT_PROGRESS_EVENT, onUpdate)
+  }, [labId, reloadLabProgress])
+
+  const completedSlugs = useMemo(
+    () => completedSlugsForLab(labId, concepts, progressBySlug),
+    [labId, concepts, progressBySlug],
+  )
 
   useEffect(() => {
     if (!menuOpen) return
@@ -87,21 +125,23 @@ export default function Sidebar() {
 
   let topicNav: ReactNode = null
   if (labId === 'design-patterns') {
-    topicNav = <DesignPatternsSidebarNav concepts={concepts} />
+    topicNav = <DesignPatternsSidebarNav concepts={concepts} completedSlugs={completedSlugs} />
   } else if (labId === 'system-design') {
-    topicNav = <SystemDesignSidebarNav concepts={concepts} />
+    topicNav = <SystemDesignSidebarNav concepts={concepts} completedSlugs={completedSlugs} />
   } else if (labId === 'api-design') {
-    topicNav = <ApiDesignSidebarNav concepts={concepts} />
+    topicNav = <ApiDesignSidebarNav concepts={concepts} completedSlugs={completedSlugs} />
   } else if (TOPIC_CURRICULUM_IDS.has(labId)) {
-    topicNav = <CurriculumTopicPane labId={labId} concepts={concepts} />
+    topicNav = (
+      <CurriculumTopicPane labId={labId} concepts={concepts} completedSlugs={completedSlugs} />
+    )
   } else if (labId === 'data-science') {
-    topicNav = <DataScienceSidebarNav concepts={concepts} />
+    topicNav = <DataScienceSidebarNav concepts={concepts} completedSlugs={completedSlugs} />
   } else if (labId === 'database-design') {
-    topicNav = <DatabaseDesignSidebarNav concepts={concepts} />
+    topicNav = <DatabaseDesignSidebarNav concepts={concepts} completedSlugs={completedSlugs} />
   } else if (labId === 'cloud-architecture') {
-    topicNav = <CloudArchitectureSidebarNav concepts={concepts} />
+    topicNav = <CloudArchitectureSidebarNav concepts={concepts} completedSlugs={completedSlugs} />
   } else if (labId === 'programming-languages') {
-    topicNav = <ProgrammingLanguagesSidebarNav concepts={concepts} />
+    topicNav = <ProgrammingLanguagesSidebarNav concepts={concepts} completedSlugs={completedSlugs} />
   }
 
   const sidebarSectionLabel =

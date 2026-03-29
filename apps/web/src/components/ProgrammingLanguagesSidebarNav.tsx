@@ -21,9 +21,10 @@ function initialOpenLangs(): Record<string, boolean> {
 
 interface Props {
   concepts: Concept[]
+  completedSlugs?: ReadonlySet<string>
 }
 
-export default function ProgrammingLanguagesSidebarNav({ concepts }: Props) {
+export default function ProgrammingLanguagesSidebarNav({ concepts, completedSlugs }: Props) {
   const navigate = useNavigate()
   const bySlug = useMemo(() => Object.fromEntries(concepts.map(c => [c.slug, c])), [concepts])
   const [open, setOpen] = useState<Record<string, boolean>>(initialOpenLangs)
@@ -71,12 +72,13 @@ export default function ProgrammingLanguagesSidebarNav({ concepts }: Props) {
                       {cat.items.map((item, idx) => {
                         const c = item.slug ? bySlug[item.slug] : undefined
                         const canOpen = c?.status === 'available'
+                        const rowDone = !!(item.slug && completedSlugs?.has(item.slug))
                         const rowKey = `${lang.id}-${cat.id}-${idx}-${item.label}`
                         return (
                           <li key={rowKey}>
                             <button
                               type="button"
-                              className={styles.patternRow}
+                              className={[styles.patternRow, rowDone ? styles.patternRowComplete : ''].join(' ')}
                               disabled={!canOpen}
                               onClick={() => {
                                 if (item.slug && canOpen) navigate(`/concept/${item.slug}`)

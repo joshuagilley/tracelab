@@ -20,10 +20,11 @@ import type { Concept } from '@/types/concept'
 interface Props {
   labId: LabId
   concepts: Concept[]
+  completedSlugs?: ReadonlySet<string>
 }
 
 /** Topic-based curriculum sidebars (accordion sections + Soon / available rows). */
-export default function CurriculumTopicPane({ labId, concepts }: Props) {
+export default function CurriculumTopicPane({ labId, concepts, completedSlugs }: Props) {
   switch (labId) {
     case 'concurrency':
       return (
@@ -32,6 +33,7 @@ export default function CurriculumTopicPane({ labId, concepts }: Props) {
           sections={CONCURRENCY_SECTIONS}
           panelPrefix="conc"
           defaultOpenSectionIds={[...CONCURRENCY_DEFAULT_OPEN]}
+          completedSlugs={completedSlugs}
         />
       )
     case 'networking':
@@ -41,6 +43,7 @@ export default function CurriculumTopicPane({ labId, concepts }: Props) {
           sections={NETWORKING_SECTIONS}
           panelPrefix="net"
           defaultOpenSectionIds={[...NETWORKING_DEFAULT_OPEN]}
+          completedSlugs={completedSlugs}
         />
       )
     case 'security':
@@ -50,6 +53,7 @@ export default function CurriculumTopicPane({ labId, concepts }: Props) {
           sections={SECURITY_SECTIONS}
           panelPrefix="sec"
           defaultOpenSectionIds={[...SECURITY_DEFAULT_OPEN]}
+          completedSlugs={completedSlugs}
         />
       )
     case 'software-architecture':
@@ -59,6 +63,7 @@ export default function CurriculumTopicPane({ labId, concepts }: Props) {
           sections={SOFTWARE_ARCHITECTURE_SECTIONS}
           panelPrefix="swa"
           defaultOpenSectionIds={[...SOFTWARE_ARCHITECTURE_DEFAULT_OPEN]}
+          completedSlugs={completedSlugs}
         />
       )
     case 'testing':
@@ -68,6 +73,7 @@ export default function CurriculumTopicPane({ labId, concepts }: Props) {
           sections={TESTING_SECTIONS}
           panelPrefix="tst"
           defaultOpenSectionIds={[...TESTING_DEFAULT_OPEN]}
+          completedSlugs={completedSlugs}
         />
       )
     case 'devops':
@@ -77,6 +83,7 @@ export default function CurriculumTopicPane({ labId, concepts }: Props) {
           sections={DEVOPS_SECTIONS}
           panelPrefix="dvo"
           defaultOpenSectionIds={[...DEVOPS_DEFAULT_OPEN]}
+          completedSlugs={completedSlugs}
         />
       )
     case 'low-level-systems':
@@ -86,6 +93,7 @@ export default function CurriculumTopicPane({ labId, concepts }: Props) {
           sections={LOW_LEVEL_SYSTEMS_SECTIONS}
           panelPrefix="lls"
           defaultOpenSectionIds={[...LOW_LEVEL_SYSTEMS_DEFAULT_OPEN]}
+          completedSlugs={completedSlugs}
         />
       )
     case 'ai-systems':
@@ -95,6 +103,7 @@ export default function CurriculumTopicPane({ labId, concepts }: Props) {
           sections={AI_SYSTEMS_SECTIONS}
           panelPrefix="ai"
           defaultOpenSectionIds={[...AI_SYSTEMS_DEFAULT_OPEN]}
+          completedSlugs={completedSlugs}
         />
       )
     case 'algorithms':
@@ -104,6 +113,7 @@ export default function CurriculumTopicPane({ labId, concepts }: Props) {
           sections={ALGORITHMS_SECTIONS}
           panelPrefix="alg"
           defaultOpenSectionIds={[...ALGORITHMS_DEFAULT_OPEN]}
+          completedSlugs={completedSlugs}
         />
       )
     default:

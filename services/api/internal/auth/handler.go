@@ -133,26 +133,26 @@ func (h *Handler) currentUser(w http.ResponseWriter, r *http.Request) {
 	}
 	c, err := r.Cookie(CookieName)
 	if err != nil || c.Value == "" {
-		writeJSON(w, http.StatusOK, meResponse{User: nil})
+		WriteJSON(w, http.StatusOK, meResponse{User: nil})
 		return
 	}
 	uid, err := parseSession(h.cfg.JWTSecret, c.Value)
 	if err != nil {
 		http.SetCookie(w, h.clearCookie(r, CookieName))
-		writeJSON(w, http.StatusOK, meResponse{User: nil})
+		WriteJSON(w, http.StatusOK, meResponse{User: nil})
 		return
 	}
 	u, err := h.users.ByID(r.Context(), uid)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			writeJSON(w, http.StatusOK, meResponse{User: nil})
+			WriteJSON(w, http.StatusOK, meResponse{User: nil})
 			return
 		}
 		log.Printf("auth: /me load user: %v", err)
 		http.Error(w, "db", http.StatusInternalServerError)
 		return
 	}
-	writeJSON(w, http.StatusOK, meResponse{User: userToPublicDTO(u)})
+	WriteJSON(w, http.StatusOK, meResponse{User: userToPublicDTO(u)})
 }
 
 func (h *Handler) logout(w http.ResponseWriter, r *http.Request) {
@@ -163,5 +163,5 @@ func (h *Handler) logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.SetCookie(w, h.clearCookie(r, CookieName))
-	writeJSON(w, http.StatusOK, logoutResponse{OK: true})
+	WriteJSON(w, http.StatusOK, logoutResponse{OK: true})
 }

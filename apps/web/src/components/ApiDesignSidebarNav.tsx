@@ -14,9 +14,10 @@ function initialOpenState(): Record<string, boolean> {
 
 interface Props {
   concepts: Concept[]
+  completedSlugs?: ReadonlySet<string>
 }
 
-export default function ApiDesignSidebarNav({ concepts }: Props) {
+export default function ApiDesignSidebarNav({ concepts, completedSlugs }: Props) {
   const navigate = useNavigate()
   const bySlug = useMemo(() => Object.fromEntries(concepts.map(c => [c.slug, c])), [concepts])
 
@@ -58,12 +59,13 @@ export default function ApiDesignSidebarNav({ concepts }: Props) {
                   {section.items.map((item, idx) => {
                     const c = item.slug ? bySlug[item.slug] : undefined
                     const canOpen = c?.status === 'available'
+                    const rowDone = !!(item.slug && completedSlugs?.has(item.slug))
                     const rowKey = `${section.id}-${idx}-${item.label}`
                     return (
                       <li key={rowKey}>
                         <button
                           type="button"
-                          className={styles.patternRow}
+                          className={[styles.patternRow, rowDone ? styles.patternRowComplete : ''].join(' ')}
                           disabled={!canOpen}
                           onClick={() => {
                             if (item.slug && canOpen) navigate(`/concept/${item.slug}`)

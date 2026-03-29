@@ -14,9 +14,10 @@ function initialPatternOpenState(): Record<string, boolean> {
 
 interface Props {
   concepts: Concept[]
+  completedSlugs?: ReadonlySet<string>
 }
 
-export default function DesignPatternsSidebarNav({ concepts }: Props) {
+export default function DesignPatternsSidebarNav({ concepts, completedSlugs }: Props) {
   const navigate = useNavigate()
   const bySlug = useMemo(() => Object.fromEntries(concepts.map(c => [c.slug, c])), [concepts])
 
@@ -58,11 +59,12 @@ export default function DesignPatternsSidebarNav({ concepts }: Props) {
                   {section.items.map(item => {
                     const c = item.slug ? bySlug[item.slug] : undefined
                     const canOpen = c?.status === 'available'
+                    const rowDone = !!(item.slug && completedSlugs?.has(item.slug))
                     return (
                       <li key={item.label}>
                         <button
                           type="button"
-                          className={styles.patternRow}
+                          className={[styles.patternRow, rowDone ? styles.patternRowComplete : ''].join(' ')}
                           disabled={!canOpen}
                           onClick={() => {
                             if (item.slug && canOpen) navigate(`/concept/${item.slug}`)

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/tracelab/api/internal/auth"
+	"github.com/tracelab/api/internal/conceptprogress"
 	"github.com/tracelab/api/internal/config"
 	"github.com/tracelab/api/internal/lessons"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -36,6 +37,14 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 		}
 		cancel()
 		auth.NewHandler(cfg, store).Register(mux)
+		progColl := mongoClient.Database(cfg.MongoDBName).Collection(cfg.ConceptsColl)
+		progStore := conceptprogress.NewStore(progColl)
+		ctx2, cancel2 := context.WithTimeout(context.Background(), 15*time.Second)
+		if err := progStore.EnsureIndexes(ctx2); err != nil {
+			log.Printf("conceptprogress: indexes failed db=%q coll=%q: %v", cfg.MongoDBName, cfg.ConceptsColl, err)
+		}
+		cancel2()
+		conceptprogress.NewHandler(cfg, progStore).Register(mux)
 	} else {
 		if !cfg.AuthConfigured() {
 			log.Printf("auth: disabled (incomplete env); /api/auth/* stubs")
@@ -62,7 +71,7 @@ func withCORS(cfg *config.Config, next http.Handler) http.Handler {
 				break
 			}
 		}
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == http.MethodOptions {

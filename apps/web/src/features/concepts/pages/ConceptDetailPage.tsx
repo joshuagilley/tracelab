@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode,
+} from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { fetchSectionLesson } from '@/features/sections/api'
 import { useLab, type LabId } from '@/contexts/lab'
@@ -21,7 +27,26 @@ import ApiDesignLessonPanel from '@/components/ApiDesignLessonPanel'
 import LowLevelSystemsLessonPanel from '@/components/LowLevelSystemsLessonPanel'
 import type { LabConceptDetail } from '@/types/labConcept'
 import type { NumpyFn } from '@/lib/numpyDemo'
+import { ConceptProgressProvider } from '@/contexts/conceptProgress'
+import ConceptLessonLayout from '@/components/ConceptLessonLayout'
 import styles from './ConceptDetailPage.module.css'
+
+function WithProgress({
+  labId,
+  slug,
+  children,
+}: {
+  labId: LabId
+  slug: string | undefined
+  children: ReactNode
+}) {
+  if (!slug) return <>{children}</>
+  return (
+    <ConceptProgressProvider labId={labId} conceptSlug={slug}>
+      {children}
+    </ConceptProgressProvider>
+  )
+}
 
 const DEFAULT_METRICS: SimMetrics = { hits: 0, misses: 0, total: 0 }
 const DEFAULT_SINGLETON_STATS: SingletonStats = {
@@ -145,12 +170,12 @@ export default function ConceptDetailPage() {
   }
 
   const handleDragStart = useCallback(
-    (e: React.MouseEvent) => {
+    (e: ReactMouseEvent) => {
       e.preventDefault()
       const startX = e.clientX
       const startW = rightWidth
 
-      const onMove = (ev: MouseEvent) => {
+      const onMove = (ev: globalThis.MouseEvent) => {
         const delta = startX - ev.clientX
         setRightWidth(Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, startW + delta)))
       }
@@ -187,409 +212,425 @@ export default function ConceptDetailPage() {
 
   if (labId === 'system-design' && lesson) {
     return (
-      <div className={styles.page}>
-        <div className={styles.pageHeader}>
-          <div className={styles.breadcrumb}>
-            <Link to="/" className={styles.breadcrumbLink}>
-              {libraryLabel}
-            </Link>
-            <span className={styles.breadcrumbSep}>›</span>
-            <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
-          </div>
-          {difficulty && (
-            <span className={`badge badge--${difficulty}`}>{difficulty}</span>
-          )}
-        </div>
-
-        <div
-          className={styles.mainArea}
-          style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
-        >
-          <div className={styles.leftCol}>
-            <div className={styles.center}>
-              <SimulationPanel
-                isRunning={isRunning}
-                hitRate={hitRate}
-                onMetrics={setMetrics}
-                onToggleRun={handleToggleRun}
-              />
+      <WithProgress labId={labId} slug={slug}>
+        <ConceptLessonLayout>
+          <div className={styles.pageHeader}>
+            <div className={styles.breadcrumb}>
+              <Link to="/" className={styles.breadcrumbLink}>
+                {libraryLabel}
+              </Link>
+              <span className={styles.breadcrumbSep}>›</span>
+              <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
             </div>
-            <div className={styles.bottom}>
-              <MetricsPanel
-                isRunning={isRunning}
-                metrics={metrics}
-                hitRate={hitRate}
-                onHitRateChange={setHitRate}
-              />
-            </div>
+            {difficulty && (
+              <span className={`badge badge--${difficulty}`}>{difficulty}</span>
+            )}
           </div>
 
           <div
-            className={styles.dragHandle}
-            onMouseDown={handleDragStart}
-            title="Drag to resize"
+            className={styles.mainArea}
+            style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
           >
-            <div className={styles.dragDots} />
-          </div>
+            <div className={styles.leftCol}>
+              <div className={styles.center}>
+                <SimulationPanel
+                  isRunning={isRunning}
+                  hitRate={hitRate}
+                  onMetrics={setMetrics}
+                  onToggleRun={handleToggleRun}
+                />
+              </div>
+              <div className={styles.bottom}>
+                <MetricsPanel
+                  isRunning={isRunning}
+                  metrics={metrics}
+                  hitRate={hitRate}
+                  onHitRateChange={setHitRate}
+                />
+              </div>
+            </div>
 
-          <div className={styles.right}>
-            <DynamicCodePanel files={lesson.codeFiles ?? []} />
+            <div
+              className={styles.dragHandle}
+              onMouseDown={handleDragStart}
+              title="Drag to resize"
+            >
+              <div className={styles.dragDots} />
+            </div>
+
+            <div className={styles.right}>
+              <DynamicCodePanel files={lesson.codeFiles ?? []} />
+            </div>
           </div>
-        </div>
-      </div>
+        </ConceptLessonLayout>
+      </WithProgress>
     )
   }
 
   if (labId === 'api-design' && lesson && lesson.vizType === 'api-lesson') {
     return (
-      <div className={styles.page}>
-        <div className={styles.pageHeader}>
-          <div className={styles.breadcrumb}>
-            <Link to="/" className={styles.breadcrumbLink}>
-              {libraryLabel}
-            </Link>
-            <span className={styles.breadcrumbSep}>›</span>
-            <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
-          </div>
-          {difficulty && (
-            <span className={`badge badge--${difficulty}`}>{difficulty}</span>
-          )}
-        </div>
-
-        <div
-          className={styles.mainArea}
-          style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
-        >
-          <div className={styles.leftCol}>
-            <div className={`${styles.center} ${styles.centerGrow}`}>
-              <ApiDesignLessonPanel summary={lesson.summary} slug={lesson.slug} />
+      <WithProgress labId={labId} slug={slug}>
+        <ConceptLessonLayout>
+          <div className={styles.pageHeader}>
+            <div className={styles.breadcrumb}>
+              <Link to="/" className={styles.breadcrumbLink}>
+                {libraryLabel}
+              </Link>
+              <span className={styles.breadcrumbSep}>›</span>
+              <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
             </div>
+            {difficulty && (
+              <span className={`badge badge--${difficulty}`}>{difficulty}</span>
+            )}
           </div>
 
           <div
-            className={styles.dragHandle}
-            onMouseDown={handleDragStart}
-            title="Drag to resize"
+            className={styles.mainArea}
+            style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
           >
-            <div className={styles.dragDots} />
-          </div>
+            <div className={styles.leftCol}>
+              <div className={`${styles.center} ${styles.centerGrow}`}>
+                <ApiDesignLessonPanel summary={lesson.summary} slug={lesson.slug} />
+              </div>
+            </div>
 
-          <div className={styles.right}>
-            <DynamicCodePanel files={lesson.codeFiles ?? []} />
+            <div
+              className={styles.dragHandle}
+              onMouseDown={handleDragStart}
+              title="Drag to resize"
+            >
+              <div className={styles.dragDots} />
+            </div>
+
+            <div className={styles.right}>
+              <DynamicCodePanel files={lesson.codeFiles ?? []} />
+            </div>
           </div>
-        </div>
-      </div>
+        </ConceptLessonLayout>
+      </WithProgress>
     )
   }
 
   if (labId === 'design-patterns' && lesson?.vizType === 'singleton') {
     return (
-      <div className={styles.page}>
-        <div className={styles.pageHeader}>
-          <div className={styles.breadcrumb}>
-            <Link to="/" className={styles.breadcrumbLink}>
-              {libraryLabel}
-            </Link>
-            <span className={styles.breadcrumbSep}>›</span>
-            <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
-          </div>
-          {difficulty && (
-            <span className={`badge badge--${difficulty}`}>{difficulty}</span>
-          )}
-        </div>
-
-        <div
-          className={styles.mainArea}
-          style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
-        >
-          <div className={styles.leftCol}>
-            <div className={styles.center}>
-              <SingletonVisualizer
-                isRunning={isRunning}
-                onToggleRun={handleToggleRun}
-                handlerCount={singletonHandlers}
-                spawnIntervalMs={singletonSpawn}
-                stressMode={singletonStress}
-                emphasizeOnce={singletonEmphasize}
-                onStatsChange={onSingletonStats}
-              />
+      <WithProgress labId={labId} slug={slug}>
+        <ConceptLessonLayout>
+          <div className={styles.pageHeader}>
+            <div className={styles.breadcrumb}>
+              <Link to="/" className={styles.breadcrumbLink}>
+                {libraryLabel}
+              </Link>
+              <span className={styles.breadcrumbSep}>›</span>
+              <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
             </div>
-            <div className={styles.bottom}>
-              <SingletonPatternPanel
-                handlerCount={singletonHandlers}
-                spawnIntervalMs={singletonSpawn}
-                stressMode={singletonStress}
-                emphasizeOnce={singletonEmphasize}
-                stats={singletonStats}
-                onHandlerCount={setSingletonHandlers}
-                onSpawnInterval={setSingletonSpawn}
-                onStressMode={setSingletonStress}
-                onEmphasizeOnce={setSingletonEmphasize}
-              />
-            </div>
+            {difficulty && (
+              <span className={`badge badge--${difficulty}`}>{difficulty}</span>
+            )}
           </div>
 
           <div
-            className={styles.dragHandle}
-            onMouseDown={handleDragStart}
-            title="Drag to resize"
+            className={styles.mainArea}
+            style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
           >
-            <div className={styles.dragDots} />
-          </div>
+            <div className={styles.leftCol}>
+              <div className={styles.center}>
+                <SingletonVisualizer
+                  isRunning={isRunning}
+                  onToggleRun={handleToggleRun}
+                  handlerCount={singletonHandlers}
+                  spawnIntervalMs={singletonSpawn}
+                  stressMode={singletonStress}
+                  emphasizeOnce={singletonEmphasize}
+                  onStatsChange={onSingletonStats}
+                />
+              </div>
+              <div className={styles.bottom}>
+                <SingletonPatternPanel
+                  handlerCount={singletonHandlers}
+                  spawnIntervalMs={singletonSpawn}
+                  stressMode={singletonStress}
+                  emphasizeOnce={singletonEmphasize}
+                  stats={singletonStats}
+                  onHandlerCount={setSingletonHandlers}
+                  onSpawnInterval={setSingletonSpawn}
+                  onStressMode={setSingletonStress}
+                  onEmphasizeOnce={setSingletonEmphasize}
+                />
+              </div>
+            </div>
 
-          <div className={styles.right}>
-            <DynamicCodePanel files={lesson.codeFiles ?? []} />
+            <div
+              className={styles.dragHandle}
+              onMouseDown={handleDragStart}
+              title="Drag to resize"
+            >
+              <div className={styles.dragDots} />
+            </div>
+
+            <div className={styles.right}>
+              <DynamicCodePanel files={lesson.codeFiles ?? []} />
+            </div>
           </div>
-        </div>
-      </div>
+        </ConceptLessonLayout>
+      </WithProgress>
     )
   }
 
   if (labId === 'design-patterns' && lesson?.vizType === 'dependency-injection') {
     return (
-      <div className={styles.page}>
-        <div className={styles.pageHeader}>
-          <div className={styles.breadcrumb}>
-            <Link to="/" className={styles.breadcrumbLink}>
-              {libraryLabel}
-            </Link>
-            <span className={styles.breadcrumbSep}>›</span>
-            <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
-          </div>
-          {difficulty && (
-            <span className={`badge badge--${difficulty}`}>{difficulty}</span>
-          )}
-        </div>
-
-        <div
-          className={styles.mainArea}
-          style={{ gridTemplateColumns: `1fr 3px ${rightWidth}px` }}
-        >
-          <div className={styles.leftCol}>
-            <div className={`${styles.center} ${styles.centerGrow}`}>
-              <DependencyInjectionVisualizer
-                isRunning={isRunning}
-                onToggleRun={handleToggleRun}
-                handlerCount={diHandlers}
-                spawnIntervalMs={diSpawn}
-                stressMode={diStress}
-                storageBackend={diStorageBackend}
-                emphasizeIface={diEmphasizeIface}
-                onStatsChange={onDIStats}
-              />
+      <WithProgress labId={labId} slug={slug}>
+        <ConceptLessonLayout>
+          <div className={styles.pageHeader}>
+            <div className={styles.breadcrumb}>
+              <Link to="/" className={styles.breadcrumbLink}>
+                {libraryLabel}
+              </Link>
+              <span className={styles.breadcrumbSep}>›</span>
+              <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
             </div>
-            <div className={`${styles.bottom} ${styles.bottomLabPanel}`}>
-              <DependencyInjectionPatternPanel
-                handlerCount={diHandlers}
-                spawnIntervalMs={diSpawn}
-                stressMode={diStress}
-                storageBackend={diStorageBackend}
-                emphasizeIface={diEmphasizeIface}
-                stats={diStats}
-                onHandlerCount={setDiHandlers}
-                onSpawnInterval={setDiSpawn}
-                onStressMode={setDiStress}
-                onStorageBackend={setDiStorageBackend}
-                onEmphasizeIface={setDiEmphasizeIface}
-              />
-            </div>
+            {difficulty && (
+              <span className={`badge badge--${difficulty}`}>{difficulty}</span>
+            )}
           </div>
 
           <div
-            className={styles.dragHandle}
-            onMouseDown={handleDragStart}
-            title="Drag to resize"
+            className={styles.mainArea}
+            style={{ gridTemplateColumns: `1fr 3px ${rightWidth}px` }}
           >
-            <div className={styles.dragDots} />
-          </div>
+            <div className={styles.leftCol}>
+              <div className={`${styles.center} ${styles.centerGrow}`}>
+                <DependencyInjectionVisualizer
+                  isRunning={isRunning}
+                  onToggleRun={handleToggleRun}
+                  handlerCount={diHandlers}
+                  spawnIntervalMs={diSpawn}
+                  stressMode={diStress}
+                  storageBackend={diStorageBackend}
+                  emphasizeIface={diEmphasizeIface}
+                  onStatsChange={onDIStats}
+                />
+              </div>
+              <div className={`${styles.bottom} ${styles.bottomLabPanel}`}>
+                <DependencyInjectionPatternPanel
+                  handlerCount={diHandlers}
+                  spawnIntervalMs={diSpawn}
+                  stressMode={diStress}
+                  storageBackend={diStorageBackend}
+                  emphasizeIface={diEmphasizeIface}
+                  stats={diStats}
+                  onHandlerCount={setDiHandlers}
+                  onSpawnInterval={setDiSpawn}
+                  onStressMode={setDiStress}
+                  onStorageBackend={setDiStorageBackend}
+                  onEmphasizeIface={setDiEmphasizeIface}
+                />
+              </div>
+            </div>
 
-          <div className={styles.right}>
-            <DependencyInjectionCodePanel files={lesson.codeFiles ?? []} />
+            <div
+              className={styles.dragHandle}
+              onMouseDown={handleDragStart}
+              title="Drag to resize"
+            >
+              <div className={styles.dragDots} />
+            </div>
+
+            <div className={styles.right}>
+              <DependencyInjectionCodePanel files={lesson.codeFiles ?? []} />
+            </div>
           </div>
-        </div>
-      </div>
+        </ConceptLessonLayout>
+      </WithProgress>
     )
   }
 
   if (labId === 'data-science' && lesson?.vizType === 'numerical') {
     return (
-      <div className={styles.page}>
-        <div className={styles.pageHeader}>
-          <div className={styles.breadcrumb}>
-            <Link to="/" className={styles.breadcrumbLink}>
-              {libraryLabel}
-            </Link>
-            <span className={styles.breadcrumbSep}>›</span>
-            <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
-          </div>
-          {difficulty && (
-            <span className={`badge badge--${difficulty}`}>{difficulty}</span>
-          )}
-        </div>
-
-        <div
-          className={styles.mainArea}
-          style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
-        >
-          <div className={styles.leftCol}>
-            <div className={styles.center}>
-              <NumericalComputingVisualizer
-                numpyFn={numpyFn}
-                length={arrayLen}
-                isRunning={isRunning}
-                onToggleRun={handleToggleRun}
-              />
+      <WithProgress labId={labId} slug={slug}>
+        <ConceptLessonLayout>
+          <div className={styles.pageHeader}>
+            <div className={styles.breadcrumb}>
+              <Link to="/" className={styles.breadcrumbLink}>
+                {libraryLabel}
+              </Link>
+              <span className={styles.breadcrumbSep}>›</span>
+              <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
             </div>
-            <div className={styles.bottom}>
-              <DataScienceLabPanel
-                parameters={lesson.parameters ?? []}
-                numpyFn={numpyFn}
-                arrayLen={arrayLen}
-                onNumpyFn={setNumpyFn}
-                onArrayLen={setArrayLen}
-              />
-            </div>
+            {difficulty && (
+              <span className={`badge badge--${difficulty}`}>{difficulty}</span>
+            )}
           </div>
 
           <div
-            className={styles.dragHandle}
-            onMouseDown={handleDragStart}
-            title="Drag to resize"
+            className={styles.mainArea}
+            style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
           >
-            <div className={styles.dragDots} />
-          </div>
+            <div className={styles.leftCol}>
+              <div className={styles.center}>
+                <NumericalComputingVisualizer
+                  numpyFn={numpyFn}
+                  length={arrayLen}
+                  isRunning={isRunning}
+                  onToggleRun={handleToggleRun}
+                />
+              </div>
+              <div className={styles.bottom}>
+                <DataScienceLabPanel
+                  parameters={lesson.parameters ?? []}
+                  numpyFn={numpyFn}
+                  arrayLen={arrayLen}
+                  onNumpyFn={setNumpyFn}
+                  onArrayLen={setArrayLen}
+                />
+              </div>
+            </div>
 
-          <div className={styles.right}>
-            <DynamicCodePanel files={lesson.codeFiles ?? []} />
+            <div
+              className={styles.dragHandle}
+              onMouseDown={handleDragStart}
+              title="Drag to resize"
+            >
+              <div className={styles.dragDots} />
+            </div>
+
+            <div className={styles.right}>
+              <DynamicCodePanel files={lesson.codeFiles ?? []} />
+            </div>
           </div>
-        </div>
-      </div>
+        </ConceptLessonLayout>
+      </WithProgress>
     )
   }
 
   if (labId === 'cloud-architecture' && lesson && lesson.vizType === 'cloud-lesson') {
     return (
-      <div className={styles.page}>
-        <div className={styles.pageHeader}>
-          <div className={styles.breadcrumb}>
-            <Link to="/" className={styles.breadcrumbLink}>
-              {libraryLabel}
-            </Link>
-            <span className={styles.breadcrumbSep}>›</span>
-            <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
-          </div>
-          {difficulty && (
-            <span className={`badge badge--${difficulty}`}>{difficulty}</span>
-          )}
-        </div>
-
-        <div
-          className={styles.mainArea}
-          style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
-        >
-          <div className={styles.leftCol}>
-            <div className={`${styles.center} ${styles.centerGrow}`}>
-              <CloudArchitectureLessonPanel summary={lesson.summary} slug={lesson.slug} />
+      <WithProgress labId={labId} slug={slug}>
+        <ConceptLessonLayout>
+          <div className={styles.pageHeader}>
+            <div className={styles.breadcrumb}>
+              <Link to="/" className={styles.breadcrumbLink}>
+                {libraryLabel}
+              </Link>
+              <span className={styles.breadcrumbSep}>›</span>
+              <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
             </div>
+            {difficulty && (
+              <span className={`badge badge--${difficulty}`}>{difficulty}</span>
+            )}
           </div>
 
           <div
-            className={styles.dragHandle}
-            onMouseDown={handleDragStart}
-            title="Drag to resize"
+            className={styles.mainArea}
+            style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
           >
-            <div className={styles.dragDots} />
-          </div>
+            <div className={styles.leftCol}>
+              <div className={`${styles.center} ${styles.centerGrow}`}>
+                <CloudArchitectureLessonPanel summary={lesson.summary} slug={lesson.slug} />
+              </div>
+            </div>
 
-          <div className={styles.right}>
-            <DynamicCodePanel files={lesson.codeFiles ?? []} />
+            <div
+              className={styles.dragHandle}
+              onMouseDown={handleDragStart}
+              title="Drag to resize"
+            >
+              <div className={styles.dragDots} />
+            </div>
+
+            <div className={styles.right}>
+              <DynamicCodePanel files={lesson.codeFiles ?? []} />
+            </div>
           </div>
-        </div>
-      </div>
+        </ConceptLessonLayout>
+      </WithProgress>
     )
   }
 
   if (labId === 'low-level-systems' && lesson && lesson.vizType === 'low-level-lesson') {
     return (
-      <div className={styles.page}>
-        <div className={styles.pageHeader}>
-          <div className={styles.breadcrumb}>
-            <Link to="/" className={styles.breadcrumbLink}>
-              {libraryLabel}
-            </Link>
-            <span className={styles.breadcrumbSep}>›</span>
-            <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
-          </div>
-          {difficulty && (
-            <span className={`badge badge--${difficulty}`}>{difficulty}</span>
-          )}
-        </div>
-
-        <div
-          className={styles.mainArea}
-          style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
-        >
-          <div className={styles.leftCol}>
-            <div className={`${styles.center} ${styles.centerGrow}`}>
-              <LowLevelSystemsLessonPanel summary={lesson.summary} slug={lesson.slug} />
+      <WithProgress labId={labId} slug={slug}>
+        <ConceptLessonLayout>
+          <div className={styles.pageHeader}>
+            <div className={styles.breadcrumb}>
+              <Link to="/" className={styles.breadcrumbLink}>
+                {libraryLabel}
+              </Link>
+              <span className={styles.breadcrumbSep}>›</span>
+              <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
             </div>
+            {difficulty && (
+              <span className={`badge badge--${difficulty}`}>{difficulty}</span>
+            )}
           </div>
 
           <div
-            className={styles.dragHandle}
-            onMouseDown={handleDragStart}
-            title="Drag to resize"
+            className={styles.mainArea}
+            style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
           >
-            <div className={styles.dragDots} />
-          </div>
+            <div className={styles.leftCol}>
+              <div className={`${styles.center} ${styles.centerGrow}`}>
+                <LowLevelSystemsLessonPanel summary={lesson.summary} slug={lesson.slug} />
+              </div>
+            </div>
 
-          <div className={styles.right}>
-            <DynamicCodePanel files={lesson.codeFiles ?? []} />
+            <div
+              className={styles.dragHandle}
+              onMouseDown={handleDragStart}
+              title="Drag to resize"
+            >
+              <div className={styles.dragDots} />
+            </div>
+
+            <div className={styles.right}>
+              <DynamicCodePanel files={lesson.codeFiles ?? []} />
+            </div>
           </div>
-        </div>
-      </div>
+        </ConceptLessonLayout>
+      </WithProgress>
     )
   }
 
   if (labId === 'database-design' && lesson?.vizType === 'db-lesson') {
     return (
-      <div className={styles.page}>
-        <div className={styles.pageHeader}>
-          <div className={styles.breadcrumb}>
-            <Link to="/" className={styles.breadcrumbLink}>
-              {libraryLabel}
-            </Link>
-            <span className={styles.breadcrumbSep}>›</span>
-            <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
-          </div>
-          {difficulty && (
-            <span className={`badge badge--${difficulty}`}>{difficulty}</span>
-          )}
-        </div>
-
-        <div
-          className={styles.mainArea}
-          style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
-        >
-          <div className={styles.leftCol}>
-            <div className={`${styles.center} ${styles.centerGrow}`}>
-              <DatabaseDesignLessonPanel summary={lesson.summary} slug={lesson.slug} />
+      <WithProgress labId={labId} slug={slug}>
+        <ConceptLessonLayout>
+          <div className={styles.pageHeader}>
+            <div className={styles.breadcrumb}>
+              <Link to="/" className={styles.breadcrumbLink}>
+                {libraryLabel}
+              </Link>
+              <span className={styles.breadcrumbSep}>›</span>
+              <span className={styles.breadcrumbCurrent}>{title ?? '…'}</span>
             </div>
+            {difficulty && (
+              <span className={`badge badge--${difficulty}`}>{difficulty}</span>
+            )}
           </div>
 
           <div
-            className={styles.dragHandle}
-            onMouseDown={handleDragStart}
-            title="Drag to resize"
+            className={styles.mainArea}
+            style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}
           >
-            <div className={styles.dragDots} />
-          </div>
+            <div className={styles.leftCol}>
+              <div className={`${styles.center} ${styles.centerGrow}`}>
+                <DatabaseDesignLessonPanel summary={lesson.summary} slug={lesson.slug} />
+              </div>
+            </div>
 
-          <div className={styles.right}>
-            <DynamicCodePanel files={lesson.codeFiles ?? []} />
+            <div
+              className={styles.dragHandle}
+              onMouseDown={handleDragStart}
+              title="Drag to resize"
+            >
+              <div className={styles.dragDots} />
+            </div>
+
+            <div className={styles.right}>
+              <DynamicCodePanel files={lesson.codeFiles ?? []} />
+            </div>
           </div>
-        </div>
-      </div>
+        </ConceptLessonLayout>
+      </WithProgress>
     )
   }
 

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -28,6 +29,18 @@ func signSession(secret string, userID primitive.ObjectID, ttl time.Duration) (s
 	}
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, &claims)
 	return t.SignedString([]byte(secret))
+}
+
+// SessionUserID returns the user id from the tracelab_session cookie, or an error if missing/invalid.
+func SessionUserID(secret string, r *http.Request) (primitive.ObjectID, error) {
+	if secret == "" {
+		return primitive.NilObjectID, errors.New("jwt secret empty")
+	}
+	c, err := r.Cookie(CookieName)
+	if err != nil || c.Value == "" {
+		return primitive.NilObjectID, errors.New("no session")
+	}
+	return parseSession(secret, c.Value)
 }
 
 func parseSession(secret, token string) (primitive.ObjectID, error) {

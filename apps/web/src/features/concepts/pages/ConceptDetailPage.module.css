@@ -8,6 +8,135 @@
   gap: 12px;
 }
 
+.pageConceptComplete {
+  position: relative;
+  border-radius: var(--radius);
+  outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  outline-offset: 0;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent),
+    0 0 56px color-mix(in srgb, var(--accent) 22%, transparent),
+    0 0 120px color-mix(in srgb, var(--accent) 12%, transparent);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent) 14%, var(--bg-base)) 0%,
+    var(--bg-base) 42%,
+    color-mix(in srgb, var(--accent) 10%, var(--bg-base)) 100%
+  );
+  transition:
+    box-shadow 0.35s ease,
+    outline-color 0.35s ease,
+    background 0.35s ease;
+}
+
+.markDoneBar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.markDoneBarComplete {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-elevated));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent),
+    0 0 28px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.markDoneBarText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.markDoneBarTitle {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.markDoneBarComplete .markDoneBarTitle {
+  color: var(--accent);
+}
+
+.markDoneBarSub {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.markDoneBarActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.markDoneHint {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.markDoneHint a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.markDoneHint a:hover {
+  text-decoration: underline;
+}
+
+.markDoneBtn {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.markDoneBtn:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  color: var(--text-primary);
+}
+
+.markDoneBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.markDoneBtnDone {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: color-mix(in srgb, var(--accent) 20%, var(--bg-subtle));
+  color: var(--accent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
 /* ─── Breadcrumb ─────────────────────────────────── */
 .pageHeader {
   display: flex;

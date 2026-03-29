@@ -90,6 +90,23 @@
   opacity: 0.55;
 }
 
+.patternRowComplete {
+  background: color-mix(in srgb, var(--accent) 10%, transparent) !important;
+  color: var(--accent);
+  box-shadow:
+    inset 3px 0 0 var(--accent),
+    0 0 20px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.patternRowComplete:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg-elevated)) !important;
+}
+
+.patternRowComplete .patternLabel {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 .patternLabel {
   font-size: 11px;
   font-weight: 500;

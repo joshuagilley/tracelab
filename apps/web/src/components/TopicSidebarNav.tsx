@@ -26,6 +26,8 @@ export interface TopicSidebarNavProps {
   panelPrefix: string
   /** Which accordion sections start expanded (default: none) */
   defaultOpenSectionIds?: string[]
+  /** Concept slugs where every lesson section is marked done */
+  completedSlugs?: ReadonlySet<string>
 }
 
 export default function TopicSidebarNav({
@@ -33,6 +35,7 @@ export default function TopicSidebarNav({
   sections,
   panelPrefix,
   defaultOpenSectionIds,
+  completedSlugs,
 }: TopicSidebarNavProps) {
   const navigate = useNavigate()
   const bySlug = useMemo(() => Object.fromEntries(concepts.map(c => [c.slug, c])), [concepts])
@@ -77,12 +80,13 @@ export default function TopicSidebarNav({
                   {section.items.map((item, idx) => {
                     const c = item.slug ? bySlug[item.slug] : undefined
                     const canOpen = c?.status === 'available'
+                    const rowDone = !!(item.slug && completedSlugs?.has(item.slug))
                     const rowKey = `${section.id}-${idx}-${item.label}`
                     return (
                       <li key={rowKey}>
                         <button
                           type="button"
-                          className={styles.patternRow}
+                          className={[styles.patternRow, rowDone ? styles.patternRowComplete : ''].join(' ')}
                           disabled={!canOpen}
                           onClick={() => {
                             if (item.slug && canOpen) navigate(`/concept/${item.slug}`)

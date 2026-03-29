@@ -10,7 +10,7 @@ func MountStub(mux *http.ServeMux) {
 
 func MountStubWithReason(mux *http.ServeMux, errCode, hint string) {
 	stub503 := func(w http.ResponseWriter, _ *http.Request) {
-		writeJSON(w, http.StatusServiceUnavailable, map[string]string{
+		WriteJSON(w, http.StatusServiceUnavailable, map[string]string{
 			"error": errCode,
 			"hint":  hint,
 		})
@@ -21,7 +21,7 @@ func MountStubWithReason(mux *http.ServeMux, errCode, hint string) {
 		if !requireMethod(w, r, http.MethodGet) {
 			return
 		}
-		writeJSON(w, http.StatusOK, meResponse{User: nil})
+		WriteJSON(w, http.StatusOK, meResponse{User: nil})
 	})
 	mux.HandleFunc("/api/auth/logout", stub503)
 }
