@@ -5,9 +5,9 @@ import {
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { fetchSectionLesson } from '@/features/sections/api'
-import { useLab, type LabId } from '@/contexts/lab'
+import { LAB_OPTIONS, useLab, type LabId } from '@/contexts/lab'
 import SimulationPanel, { type SimMetrics } from '@/components/system-design/latency-caching/caching/SimulationPanel'
 import MetricsPanel from '@/components/system-design/latency-caching/caching/MetricsPanel'
 import DynamicCodePanel from '@/components/code/DynamicCodePanel'
@@ -58,6 +58,8 @@ const DEFAULT_SINGLETON_STATS: SingletonStats = {
 const DEFAULT_DI_STATS: DIStats = { uploadsCompleted: 0, putCalls: 0, wires: 0 }
 const MIN_WIDTH = 260
 const MAX_WIDTH = 680
+
+const VALID_LAB_IDS = new Set<LabId>(LAB_OPTIONS.map(o => o.id))
 
 const LIBRARY_LABELS: Record<LabId, string> = {
   'system-design': 'Concept Library',
@@ -111,7 +113,14 @@ function initialNumpyState(c: LabConceptDetail | null) {
 
 export default function ConceptDetailPage() {
   const { slug } = useParams<{ slug: string }>()
-  const { labId } = useLab()
+  const [searchParams] = useSearchParams()
+  const { labId, setLabId } = useLab()
+  const labQuery = searchParams.get('lab')
+
+  useEffect(() => {
+    if (!labQuery || !VALID_LAB_IDS.has(labQuery as LabId)) return
+    setLabId(labQuery as LabId)
+  }, [labQuery, setLabId])
 
   const [lesson, setLesson] = useState<LabConceptDetail | null>(null)
   const [error, setError] = useState<string | null>(null)

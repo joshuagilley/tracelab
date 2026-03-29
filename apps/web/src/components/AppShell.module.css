@@ -12,9 +12,24 @@
   overflow: hidden;
 }
 
+.topBar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border-dim);
+  background: var(--bg-surface);
+}
+
 .main {
   flex: 1;
   overflow: hidden;
+}
+
+.mainScrollable {
+  overflow: auto;
+  min-height: 0;
 }
 
 .footer {

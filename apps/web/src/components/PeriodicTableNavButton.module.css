@@ -1,0 +1,44 @@
+.link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.link:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  color: var(--text-primary);
+  box-shadow: 0 0 14px var(--accent-glow);
+}
+
+.linkActive {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 5px);
+  grid-template-rows: repeat(3, 5px);
+  gap: 2px;
+}
+
+.cell {
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0.85;
+}
+
+.cell:nth-child(5) {
+  opacity: 1;
+  box-shadow: 0 0 4px currentColor;
+}

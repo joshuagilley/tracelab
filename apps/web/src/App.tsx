@@ -7,6 +7,7 @@ import { CurriculumVisibilityProvider } from '@/contexts/curriculumVisibility'
 import { LabProvider } from '@/contexts/lab'
 import ConceptLibraryPage from '@/features/concepts/pages/ConceptLibraryPage'
 import ConceptDetailPage from '@/features/concepts/pages/ConceptDetailPage'
+import CsPeriodicTablePage from '@/features/periodic-table/CsPeriodicTablePage'
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
               <AppShell>
                 <Routes>
                   <Route path="/" element={<ConceptLibraryPage />} />
+                  <Route path="/cs-periodic-table" element={<CsPeriodicTablePage />} />
                   <Route path="/concept/:slug" element={<ConceptDetailPage />} />
                 </Routes>
               </AppShell>
