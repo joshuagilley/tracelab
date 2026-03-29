@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -117,6 +118,7 @@ func (h *Handler) githubCallback(w http.ResponseWriter, r *http.Request) {
 
 	tok, err := h.oauth.Exchange(ctx, code)
 	if err != nil {
+		log.Printf("auth/github/callback: token exchange failed: %v", err)
 		http.Redirect(w, r, h.cfg.FrontendOrigin+"/?auth_error=token_exchange", http.StatusFound)
 		return
 	}
@@ -124,20 +126,24 @@ func (h *Handler) githubCallback(w http.ResponseWriter, r *http.Request) {
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.github.com/user", nil)
 	resp, err := client.Do(req)
 	if err != nil {
+		log.Printf("auth/github/callback: GET /user request failed: %v", err)
 		http.Redirect(w, r, h.cfg.FrontendOrigin+"/?auth_error=github_user", http.StatusFound)
 		return
 	}
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	if resp.StatusCode != http.StatusOK {
+		log.Printf("auth/github/callback: GET /user status=%d body_len=%d", resp.StatusCode, len(body))
 		http.Redirect(w, r, h.cfg.FrontendOrigin+"/?auth_error=github_api", http.StatusFound)
 		return
 	}
 	var gu githubUser
 	if err := json.Unmarshal(body, &gu); err != nil || gu.ID == 0 {
+		log.Printf("auth/github/callback: parse github user: err=%v github_id=%d", err, gu.ID)
 		http.Redirect(w, r, h.cfg.FrontendOrigin+"/?auth_error=parse_user", http.StatusFound)
 		return
 	}
+	log.Printf("auth/github/callback: github user ok id=%d login=%q", gu.ID, gu.Login)
 	if gu.Email == "" {
 		gu.Email = h.fetchPrimaryGitHubEmail(ctx, client)
 	}
@@ -149,10 +155,14 @@ func (h *Handler) githubCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	jwtStr, err := signSession(h.cfg.JWTSecret, u.ID, sessionTTL)
 	if err != nil {
+		log.Printf("auth/github/callback: sign session failed mongo_id=%s: %v", u.ID.Hex(), err)
 		http.Redirect(w, r, h.cfg.FrontendOrigin+"/?auth_error=session", http.StatusFound)
 		return
 	}
-	http.SetCookie(w, h.sessionCookie(jwtStr))
+	sessCookie := h.sessionCookie(jwtStr)
+	http.SetCookie(w, sessCookie)
+	log.Printf("auth/github/callback: session cookie set mongo_id=%s SameSite=%v Secure=%v",
+		u.ID.Hex(), sessCookie.SameSite, sessCookie.Secure)
 	http.Redirect(w, r, h.cfg.FrontendOrigin+"/", http.StatusFound)
 }
 
@@ -202,15 +212,18 @@ func (h *Handler) me(w http.ResponseWriter, r *http.Request) {
 	}
 	uid, err := parseSession(h.cfg.JWTSecret, c.Value)
 	if err != nil {
+		log.Printf("auth/me: session cookie present but JWT invalid: %v", err)
 		_ = json.NewEncoder(w).Encode(map[string]any{"user": nil})
 		return
 	}
 	u, err := h.users.ByID(r.Context(), uid)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
+			log.Printf("auth/me: JWT ok but no Mongo user for mongo_id=%s", uid.Hex())
 			_ = json.NewEncoder(w).Encode(map[string]any{"user": nil})
 			return
 		}
+		log.Printf("auth/me: ByID error mongo_id=%s: %v", uid.Hex(), err)
 		http.Error(w, "db", http.StatusInternalServerError)
 		return
 	}

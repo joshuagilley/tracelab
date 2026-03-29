@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -58,8 +59,10 @@ func (s *UserStore) UpsertFromGitHub(ctx context.Context, ghID int64, login, nam
 	var out User
 	err := s.coll.FindOneAndUpdate(ctx, filter, update, opts).Decode(&out)
 	if err != nil {
+		log.Printf("auth/store: UpsertFromGitHub failed github_id=%d login=%q: %v", ghID, login, err)
 		return nil, err
 	}
+	log.Printf("auth/store: UpsertFromGitHub ok github_id=%d mongo_id=%s login=%q coll=%s", ghID, out.ID.Hex(), login, s.coll.Name())
 	return &out, nil
 }
 
@@ -67,6 +70,9 @@ func (s *UserStore) ByID(ctx context.Context, id primitive.ObjectID) (*User, err
 	var u User
 	err := s.coll.FindOne(ctx, bson.M{"_id": id}).Decode(&u)
 	if err != nil {
+		if err != mongo.ErrNoDocuments {
+			log.Printf("auth/store: ByID failed mongo_id=%s: %v", id.Hex(), err)
+		}
 		return nil, err
 	}
 	return &u, nil

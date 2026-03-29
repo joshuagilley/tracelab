@@ -32,7 +32,9 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 		store := auth.NewUserStore(coll)
 		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 		if err := store.EnsureIndexes(ctx); err != nil {
-			log.Printf("auth: ensure indexes: %v", err)
+			log.Printf("auth: ensure indexes failed db=%q coll=%q: %v", cfg.MongoDBName, cfg.UsersColl, err)
+		} else {
+			log.Printf("auth: user indexes ok db=%q coll=%q", cfg.MongoDBName, cfg.UsersColl)
 		}
 		cancel()
 		auth.NewHandler(cfg, store).Register(mux)
