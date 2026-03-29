@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 	"strings"
 )
@@ -98,4 +99,18 @@ func (c *Config) AuthConfigured() bool {
 		c.GitHubClientSecret != "" &&
 		c.OAuthCallbackURL != "" &&
 		c.JWTSecret != ""
+}
+
+// LogAuthEnvDiagnostics logs which auth-related env vars are non-empty (never logs secret values).
+func (c *Config) LogAuthEnvDiagnostics() {
+	log.Printf("auth env: MONGO_DB_URI set=%v GITHUB_CLIENT_ID set=%v GITHUB_CLIENT_SECRET set=%v OAUTH_CALLBACK_URL set=%v AUTH_JWT_SECRET set=%v",
+		c.MongoURI != "",
+		c.GitHubClientID != "",
+		c.GitHubClientSecret != "",
+		c.OAuthCallbackURL != "",
+		c.JWTSecret != "",
+	)
+	if c.OAuthCallbackURL != "" {
+		log.Printf("auth env: OAUTH_CALLBACK_URL=%q FRONTEND_ORIGIN=%q", c.OAuthCallbackURL, c.FrontendOrigin)
+	}
 }

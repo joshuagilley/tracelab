@@ -47,7 +47,7 @@ func (h *Handler) authDisabled(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusServiceUnavailable)
 	_ = json.NewEncoder(w).Encode(map[string]string{
 		"error": "auth_not_configured",
-		"hint":  "Set MONGO_DB_URI, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, OAUTH_CALLBACK_URL, AUTH_JWT_SECRET",
+		"hint":  hintMissingEnv,
 	})
 }
 
@@ -294,14 +294,27 @@ func randomState() (string, error) {
 	return hex.EncodeToString(b), nil
 }
 
+const (
+	hintMissingEnv = "Set MONGO_DB_URI, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, OAUTH_CALLBACK_URL, AUTH_JWT_SECRET on the API service (Cloud Run → tracelab-api → Variables & secrets)."
+	hintMongoDown  = "OAuth env may be set, but MongoDB is not connected. Check MONGO_DB_URI, Atlas Network Access (allow Cloud Run egress), and API logs for mongo: connect failed."
+)
+
+// HintMongoDown is the API JSON hint when env is complete but Mongo never connected.
+func HintMongoDown() string { return hintMongoDown }
+
 // MountStub registers JSON 503 handlers when auth deps are missing.
 func MountStub(mux *http.ServeMux) {
+	MountStubWithReason(mux, "auth_not_configured", hintMissingEnv)
+}
+
+// MountStubWithReason uses a specific error code and hint (e.g. mongo down vs missing env).
+func MountStubWithReason(mux *http.ServeMux, errCode, hint string) {
 	stub := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusServiceUnavailable)
 		_ = json.NewEncoder(w).Encode(map[string]string{
-			"error": "auth_not_configured",
-			"hint":  "Set MONGO_DB_URI, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, OAUTH_CALLBACK_URL, AUTH_JWT_SECRET",
+			"error": errCode,
+			"hint":  hint,
 		})
 	}
 	mux.HandleFunc("/api/auth/github", stub)

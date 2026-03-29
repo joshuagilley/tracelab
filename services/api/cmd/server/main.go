@@ -17,6 +17,7 @@ import (
 
 func main() {
 	cfg := config.Load()
+	cfg.LogAuthEnvDiagnostics()
 
 	var mongoClient *mongo.Client
 	if cfg.MongoURI != "" {

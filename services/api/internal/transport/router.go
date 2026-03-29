@@ -37,12 +37,14 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 		cancel()
 		auth.NewHandler(cfg, store).Register(mux)
 	} else {
+		cfg.LogAuthEnvDiagnostics()
 		if !cfg.AuthConfigured() {
-			log.Printf("auth: not fully configured (GitHub OAuth + Mongo + JWT); /api/auth/* returns stubs")
+			log.Printf("auth: missing one or more env vars (see log line auth env: …); /api/auth/* returns stubs")
+			auth.MountStub(mux)
 		} else {
-			log.Printf("auth: Mongo client unavailable; /api/auth/* returns stubs")
+			log.Printf("auth: env OK but Mongo not connected — fix DB; /api/auth/* returns stubs until mongo connects")
+			auth.MountStubWithReason(mux, "auth_store_unavailable", auth.HintMongoDown())
 		}
-		auth.MountStub(mux)
 	}
 
 	mux.Handle("/api/sections/", lessonHandler)
