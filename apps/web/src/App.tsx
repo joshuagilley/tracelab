@@ -1,6 +1,8 @@
 import { Routes, Route } from 'react-router-dom'
 import AppShell from '@/components/AppShell'
 import { AuthProvider } from '@/contexts/auth'
+import { GlobalConceptProgressProvider } from '@/contexts/globalConceptProgress'
+import { LabCurriculumProgressProvider } from '@/contexts/labCurriculumProgress'
 import { LabProvider } from '@/contexts/lab'
 import ConceptLibraryPage from '@/features/concepts/pages/ConceptLibraryPage'
 import ConceptDetailPage from '@/features/concepts/pages/ConceptDetailPage'
@@ -9,12 +11,16 @@ export default function App() {
   return (
     <AuthProvider>
       <LabProvider>
-        <AppShell>
-          <Routes>
-            <Route path="/" element={<ConceptLibraryPage />} />
-            <Route path="/concept/:slug" element={<ConceptDetailPage />} />
-          </Routes>
-        </AppShell>
+        <LabCurriculumProgressProvider>
+          <GlobalConceptProgressProvider>
+            <AppShell>
+              <Routes>
+                <Route path="/" element={<ConceptLibraryPage />} />
+                <Route path="/concept/:slug" element={<ConceptDetailPage />} />
+              </Routes>
+            </AppShell>
+          </GlobalConceptProgressProvider>
+        </LabCurriculumProgressProvider>
       </LabProvider>
     </AuthProvider>
   )

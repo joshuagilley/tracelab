@@ -1,12 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import { fetchSectionConcepts } from '@/features/sections/api'
-import {
-  fetchLabConceptProgress,
-  TRACELAB_CONCEPT_PROGRESS_EVENT,
-} from '@/features/concepts/conceptProgressApi'
-import { completedSlugsForLab } from '@/features/concepts/conceptSectionExpectations'
-import { useAuth } from '@/contexts/auth'
+import { useLabCurriculumProgress } from '@/contexts/labCurriculumProgress'
 import { LAB_GROUPS, useLab, type LabId } from '@/contexts/lab'
 import CurriculumTopicPane from './CurriculumTopicPane'
 import DesignPatternsSidebarNav from './design-patterns/DesignPatternsSidebarNav'
@@ -16,7 +10,6 @@ import DatabaseDesignSidebarNav from './database-design/DatabaseDesignSidebarNav
 import CloudArchitectureSidebarNav from './cloud-architecture/CloudArchitectureSidebarNav'
 import ApiDesignSidebarNav from './api-design/ApiDesignSidebarNav'
 import ProgrammingLanguagesSidebarNav from './programming-languages/ProgrammingLanguagesSidebarNav'
-import type { Concept } from '@/types/concept'
 import styles from './Sidebar.module.css'
 
 const LIBRARY_LINK_LABEL: Record<LabId, string> = {
@@ -59,53 +52,10 @@ function BrandGridIcon() {
 }
 
 export default function Sidebar() {
-  const [concepts, setConcepts] = useState<Concept[]>([])
-  const [progressBySlug, setProgressBySlug] = useState<Record<string, string[]>>({})
+  const { concepts, completedSlugs } = useLabCurriculumProgress()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const { labId, setLabId, current } = useLab()
-  const { user } = useAuth()
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setConcepts(await fetchSectionConcepts(labId))
-      } catch {
-        setConcepts([])
-      }
-    }
-    load()
-  }, [labId])
-
-  const reloadLabProgress = useCallback(async () => {
-    if (!user) {
-      setProgressBySlug({})
-      return
-    }
-    try {
-      setProgressBySlug(await fetchLabConceptProgress(labId))
-    } catch {
-      setProgressBySlug({})
-    }
-  }, [user, labId])
-
-  useEffect(() => {
-    void reloadLabProgress()
-  }, [reloadLabProgress])
-
-  useEffect(() => {
-    const onUpdate = (e: Event) => {
-      const ce = e as CustomEvent<{ labId?: LabId }>
-      if (ce.detail?.labId === labId) void reloadLabProgress()
-    }
-    window.addEventListener(TRACELAB_CONCEPT_PROGRESS_EVENT, onUpdate)
-    return () => window.removeEventListener(TRACELAB_CONCEPT_PROGRESS_EVENT, onUpdate)
-  }, [labId, reloadLabProgress])
-
-  const completedSlugs = useMemo(
-    () => completedSlugsForLab(labId, concepts, progressBySlug),
-    [labId, concepts, progressBySlug],
-  )
 
   useEffect(() => {
     if (!menuOpen) return

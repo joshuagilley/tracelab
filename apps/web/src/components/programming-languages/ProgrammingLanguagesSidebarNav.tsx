@@ -5,6 +5,7 @@ import {
   PROGRAMMING_LANGUAGES_DEFAULT_OPEN,
 } from '@/features/programming-languages/programmingLanguagesNav'
 import { LanguageLogo } from '@/features/programming-languages/LanguageLogo'
+import { countSectionNavProgress } from '@/features/concepts/navSectionProgress'
 import type { Concept } from '@/types/concept'
 import styles from './ProgrammingLanguagesSidebarNav.module.css'
 
@@ -38,6 +39,9 @@ export default function ProgrammingLanguagesSidebarNav({ concepts, completedSlug
       {PROGRAMMING_LANGUAGES.map(lang => {
         const isOpen = open[lang.id] ?? false
         const panelId = `pl-lang-${lang.id}`
+        const flatItems = lang.categories.flatMap(c => c.items)
+        const { done, total } = countSectionNavProgress(flatItems, bySlug, completedSlugs)
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0
         return (
           <div key={lang.id} className={styles.langSection}>
             <button
@@ -48,13 +52,32 @@ export default function ProgrammingLanguagesSidebarNav({ concepts, completedSlug
               id={`${panelId}-btn`}
               onClick={() => toggle(lang.id)}
             >
-              <span className={styles.langChevron} aria-hidden>
-                {isOpen ? '▼' : '▶'}
-              </span>
-              <span className={styles.langTitleRow}>
-                <LanguageLogo languageId={lang.id} />
-                <span className={styles.langTitle}>{lang.title}</span>
-              </span>
+              <div className={styles.langHeadTop}>
+                <span className={styles.langChevron} aria-hidden>
+                  {isOpen ? '▼' : '▶'}
+                </span>
+                <span className={styles.langTitleRow}>
+                  <LanguageLogo languageId={lang.id} />
+                  <span className={styles.langTitle}>{lang.title}</span>
+                </span>
+                {total > 0 && (
+                  <span className={styles.langStat} title={`${pct}% complete for ${lang.title}`}>
+                    {done}/{total}
+                  </span>
+                )}
+              </div>
+              {total > 0 && (
+                <div
+                  className={styles.langProgressTrack}
+                  role="progressbar"
+                  aria-valuenow={done}
+                  aria-valuemin={0}
+                  aria-valuemax={total}
+                  aria-label={`${done} of ${total} topics complete in ${lang.title}`}
+                >
+                  <div className={styles.langProgressFill} style={{ width: `${pct}%` }} />
+                </div>
+              )}
             </button>
             {isOpen && (
               <div

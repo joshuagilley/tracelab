@@ -1,0 +1,55 @@
+.wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.label {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.fraction {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5em;
+}
+
+.pct {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  min-width: 2.25em;
+}
+
+.muted {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.track {
+  width: 72px;
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--border) 80%, transparent);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 75%, transparent),
+    var(--accent)
+  );
+  box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 40%, transparent);
+  transition: width 0.28s ease;
+}

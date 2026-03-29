@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { DATABASE_DESIGN_SECTIONS } from '@/features/database-design/databaseDesignNav'
 import type { Concept } from '@/types/concept'
+import SectionNavHead from '@/components/sidebar/SectionNavHead'
 import styles from '@/components/sidebar/NavSections.module.css'
 
 function initialOpenState(): Record<string, boolean> {
@@ -34,19 +35,15 @@ export default function DatabaseDesignSidebarNav({ concepts, completedSlugs }: P
         const panelId = `dbd-section-${section.id}`
         return (
           <div key={section.id} className={styles.section}>
-            <button
-              type="button"
-              className={styles.sectionHead}
-              aria-expanded={isOpen}
-              aria-controls={panelId}
-              id={`${panelId}-btn`}
-              onClick={() => toggle(section.id)}
-            >
-              <span className={styles.sectionChevron} aria-hidden>
-                {isOpen ? '▼' : '▶'}
-              </span>
-              <span className={styles.sectionTitle}>{section.title}</span>
-            </button>
+            <SectionNavHead
+              isOpen={isOpen}
+              panelId={panelId}
+              title={section.title}
+              items={section.items}
+              bySlug={bySlug}
+              completedSlugs={completedSlugs}
+              onToggle={() => toggle(section.id)}
+            />
             {isOpen && (
               <div
                 id={panelId}

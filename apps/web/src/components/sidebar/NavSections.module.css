@@ -11,7 +11,8 @@
 
 .sectionHead {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: stretch;
   gap: 6px;
   width: 100%;
   padding: 8px 8px;
@@ -22,6 +23,49 @@
   cursor: pointer;
   color: var(--text-primary);
   transition: border-color 0.15s, background 0.15s;
+}
+
+.sectionHeadMain {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+.sectionStat {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-left: 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  opacity: 0.9;
+}
+
+.sectionProgressTrack {
+  height: 3px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--border) 85%, transparent);
+  overflow: hidden;
+  margin-left: 16px;
+  width: calc(100% - 16px);
+  align-self: flex-start;
+}
+
+.sectionProgressFill {
+  height: 100%;
+  min-width: 0;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 88%, transparent),
+    var(--accent)
+  );
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 35%, transparent);
+  transition: width 0.28s ease;
 }
 
 .sectionHead:hover {
@@ -42,6 +86,9 @@
   font-weight: 600;
   line-height: 1.35;
   letter-spacing: 0.02em;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
 }
 
 .panel {
