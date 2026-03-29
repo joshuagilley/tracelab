@@ -24,15 +24,18 @@ func main() {
 		c, err := db.Connect(ctx, cfg.MongoURI)
 		cancel()
 		if err != nil {
-			log.Fatalf("mongo connect: %v", err)
+			// Do not exit: Cloud Run requires the process to listen on PORT; a bad URI,
+			// Atlas IP allowlist, or network blip would otherwise fail every deploy.
+			log.Printf("mongo: connect failed (lessons still served; auth user store offline): %v", err)
+		} else {
+			mongoClient = c
+			defer func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				_ = mongoClient.Disconnect(ctx)
+				cancel()
+			}()
+			log.Printf("mongo: connected (db=%q users=%q)", cfg.MongoDBName, cfg.UsersColl)
 		}
-		mongoClient = c
-		defer func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			_ = mongoClient.Disconnect(ctx)
-			cancel()
-		}()
-		log.Printf("mongo: connected (db=%q users=%q)", cfg.MongoDBName, cfg.UsersColl)
 	} else {
 		log.Printf("mongo: MONGO_DB_URI not set; auth persistence disabled")
 	}
