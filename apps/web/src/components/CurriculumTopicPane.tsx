@@ -1,4 +1,4 @@
-import TopicSidebarNav from './TopicSidebarNav'
+import TopicSidebarNav from '@/components/sidebar/TopicSidebarNav'
 import { ALGORITHMS_DEFAULT_OPEN, ALGORITHMS_SECTIONS } from '@/features/algorithms/algorithmsNav'
 import { AI_SYSTEMS_DEFAULT_OPEN, AI_SYSTEMS_SECTIONS } from '@/features/ai-systems/aiSystemsNav'
 import { CONCURRENCY_DEFAULT_OPEN, CONCURRENCY_SECTIONS } from '@/features/concurrency/concurrencyNav'
