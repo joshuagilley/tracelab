@@ -11,6 +11,7 @@ import { useLab, type LabId } from '@/contexts/lab'
 import SimulationPanel, { type SimMetrics } from '@/components/system-design/latency-caching/caching/SimulationPanel'
 import MetricsPanel from '@/components/system-design/latency-caching/caching/MetricsPanel'
 import DynamicCodePanel from '@/components/code/DynamicCodePanel'
+import CachingPracticeDownload from '@/components/system-design/latency-caching/caching/CachingPracticeDownload'
 import SingletonVisualizer, { type SingletonStats } from '@/components/design-patterns/creational/singleton/SingletonVisualizer'
 import DependencyInjectionVisualizer, {
   type DIStats,
@@ -259,7 +260,10 @@ export default function ConceptDetailPage() {
             </div>
 
             <div className={styles.right}>
-              <DynamicCodePanel files={lesson.codeFiles ?? []} />
+              <DynamicCodePanel
+                files={lesson.codeFiles ?? []}
+                extraActions={lesson.slug === 'caching' ? <CachingPracticeDownload /> : undefined}
+              />
             </div>
           </div>
         </ConceptLessonLayout>

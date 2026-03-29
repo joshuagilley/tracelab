@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, type ReactNode } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import type { LabCodeFile } from '@/types/labConcept'
@@ -6,9 +6,11 @@ import styles from './CodePanel.module.css'
 
 interface Props {
   files: LabCodeFile[]
+  /** Extra header controls (e.g. practice sandbox download for specific concepts). */
+  extraActions?: ReactNode
 }
 
-export default function DynamicCodePanel({ files }: Props) {
+export default function DynamicCodePanel({ files, extraActions }: Props) {
   const map = useMemo(() => {
     const m: Record<string, { lang: string; code: string }> = {}
     for (const f of files) {
@@ -56,10 +58,11 @@ export default function DynamicCodePanel({ files }: Props) {
           ))}
         </div>
         <div className={styles.actions}>
+          {extraActions}
           <button
             type="button"
             className={styles.actionBtn}
-            title="Copy code"
+            title="Copy active file"
             onClick={() => {
               navigator.clipboard.writeText(code).catch(() => {})
             }}
