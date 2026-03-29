@@ -19,7 +19,7 @@ A lightweight interactive learning tool for system design concepts.
 ## Running Locally
 
 ### Prerequisites
-- Go 1.21+
+- Go 1.25+ (matches `services/api/go.mod` and the API Dockerfile)
 - Node.js 18+
 
 ### Quick Start

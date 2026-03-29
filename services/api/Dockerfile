@@ -2,7 +2,7 @@
 # Lesson files (present/bad per topic) live in services/api/internal/lessons/embed/ and are committed.
 
 # ── Build stage ────────────────────────────────────
-FROM golang:1.22-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
