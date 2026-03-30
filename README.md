@@ -94,7 +94,7 @@ Each entry in **`concepts`** should include at least what the UI expects on the 
 | `slug` | URL segment; **must be unique within the lab** and must match `navSections[].items[].slug` when you want a sidebar link. |
 | `title`, `summary`, `difficulty`, `tags`, `status` | `status`: `available` or `coming-soon`. |
 | `labKind` | Usually the lab id string (e.g. `system-design`). |
-| `vizType` | Frontend uses this with `labId` to pick a layout in `ConceptDetailPage`. |
+| `vizType` | How the detail page renders: `"lesson"` for a **text lesson** (must register **`slug`** in `lessonRegistry.ts` — see §3 below), or a simulation key (e.g. `caching`) registered in `vizRegistry.tsx`. |
 | `codeFiles` | Array of `{ "name", "lang" }` for tab labels. Actual source text usually comes from the **Concepts** document (next step). |
 
 After inserting or editing the lab document, restart or refresh the app so **`fetchLabsCatalogIntoCache`** runs again (full page load).
@@ -127,25 +127,49 @@ Use normal subpaths in `name` (no `.` or `..` segments). The **Caching** templat
 
 ### 3. Frontend — routing and UI
 
-All of this lives under **`apps/web/src/features/concepts/`** and related lesson modules.
+Rendering is driven by **`apps/web/src/features/concepts/pages/ConceptDetailPage.tsx`**. After **`GET /api/catalog/lesson`** returns a merged lesson, the page picks **one** of:
 
-1. **`ConceptDetailPage.tsx`**  
-   Your **`labId`** + **`vizType`** and/or **`slug`** must hit an existing branch: lesson panel + visualizer, not the generic “layout is not available yet” path (see **`LABS_AWAITING_LESSON_UI`** in that file). Until that branch exists, the catalog can list the concept but the detail page will look broken or wrong.
+| Kind | When | Where you register |
+|------|------|---------------------|
+| **Interactive simulation** | `vizType` is a key in **`VIZ_REGISTRY`** (e.g. `caching`, `singleton`) | **`apps/web/src/features/concepts/vizRegistry.tsx`** — add an adapter + entry. |
+| **Text lesson** | `vizType` is `"lesson"`, **or** missing/empty, **or** not a simulation key — and the **`slug`** has a panel in **`LESSON_REGISTRY`** | **`apps/web/src/features/lessons/lessonRegistry.ts`** — **required** for every new text lesson. |
 
-2. **Code panel source files** (when you want non-empty tabs)  
-   - Add raw files under `apps/web/src/components/…` (follow existing lessons).  
-   - Register them in **`apps/web/src/features/lessons/lessonSourceRegistry.ts`** with **`?raw`** imports.  
-   - Keys must match the **`name`** values in `codeFiles` from Mongo.
+If nothing matches, the user sees **“This concept is not wired to a lesson UI yet”** with the **`vizType`** and **`slug`** from the API — use that to fix Mongo vs registry mismatch.
 
-3. **Optional: “mark done” / sidebar completion**  
-   If this lab should participate in whole-concept progress, update **`apps/web/src/features/concepts/conceptSectionExpectations.ts`** (`LABS_WITH_WHOLE_CONCEPT_PROGRESS`).
+#### Frontend: text lesson (`vizType: "lesson"`)
+
+Do this for “read the lesson on the left, optional code tabs on the right” (most catalog concepts).
+
+1. **Create a lesson component** under **`apps/web/src/components/lessons/<lab>/YourLessonName.tsx`**.  
+   - Props must match **`LessonPanelProps`** in **`lessonRegistry.ts`** (today: **`{ summary: string }`** — the catalog **`summary`** is passed through).  
+   - Reuse **`LessonRoot`**, **`LessonProblem`**, **`LessonDiagram`**, etc. from **`apps/web/src/components/lesson-panels/LessonPanel.tsx`** like **`LoadBalancerL4L7Lesson.tsx`**.
+
+2. **Register it by slug** in **`apps/web/src/features/lessons/lessonRegistry.ts`**:  
+   - Import your component.  
+   - Add a line: **`'your-concept-slug': YourLessonComponent`**  
+   - The **object key must match exactly** the **`slug`** in **`Labs.concepts[]`** and in the URL **`/concept/<slug>`** (kebab-case). One slug ⇒ one registry entry. If Mongo uses a different slug (e.g. `load-balancing` vs `load-balancer`), add **another line** or change the catalog slug.
+
+3. **Set `vizType` in Mongo** (recommended): on the **`Labs`** concept row, set **`"vizType": "lesson"`**.  
+   You can also set **`vizType`** on the **`Concepts`** document; it merges over the lab row.  
+   If **`vizType`** is omitted, the app still resolves a **`LESSON_REGISTRY`** panel when the **`slug`** is registered (see **`resolveLessonPanelComponent`** in **`ConceptDetailPage.tsx`**). Simulation types (`caching`, …) must still set **`vizType`** correctly so the sim branch wins.
+
+4. **Code tabs (optional)** — put **`codeFiles`** on **`Labs`** and/or **`Concepts`** with **`name`**, **`lang`**, and **`code`** strings. The right-hand **`DynamicCodePanel`** renders whatever the API returns; no separate “source registry” file.
+
+#### Frontend: interactive simulation (not a text lesson)
+
+Add **`vizType`** in Mongo to match a key in **`VIZ_REGISTRY`**, and implement the adapter in **`vizRegistry.tsx`** (parameters + metrics wiring).
+
+#### Optional: per-concept completion (sidebar / progress)
+
+If this lab should track **completed concepts**, ensure the lab id is listed in **`apps/web/src/features/concepts/conceptSectionExpectations.ts`** (`LABS_WITH_CONCEPT_COMPLETION`).
 
 ### 4. Quick verification
 
 1. Open the app, select the lab, confirm the concept appears in the **library**.  
 2. Open the **sidebar** link (item must have **`slug`** set).  
 3. Confirm **`/api/catalog/lesson?lab=…&slug=…`** returns JSON with the fields you expect (`codeFiles`, `practice`, etc.).  
-4. Confirm the **detail page** shows the correct lesson layout and code/practice behavior.
+4. Confirm the **detail page** shows the correct lesson layout (not the “not wired” error) and code/practice behavior.  
+5. If you added a **text lesson**, confirm **`lessonRegistry.ts`** contains an entry whose key equals the concept **`slug`**.
 
 ---
 

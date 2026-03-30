@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useState,
+  type ComponentType,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react'
@@ -12,7 +13,8 @@ import DynamicCodePanel from '@/components/code/DynamicCodePanel'
 import ParametersPanel from '@/components/panels/ParametersPanel'
 import MetricsPanel from '@/components/panels/MetricsPanel'
 import { VIZ_REGISTRY } from '@/features/concepts/vizRegistry'
-import { LESSON_REGISTRY } from '@/features/lessons/lessonRegistry'
+import { LESSON_REGISTRY, type LessonPanelProps } from '@/features/lessons/lessonRegistry'
+import type { LabConceptDetail } from '@/types/labConcept'
 import { ConceptProgressProvider } from '@/contexts/conceptProgress'
 import ConceptLessonLayout from '@/components/lesson-panels/ConceptLessonLayout'
 import styles from './ConceptDetailPage.module.css'
@@ -38,6 +40,19 @@ const MIN_WIDTH = 260
 const MAX_WIDTH = 680
 
 const VALID_LAB_IDS = new Set<LabId>(LAB_OPTIONS.map(o => o.id))
+
+/** Lesson panel when vizType is `lesson`, missing, or not a registered simulation. */
+function resolveLessonPanelComponent(
+  lesson: LabConceptDetail,
+): ComponentType<LessonPanelProps> | undefined {
+  const panel = LESSON_REGISTRY[lesson.slug]
+  if (!panel) return undefined
+  const vt = lesson.vizType
+  if (vt === 'lesson') return panel
+  if (vt == null || vt === '') return panel
+  if (typeof vt === 'string' && !VIZ_REGISTRY[vt]) return panel
+  return undefined
+}
 
 const LIBRARY_LABELS: Record<LabId, string> = {
   'system-design':         'Concept Library',
@@ -209,10 +224,8 @@ export default function ConceptDetailPage() {
   }
 
   // ── Lesson text path ──────────────────────────────────────────────────────
-  // Any concept with vizType 'lesson' renders a rich-text lesson panel on the left.
-  // To add a new one: create a component under components/lessons/{lab}/ and register
-  // it in lessonRegistry.ts.
-  const LessonComp = lesson?.vizType === 'lesson' ? LESSON_REGISTRY[lesson.slug] : undefined
+  // Registered slugs in LESSON_REGISTRY; vizType should be `lesson` (may be omitted in Mongo).
+  const LessonComp = lesson ? resolveLessonPanelComponent(lesson) : undefined
   if (LessonComp && lesson) {
     return (
       <WithProgress labId={labId} slug={slug}>
@@ -231,6 +244,25 @@ export default function ConceptDetailPage() {
           </div>
         </ConceptLessonLayout>
       </WithProgress>
+    )
+  }
+
+  // Lesson loaded from API but no visualizer / lesson panel is registered — avoid infinite "Loading…"
+  if (lesson) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.errorPage}>
+          <p>This concept is not wired to a lesson UI yet.</p>
+          <p className={styles.errorMeta}>
+            <code>vizType</code>: {lesson.vizType} · <code>slug</code>: {lesson.slug}
+          </p>
+          <p className={styles.errorHint}>
+            Add the slug to <code>LESSON_REGISTRY</code> (if <code>vizType</code> is <code>lesson</code>) or register{' '}
+            <code>vizType</code> in <code>VIZ_REGISTRY</code>.
+          </p>
+          <Link to="/" className={styles.backLink}>← Back to library</Link>
+        </div>
+      </div>
     )
   }
 
