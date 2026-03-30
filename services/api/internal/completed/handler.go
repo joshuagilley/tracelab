@@ -1,7 +1,6 @@
 package completed
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -12,38 +11,46 @@ import (
 )
 
 type Handler struct {
-	cfg          *config.Config
-	store        *Store
-	conceptsColl *mongo.Collection
+	cfg     *config.Config
+	store   *Store
+	service *Service
 }
 
 func NewHandler(cfg *config.Config, store *Store, conceptsColl *mongo.Collection) *Handler {
-	return &Handler{cfg: cfg, store: store, conceptsColl: conceptsColl}
+	repo := NewPracticeRepository(conceptsColl)
+	runner := NewGoRunner(defaultPracticeRunTimeout)
+	svc := NewService(store, repo, runner)
+	return &Handler{cfg: cfg, store: store, service: svc}
 }
 
 func (h *Handler) Register(mux *http.ServeMux) {
-	mux.HandleFunc("/api/completed", h.handle)
+	mux.HandleFunc("/api/completed", h.handleCompleted)
 	mux.HandleFunc("/api/completed/submit", h.submitLab)
 }
 
-// statusResponse is returned for single-concept queries and after PUT.
-type statusResponse struct {
+type completionStatusResponse struct {
 	Completed   bool    `json:"completed"`
-	CompletedAt *string `json:"completedAt"` // RFC3339 or null
+	CompletedAt *string `json:"completedAt"`
 }
 
-// labResponse is returned when only lab is provided.
-type labResponse struct {
+type labCompletionResponse struct {
 	CompletedSlugs []string `json:"completedSlugs"`
 }
 
-type putBody struct {
+type updateCompletionRequest struct {
 	Lab       string `json:"lab"`
 	Slug      string `json:"slug"`
 	Completed bool   `json:"completed"`
 }
 
-func (h *Handler) handle(w http.ResponseWriter, r *http.Request) {
+type submitPracticeResponse struct {
+	Passed      bool    `json:"passed"`
+	Completed   bool    `json:"completed"`
+	CompletedAt *string `json:"completedAt"`
+	Output      string  `json:"output"`
+}
+
+func (h *Handler) handleCompleted(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.getCompleted(w, r)
@@ -54,6 +61,14 @@ func (h *Handler) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func writeAnonymousCompletionResponse(w http.ResponseWriter, slug string) {
+	if slug != "" {
+		auth.WriteJSON(w, http.StatusOK, completionStatusResponse{Completed: false})
+		return
+	}
+	auth.WriteJSON(w, http.StatusOK, labCompletionResponse{CompletedSlugs: []string{}})
+}
+
 // GET /api/completed?lab=<lab>              → { completedSlugs: [...] }
 // GET /api/completed?lab=<lab>&slug=<slug>  → { completed: bool, completedAt: string|null }
 func (h *Handler) getCompleted(w http.ResponseWriter, r *http.Request) {
@@ -61,26 +76,21 @@ func (h *Handler) getCompleted(w http.ResponseWriter, r *http.Request) {
 	slug := r.URL.Query().Get("slug")
 
 	if lab == "" {
-		auth.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "lab_required"})
+		writeError(w, http.StatusBadRequest, "lab_required")
 		return
 	}
 
 	uid, err := auth.SessionUserID(h.cfg.JWTSecret, r)
 	if err != nil {
-		// Unauthenticated: return empty results without an error.
-		if slug != "" {
-			auth.WriteJSON(w, http.StatusOK, statusResponse{Completed: false})
-		} else {
-			auth.WriteJSON(w, http.StatusOK, labResponse{CompletedSlugs: []string{}})
-		}
+		writeAnonymousCompletionResponse(w, slug)
 		return
 	}
 
 	if slug != "" {
 		done, completedAt, err := h.store.IsCompleted(r.Context(), uid, lab, slug)
 		if err != nil {
-			log.Printf("completed: get lab=%q slug=%q: %v", lab, slug, err)
-			http.Error(w, "db", http.StatusInternalServerError)
+			log.Printf("completed.get: lab=%q slug=%q: %v", lab, slug, err)
+			writeError(w, http.StatusInternalServerError, "internal_error")
 			return
 		}
 		auth.WriteJSON(w, http.StatusOK, buildStatusResponse(done, completedAt))
@@ -89,53 +99,94 @@ func (h *Handler) getCompleted(w http.ResponseWriter, r *http.Request) {
 
 	slugs, err := h.store.CompletedSlugs(r.Context(), uid, lab)
 	if err != nil {
-		log.Printf("completed: list lab=%q: %v", lab, err)
-		http.Error(w, "db", http.StatusInternalServerError)
+		log.Printf("completed.list: lab=%q: %v", lab, err)
+		writeError(w, http.StatusInternalServerError, "internal_error")
 		return
 	}
-	auth.WriteJSON(w, http.StatusOK, labResponse{CompletedSlugs: slugs})
+	auth.WriteJSON(w, http.StatusOK, labCompletionResponse{CompletedSlugs: slugs})
 }
 
-// PUT /api/completed  body: { lab, slug, completed: bool }  → statusResponse
+// PUT /api/completed  body: { lab, slug, completed: bool }  → completionStatusResponse
 func (h *Handler) putCompleted(w http.ResponseWriter, r *http.Request) {
 	uid, err := auth.SessionUserID(h.cfg.JWTSecret, r)
 	if err != nil {
-		auth.WriteJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		writeError(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
 
-	var body putBody
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		auth.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid_json"})
+	var body updateCompletionRequest
+	if err := decodeJSON(w, r, maxCompletionBodyBytes, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid_json")
 		return
 	}
 	if body.Lab == "" || body.Slug == "" {
-		auth.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "lab_and_slug_required"})
+		writeError(w, http.StatusBadRequest, "lab_and_slug_required")
 		return
 	}
 
 	if body.Completed {
 		completedAt, err := h.store.Complete(r.Context(), uid, body.Lab, body.Slug)
 		if err != nil {
-			log.Printf("completed: mark done lab=%q slug=%q: %v", body.Lab, body.Slug, err)
-			http.Error(w, "db", http.StatusInternalServerError)
+			log.Printf("completed.put mark: lab=%q slug=%q: %v", body.Lab, body.Slug, err)
+			writeError(w, http.StatusInternalServerError, "internal_error")
 			return
 		}
 		auth.WriteJSON(w, http.StatusOK, buildStatusResponse(true, completedAt))
-	} else {
-		if err := h.store.Uncomplete(r.Context(), uid, body.Lab, body.Slug); err != nil {
-			log.Printf("completed: unmark lab=%q slug=%q: %v", body.Lab, body.Slug, err)
-			http.Error(w, "db", http.StatusInternalServerError)
-			return
-		}
-		auth.WriteJSON(w, http.StatusOK, statusResponse{Completed: false})
+		return
 	}
+
+	if err := h.store.Uncomplete(r.Context(), uid, body.Lab, body.Slug); err != nil {
+		log.Printf("completed.put unmark: lab=%q slug=%q: %v", body.Lab, body.Slug, err)
+		writeError(w, http.StatusInternalServerError, "internal_error")
+		return
+	}
+	auth.WriteJSON(w, http.StatusOK, completionStatusResponse{Completed: false})
 }
 
-func buildStatusResponse(done bool, completedAt time.Time) statusResponse {
+func buildStatusResponse(done bool, completedAt time.Time) completionStatusResponse {
 	if !done {
-		return statusResponse{Completed: false}
+		return completionStatusResponse{Completed: false}
 	}
 	ts := completedAt.Format(time.RFC3339)
-	return statusResponse{Completed: true, CompletedAt: &ts}
+	return completionStatusResponse{Completed: true, CompletedAt: &ts}
+}
+
+func (h *Handler) submitLab(w http.ResponseWriter, r *http.Request) {
+	if !auth.RequireMethod(w, r, http.MethodPost) {
+		return
+	}
+	uid, err := auth.SessionUserID(h.cfg.JWTSecret, r)
+	if err != nil {
+		writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	var body SubmitPracticeRequest
+	if err := decodeJSON(w, r, maxSubmitBodyBytes, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid_json")
+		return
+	}
+
+	result, err := h.service.Submit(r.Context(), uid, body)
+	if err != nil {
+		status, code, doLog := MapSubmitError(err)
+		if doLog {
+			log.Printf("completed.submit: lab=%q slug=%q: %v", body.Lab, body.Slug, err)
+		}
+		writeError(w, status, code)
+		return
+	}
+
+	var completedAt *string
+	if result.CompletedAt != nil {
+		ts := result.CompletedAt.UTC().Format(time.RFC3339)
+		completedAt = &ts
+	}
+
+	auth.WriteJSON(w, http.StatusOK, submitPracticeResponse{
+		Passed:      result.Passed,
+		Completed:   result.Completed,
+		CompletedAt: completedAt,
+		Output:      result.Output,
+	})
 }

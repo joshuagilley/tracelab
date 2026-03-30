@@ -10,8 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// Doc is one row per completed concept: document exists ⟹ concept is done.
-type Doc struct {
+// CompletionRecord is one row per completed concept: document exists ⟹ concept is done.
+type CompletionRecord struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty"`
 	UserID      primitive.ObjectID `bson:"user_id"`
 	Lab         string             `bson:"lab"`
@@ -38,7 +38,7 @@ func (s *Store) EnsureIndexes(ctx context.Context) error {
 
 // IsCompleted returns whether the given concept is completed and when (zero time if not).
 func (s *Store) IsCompleted(ctx context.Context, userID primitive.ObjectID, lab, slug string) (bool, time.Time, error) {
-	var d Doc
+	var d CompletionRecord
 	err := s.coll.FindOne(ctx, bson.M{"user_id": userID, "lab": lab, "slug": slug}).Decode(&d)
 	if err == mongo.ErrNoDocuments {
 		return false, time.Time{}, nil
@@ -49,9 +49,12 @@ func (s *Store) IsCompleted(ctx context.Context, userID primitive.ObjectID, lab,
 	return true, d.CompletedAt, nil
 }
 
-// CompletedSlugs returns the set of slugs the user has completed in the given lab.
+// CompletedSlugs returns slugs the user has completed in the lab, sorted by slug.
 func (s *Store) CompletedSlugs(ctx context.Context, userID primitive.ObjectID, lab string) ([]string, error) {
-	cur, err := s.coll.Find(ctx, bson.M{"user_id": userID, "lab": lab})
+	opts := options.Find().
+		SetProjection(bson.M{"slug": 1, "_id": 0}).
+		SetSort(bson.D{{Key: "slug", Value: 1}})
+	cur, err := s.coll.Find(ctx, bson.M{"user_id": userID, "lab": lab}, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -59,11 +62,13 @@ func (s *Store) CompletedSlugs(ctx context.Context, userID primitive.ObjectID, l
 
 	var slugs []string
 	for cur.Next(ctx) {
-		var d Doc
-		if err := cur.Decode(&d); err != nil {
+		var row struct {
+			Slug string `bson:"slug"`
+		}
+		if err := cur.Decode(&row); err != nil {
 			return nil, err
 		}
-		slugs = append(slugs, d.Slug)
+		slugs = append(slugs, row.Slug)
 	}
 	if err := cur.Err(); err != nil {
 		return nil, err
@@ -87,7 +92,7 @@ func (s *Store) Complete(ctx context.Context, userID primitive.ObjectID, lab, sl
 		},
 		options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After),
 	)
-	var d Doc
+	var d CompletionRecord
 	if err := res.Decode(&d); err != nil {
 		return time.Time{}, err
 	}
