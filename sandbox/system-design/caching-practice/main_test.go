@@ -1,13 +1,13 @@
-package cache
+package main
 
 import "testing"
 
 func TestSetGetRoundTrip(t *testing.T) {
-	c := New()
+	c := NewCache()
 	c.Set("language", "Go")
 	v, ok := c.Get("language")
 	if !ok {
-		t.Fatal("expected cache hit after Set")
+		t.Fatal("expected hit after Set")
 	}
 	if v != "Go" {
 		t.Fatalf("got %q, want Go", v)
@@ -15,15 +15,15 @@ func TestSetGetRoundTrip(t *testing.T) {
 }
 
 func TestGetMissing(t *testing.T) {
-	c := New()
+	c := NewCache()
 	_, ok := c.Get("nope")
 	if ok {
-		t.Fatal("expected miss for unknown key")
+		t.Fatal("expected miss")
 	}
 }
 
 func TestOverwrite(t *testing.T) {
-	c := New()
+	c := NewCache()
 	c.Set("k", "a")
 	c.Set("k", "b")
 	v, ok := c.Get("k")

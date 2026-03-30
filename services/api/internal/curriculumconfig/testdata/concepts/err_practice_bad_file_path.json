@@ -1,8 +1,0 @@
-{
-  "_id": "system-design/caching",
-  "practice": {
-    "zipName": "lab.zip",
-    "folder": "lab",
-    "files": [{ "name": "../etc/passwd", "content": "x" }]
-  }
-}

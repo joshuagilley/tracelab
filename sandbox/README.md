@@ -12,6 +12,6 @@ Python pins and lesson sources for the Data Science / numerical UI live under **
 | Path | Notes |
 |------|--------|
 | `design-patterns/dependency-injection`, `singleton` | Go demos; canonical lesson sources stay under `apps/web/src/components/design-patterns/`. |
-| `system-design/caching-practice/` | Example layout for Mongo **`practice`** ZIPs (root README §5a). |
+| `system-design/caching-practice/` | Minimal practice bundle: `go.mod`, `LAB.md`, `main.go`, `main_test.go`, `solution.go` (`//go:build ignore`). |
 | `system-design/concepts/caching/lru_cache.go` | Heavier LRU sample for local runs. |
 | `low-level-systems/pointers/` | C `present` / `bad` samples for the pointers lesson. |

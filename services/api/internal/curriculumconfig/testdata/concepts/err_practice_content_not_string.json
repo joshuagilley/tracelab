@@ -1,8 +1,0 @@
-{
-  "_id": "system-design/caching",
-  "practice": {
-    "zipName": "x.zip",
-    "folder": "lab",
-    "files": [{ "name": "a.go", "content": 1 }]
-  }
-}

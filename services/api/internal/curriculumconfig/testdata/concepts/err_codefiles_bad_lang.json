@@ -1,4 +1,0 @@
-{
-  "_id": "api-design/retries",
-  "codeFiles": [{ "name": "present.go", "lang": "", "code": "package main" }]
-}

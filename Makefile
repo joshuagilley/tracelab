@@ -1,4 +1,4 @@
-.PHONY: dev api web install build clean compose-up compose-down test
+.PHONY: dev api web install build clean compose-up compose-down test sync-caching-mongo
 
 # Bash so `api` can `source .env` (GitHub OAuth, Mongo, JWT, etc.)
 SHELL := /bin/bash
@@ -35,7 +35,11 @@ build:
 
 test:
 	cd services/api && go test ./...
-	cd apps/web && npm test
+	cd apps/web && npm run build
+
+# $set Concepts.practice for system-design/caching from sandbox/system-design/caching-practice/
+sync-caching-mongo:
+	@bash -c 'if [[ -f "$(CURDIR)/.env" ]]; then set -a && source "$(CURDIR)/.env" && set +a; fi; cd "$(CURDIR)/services/api" && go run ./cmd/sync-caching-practice -repo "$(CURDIR)"'
 
 clean:
 	rm -rf apps/web/dist

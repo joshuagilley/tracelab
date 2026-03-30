@@ -60,26 +60,15 @@ make web        # Vite on :5173 (proxies `/api` to the API in dev)
 
 On startup the SPA calls **`GET /api/catalog/labs`**, caches each lab document, then uses **`GET /api/catalog/lesson?lab=&slug=`** for concept detail.
 
-### Tests (curriculum config)
+### Tests
 
 ```bash
 make test
 ```
 
-Runs **`go test ./...`** in `services/api` (including `internal/curriculumconfig`) and **`npm test`** in `apps/web`.
+Runs **`go test ./...`** in `services/api` and **`npm run build`** in `apps/web` (TypeScript + Vite).
 
-Both suites validate **Mongo-shaped JSON** using shared fixtures under **`services/api/internal/curriculumconfig/testdata/`** (these are **Mongo `Labs` collection** document shapes—not the filesystem **`sandbox/`** folder):
-
-- **`labs/*.json`** — full **catalog lab** documents: `concepts`, `navSections`, no stray top-level `practice`, matching slugs between nav items and concepts, required concept fields, `labKind` vs `lab._id`, etc.
-- **`concepts/*.json`** — Concepts documents: optional `practice` (ZIP shape, safe paths, non-empty `files`, string `content`) and optional `codeFiles` entries.
-
-File names must start with **`ok_`** (expect zero validation errors) or **`err_`** (expect at least one error). Add a new pair when you introduce a new rule.
-
-TypeScript checks reuse the same files and align **`practice` path rules** with `practiceZipEntryPath` in `apps/web/src/lib/practiceZip.ts`.
-
-These tests do **not** connect to Mongo; they guard structure only. To validate a live export, paste documents into temporary `ok_` / `err_` fixtures or run the validators in a REPL.
-
-**GitHub Actions:** `.github/workflows/ci.yml` runs the same Go tests, `npm test`, and `npm run build` on **pull requests** and on **pushes to branches other than `main`**. Pushes to **`main`** run **`.github/workflows/deploy.yml`**, which runs those tests first, then deploys the API and web to Cloud Run.
+**GitHub Actions:** `.github/workflows/ci.yml` runs the same Go tests and web build on **pull requests** and on **pushes to branches other than `main`**. Pushes to **`main`** run **`.github/workflows/deploy.yml`**, which runs those checks first, then deploys the API and web to Cloud Run.
 
 ---
 
@@ -125,13 +114,16 @@ Optional for a bare listing, but you need it for **filled code tabs**, **practic
   "zipName": "my-lab.zip",
   "folder": "my-lab",
   "files": [
-    { "name": "README.md", "content": "..." },
-    { "name": "pkg/stub.go", "content": "..." }
+    { "name": "go.mod", "content": "..." },
+    { "name": "LAB.md", "content": "..." },
+    { "name": "main.go", "content": "..." },
+    { "name": "main_test.go", "content": "..." },
+    { "name": "solution.go", "content": "..." }
   ]
 }
 ```
 
-Use normal subpaths in `name` (no `.` or `..` segments). Reference tree: `sandbox/system-design/caching-practice/`. Client build: `apps/web/src/lib/practiceZip.ts`.
+Use normal subpaths in `name` (no `.` or `..` segments). The **Caching** template in-repo is **`sandbox/system-design/caching-practice/`** (`go.mod`, `LAB.md`, `main.go`, `main_test.go`, `solution.go` with `//go:build ignore`). To push that tree into Mongo as the downloadable bundle for **`system-design/caching`**, run **`make sync-caching-mongo`** (loads repo `.env`, updates only the **`practice`** field on **`Concepts._id`** `system-design/caching`). Client ZIP: `apps/web/src/lib/practiceZip.ts`.
 
 ### 3. Frontend — routing and UI
 
