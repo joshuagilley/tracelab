@@ -1,7 +1,7 @@
 // Local sandbox — self-contained runnable main (not served by the API).
 // Canonical lesson code: apps/web/src/components/design-patterns/advanced/dependency-injection/present.go
 //
-//	cd labs/design-patterns && go run ./sandbox/dependency-injection
+//	cd sandbox/design-patterns && go run ./dependency-injection
 package main
 
 import (

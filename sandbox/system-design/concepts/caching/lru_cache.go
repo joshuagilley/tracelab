@@ -1,5 +1,5 @@
 // Package caching holds a small thread-safe LRU cache with per-entry TTL.
-// This mirrors the TraceLab system-design Caching lesson (see ../../sandbox/caching/main.go).
+// Local sandbox sample; lesson UI and sources live in apps/web. See ../caching-practice/ for the mini-lab layout.
 package caching
 
 import (

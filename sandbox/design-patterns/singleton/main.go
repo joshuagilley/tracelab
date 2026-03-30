@@ -1,7 +1,7 @@
 // Local sandbox — self-contained runnable main (not served by the API).
 // Canonical lesson code: apps/web/src/components/design-patterns/creational/singleton/present.go
 //
-//	cd labs/design-patterns && go run ./sandbox/singleton
+//	cd sandbox/design-patterns && go run ./singleton
 package main
 
 import (

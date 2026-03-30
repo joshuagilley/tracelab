@@ -56,7 +56,7 @@ make web        # Vite on :5173 (proxies `/api` to the API in dev)
 |------|------|
 | `apps/web/` | React + Vite SPA |
 | `services/api/` | Go HTTP API (`cmd/server`) |
-| `labs/` | Optional on-disk examples (e.g. practice lab file trees); not served by the API |
+| `sandbox/` | **Dev-only** practice code (see `sandbox/README.md`). Not imported by the app or API. |
 
 On startup the SPA calls **`GET /api/catalog/labs`**, caches each lab document, then uses **`GET /api/catalog/lesson?lab=&slug=`** for concept detail.
 
@@ -68,9 +68,9 @@ make test
 
 Runs **`go test ./...`** in `services/api` (including `internal/curriculumconfig`) and **`npm test`** in `apps/web`.
 
-Both suites validate **Mongo-shaped JSON** using shared fixtures under **`services/api/internal/curriculumconfig/testdata/`**:
+Both suites validate **Mongo-shaped JSON** using shared fixtures under **`services/api/internal/curriculumconfig/testdata/`** (these are **Mongo `Labs` collection** document shapes—not the filesystem **`sandbox/`** folder):
 
-- **`labs/*.json`** — full lab documents: `concepts`, `navSections`, no stray top-level `practice`, matching slugs between nav items and concepts, required concept fields, `labKind` vs `lab._id`, etc.
+- **`labs/*.json`** — full **catalog lab** documents: `concepts`, `navSections`, no stray top-level `practice`, matching slugs between nav items and concepts, required concept fields, `labKind` vs `lab._id`, etc.
 - **`concepts/*.json`** — Concepts documents: optional `practice` (ZIP shape, safe paths, non-empty `files`, string `content`) and optional `codeFiles` entries.
 
 File names must start with **`ok_`** (expect zero validation errors) or **`err_`** (expect at least one error). Add a new pair when you introduce a new rule.
@@ -131,7 +131,7 @@ Optional for a bare listing, but you need it for **filled code tabs**, **practic
 }
 ```
 
-Use normal subpaths in `name` (no `.` or `..` segments). Reference tree: `labs/system-design/caching-practice/`. Client build: `apps/web/src/lib/practiceZip.ts`.
+Use normal subpaths in `name` (no `.` or `..` segments). Reference tree: `sandbox/system-design/caching-practice/`. Client build: `apps/web/src/lib/practiceZip.ts`.
 
 ### 3. Frontend — routing and UI
 
