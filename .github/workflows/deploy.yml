@@ -9,6 +9,10 @@ env:
   REGION: us-east1
   REGISTRY: us-east1-docker.pkg.dev
   REPO: tracelab
+  # Cloud Run direct VPC egress — required for API → Mongo via NAT (--vpc-egress all-traffic).
+  # Subnet must be a regional subnet in the same region as Cloud Run. Adjust names if yours differ.
+  VPC_NETWORK: tracelab-vpc
+  VPC_SUBNET: tracelab-subnet
 
 jobs:
   test:
@@ -72,6 +76,9 @@ jobs:
             --platform managed \
             --allow-unauthenticated \
             --port 8080 \
+            --network ${{ env.VPC_NETWORK }} \
+            --subnet ${{ env.VPC_SUBNET }} \
+            --vpc-egress all-traffic \
             --quiet
 
       - name: Get API service URL
@@ -121,6 +128,9 @@ jobs:
             --platform managed \
             --allow-unauthenticated \
             --port 8080 \
+            --network ${{ env.VPC_NETWORK }} \
+            --subnet ${{ env.VPC_SUBNET }} \
+            --vpc-egress all-traffic \
             --quiet
 
       - name: Summary
