@@ -21,7 +21,6 @@ func main() {
 
 	var mongoClient *mongo.Client
 	if cfg.MongoURI != "" {
-		// Atlas + VPC/NAT can need more than 15s for TLS + server selection on cold start.
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		c, err := db.Connect(ctx, cfg.MongoURI)
 		cancel()

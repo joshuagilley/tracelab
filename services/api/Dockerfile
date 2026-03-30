@@ -14,8 +14,7 @@ COPY services/api/ ./
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -o server ./cmd/server
 
 # ── Runtime stage ───────────────────────────────────
-# base-debian12 (not static) includes CA certificates — required for MongoDB Atlas TLS.
-# static-debian12 has no system trust store; drivers see Unknown / deadline during TLS handshake.
+# base-debian12 includes CA certs (Atlas TLS). static-debian12 does not.
 FROM gcr.io/distroless/base-debian12:nonroot
 
 COPY --from=builder /app/server /server

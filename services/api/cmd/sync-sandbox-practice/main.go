@@ -1,10 +1,11 @@
 // Command sync-sandbox-practice reads files from sandbox/<path> and $set practice on a Concepts document.
+// This is the only practice-sync binary; per-topic Makefile targets and scripts pass flags.
 //
-// Example (repo root, .env loaded):
+// Examples (repo root, .env loaded):
 //
-//	./scripts/sync-load-balancer-practice.sh
+//	make sync-caching-mongo
 //
-// Or:
+// Or manually (load-balancer-shaped bundle):
 //
 //	cd services/api && go run ./cmd/sync-sandbox-practice -repo ../.. -sandbox system-design/load-balancer -concept system-design/load-balancing -zip tracelab-load-balancer-practice.zip -folder load-balancer -files go.mod,LAB.md,main.go,main_test.go,solution.go,present.go,bad.go
 package main

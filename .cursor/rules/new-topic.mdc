@@ -19,8 +19,7 @@ This is the **complete list** of files that change for a typical new topic. Use 
 | Area | File(s) | What you do |
 |------|---------|-------------|
 | **Sandbox** | `sandbox/<lab>/<topic>/go.mod`, `main.go`, `main_test.go`, `solution.go`, `present.go`, `bad.go`, `LAB.md` | Create the practice bundle (§1). |
-| **Sync script** | `scripts/sync-<topic>-practice.sh` | Shell wrapper around `sync-sandbox-practice` to push `practice` into Mongo. |
-| **Makefile** | `Makefile` | Add `sync-<topic>-mongo` target calling the script above; add to `.PHONY`. |
+| **Makefile** | `Makefile` | **Temporary:** add `sync-<topic>-mongo` (same `go run ./cmd/sync-sandbox-practice` flags as **`make sync-caching-mongo`**), run it to **`$set`** **`practice`**, then **remove the target** from `.PHONY` / `Makefile` once Mongo is correct. Alternatively run **`go run`** once from a shell and skip editing the Makefile. |
 | **Lesson panel** | `apps/web/src/components/lessons/<lab>/<Topic>Lesson.tsx` | New text-lesson component (`LessonRoot` / `LessonProblem` / `LessonDiagram` / `LessonTradeoffs`). |
 | **Lesson registry** | `apps/web/src/features/lessons/lessonRegistry.ts` | Import + register `"<slug>": <Topic>Lesson`. |
 | **Simulation** | `apps/web/src/components/simulations/<lab>/<Topic>Simulation.tsx` + `.module.css` | SVG sim matching the user's PNG; reuse `CachingSimulation.module.css` panel chrome; rAF packet animation; `onMetrics` emitting metric ids. |
@@ -30,7 +29,7 @@ This is the **complete list** of files that change for a typical new topic. Use 
 | **SPA types** | `apps/web/src/types/labConcept.ts` | Only if new fields are added to the lesson payload; otherwise **no change**. |
 | **Code panel** | `apps/web/src/components/code/DynamicCodePanel.tsx` | Only if new lang/content fallback rules; otherwise **no change**. |
 | **Mongo** | `Labs` doc (concepts[] row + navSections item), `Concepts` doc (_id, vizType, codeFiles, parameters, metricGroups) | Manual or via one-off script (delete after). |
-| **README** | `README.md`, `sandbox/README.md` | Document the new bundle + sync target. |
+| **README** | `README.md`, `sandbox/README.md` | Document the new bundle; avoid permanent **`make sync-*`** unless it is a deliberate template (e.g. caching). |
 
 Items marked **"no change"** are already generic enough from previous topics. The first six rows are always new files or edits.
 
@@ -124,18 +123,19 @@ For a **new** simulation, define **`metricGroups` last**, after you know the exa
 
 ## 3. Syncing to Mongo
 
-### A. Practice ZIP + `practice` field (keep in repo)
+### A. Practice ZIP + `practice` field
 
-Use **`services/api/cmd/sync-sandbox-practice`** (and optionally a thin **`scripts/sync-<topic>-practice.sh`** + **`make sync-<topic>-mongo`**) to **`$set`** **`practice`** (`zipName`, `folder`, `files[]`) on **`Concepts._id`**.
+Use **`services/api/cmd/sync-sandbox-practice`** to **`$set`** **`practice`** (`zipName`, `folder`, `files[]`) on **`Concepts._id`**. Copy the pattern from **`make sync-caching-mongo`** (flags: **`-repo`**, **`-sandbox`**, **`-concept`**, **`-zip`**, **`-folder`**, **`-files`**).
 
-- Example script: **`scripts/sync-load-balancer-practice.sh`**.
 - **`-files`** order is the ZIP contents; include **`go.mod`**, **`LAB.md`**, **`main.go`**, **`main_test.go`**, **`solution.go`**, **`present.go`**, **`bad.go`** as needed.
+
+**After the concept’s `practice` field is correct in Mongo, remove** any **temporary** **`Makefile`** target you added for that topic (same as metadata helpers below). The only long-lived sync entry in the repo is optional **`sync-caching-mongo`** as a template; everything else is one-off **`go run`** or a target you delete.
 
 ### B. One-off metadata (`parameters`, `vizType`, `metricGroups`, …)
 
 For first-time wiring, a **temporary** helper is fine: small **`go run`** (Mongo update), **`mongosh`**, or a throwaway script that **`$set`s** the fields on **`Concepts`** (and **`Labs.concepts[]`** row if you keep catalog there).
 
-**After values are correct in the database, remove the throwaway script** and any **`Makefile`** target that only existed to run it. **Do not** remove the durable **`sync-sandbox-practice`** script unless the topic is dropped entirely.
+**After values are correct in the database, remove** any **throwaway** Mongo-update script or temporary **`Makefile`** target. Keep **`sync-sandbox-practice`** in **`cmd/`**; do not accumulate permanent per-topic **`make sync-*`** targets unless you deliberately want a recurring lab (e.g. caching template).
 
 ---
 
@@ -168,7 +168,7 @@ The user provides a **PNG (or sketch) of the architecture flow**. This is the pr
 - **`Labs`** document: **`concepts[]`** row (**`slug`**, **`title`**, **`status`**, **`labKind`**, **`vizType`**, **`codeFiles`** names/roles as needed).
 - **`navSections`**: item **`slug`** equals concept **`slug`** for a working sidebar link.
 - **`Concepts._id`**: `"<labId>/<slug>"` for merged detail + **`practice`**.
-- Root **`README.md`** § curriculum / sync if you add a **new** permanent sync script.
+- Root **`README.md`** § curriculum / sync only if you add a **documented recurring** sync (rare); otherwise prefer one-off **`go run ./cmd/sync-sandbox-practice`** and no permanent Makefile churn.
 
 ---
 

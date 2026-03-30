@@ -24,8 +24,7 @@ export async function fetchLabsCatalogIntoCache(): Promise<void> {
     try {
       const j = (await res.json()) as { error?: string }
       if (j.error === 'mongo_unavailable') {
-        hint =
-          ' The API is running but MongoDB did not connect at startup (check Cloud Run logs for db.Connect and MONGO_DB_URI / Atlas).'
+        hint = ' MongoDB did not connect at API startup (see API logs and MONGO_DB_URI).'
       }
     } catch {
       /* non-JSON body */

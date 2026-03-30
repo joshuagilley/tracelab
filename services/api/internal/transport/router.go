@@ -3,7 +3,6 @@ package transport
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"log"
 	"net/http"
 	"time"
@@ -24,45 +23,11 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 		json.NewEncoder(w).Encode(map[string]string{"status": "ok", "service": "tracelab-api"})
 	})
 
-	// Debug: egress public IP (verify Cloud Run → VPC NAT). Plain text body, e.g. curl .../ip
-	mux.HandleFunc("/ip", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
-		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
-		defer cancel()
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.ipify.org", nil)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		client := &http.Client{Timeout: 10 * time.Second}
-		resp, err := client.Do(req)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadGateway)
-			return
-		}
-		defer resp.Body.Close()
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadGateway)
-			return
-		}
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.Write(body)
-	})
-
-	mux.HandleFunc("/mongo-probe", mongoProbeHandler(cfg))
-	mux.HandleFunc("/mongo-tls-probe", mongoTLSProbeHandler(cfg))
-
 	if mongoClient != nil {
-		log.Printf("catalog: registering /api/catalog/* (mongo connected)")
 		labsColl := mongoClient.Database(cfg.MongoDBName).Collection(cfg.LabsColl)
 		conceptsColl = mongoClient.Database(cfg.MongoDBName).Collection(cfg.ConceptsColl)
 		catalog.NewHandler(labsColl, conceptsColl).Register(mux)
 	} else {
-		log.Printf("catalog: mongoClient is nil — /api/catalog/* serves 503 stubs (see startup mongo: connect log)")
 		mux.HandleFunc("/api/catalog/labs", catalogUnavailableLabs)
 		mux.HandleFunc("/api/catalog/lesson", catalogUnavailableLesson)
 	}

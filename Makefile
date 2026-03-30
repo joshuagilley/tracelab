@@ -1,4 +1,4 @@
-.PHONY: dev api web install build clean compose-up compose-down test sync-caching-mongo sync-load-balancer-mongo
+.PHONY: dev api web install build clean compose-up compose-down test sync-caching-mongo
 
 # Bash so `api` can `source .env` (GitHub OAuth, Mongo, JWT, etc.)
 SHELL := /bin/bash
@@ -37,13 +37,14 @@ test:
 	cd services/api && go test ./...
 	cd apps/web && npm run build
 
-# $set Concepts.practice for system-design/caching from sandbox/system-design/caching-practice/
+# $set Concepts.practice for system-design/caching (same tool as other labs: sync-sandbox-practice)
 sync-caching-mongo:
-	@bash -c 'if [[ -f "$(CURDIR)/.env" ]]; then set -a && source "$(CURDIR)/.env" && set +a; fi; cd "$(CURDIR)/services/api" && go run ./cmd/sync-caching-practice -repo "$(CURDIR)"'
-
-# $set Concepts.practice for system-design/load-balancing from sandbox/system-design/load-balancer/
-sync-load-balancer-mongo:
-	@$(CURDIR)/scripts/sync-load-balancer-practice.sh
+	@bash -c 'if [[ -f "$(CURDIR)/.env" ]]; then set -a && source "$(CURDIR)/.env" && set +a; fi; cd "$(CURDIR)/services/api" && go run ./cmd/sync-sandbox-practice -repo "$(CURDIR)" \
+		-sandbox system-design/caching-practice \
+		-concept system-design/caching \
+		-zip tracelab-caching-practice.zip \
+		-folder caching-practice \
+		-files go.mod,LAB.md,main.go,main_test.go,solution.go'
 
 clean:
 	rm -rf apps/web/dist
