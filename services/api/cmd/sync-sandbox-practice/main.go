@@ -1,9 +1,7 @@
 // Command sync-sandbox-practice reads files from sandbox/<path> and $set practice on a Concepts document.
-// This is the only practice-sync binary; per-topic Makefile targets and scripts pass flags.
+// This is the only practice-sync binary. From repo root, prefer:
 //
-// Examples (repo root, .env loaded):
-//
-//	make sync-caching-mongo
+//	make sync-sandbox-mongo SANDBOX=... CONCEPT=... ZIP=... FOLDER=... FILES=...
 //
 // Or manually (load-balancer-shaped bundle):
 //

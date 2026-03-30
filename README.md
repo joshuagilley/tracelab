@@ -123,9 +123,19 @@ Optional for a bare listing, but you need it for **filled code tabs**, **practic
 }
 ```
 
-Use normal subpaths in `name` (no `.` or `..` segments). The **Caching** template in-repo is **`sandbox/system-design/caching-practice/`** (`go.mod`, `LAB.md`, `main.go`, `main_test.go`, `solution.go` with `//go:build ignore`). To push that tree into Mongo, run **`make sync-caching-mongo`** (wrapper around **`go run ./cmd/sync-sandbox-practice`** with caching flags). For other topics, run **`sync-sandbox-practice`** with the right flags (from repo root with **`.env`** loaded, same pattern as the Makefile target); add a temporary **`Makefile`** target only while iterating, then remove it once **`Concepts.practice`** is set. Client ZIP: `apps/web/src/lib/practiceZip.ts`.
+Use normal subpaths in `name` (no `.` or `..` segments). **One command** syncs any sandbox folder into **`Concepts.practice`**: **`services/api/cmd/sync-sandbox-practice`**. From the **repo root** (with **`.env`** if you use Atlas/local Mongo), run **`make sync-sandbox-mongo`** and pass **`SANDBOX`** (path under **`sandbox/`**), **`CONCEPT`** (**`Concepts._id`**), **`ZIP`** (download basename), **`FOLDER`** (directory inside the ZIP), and **`FILES`** (comma-separated names, ZIP order). The **`Makefile`** prints usage if any variable is missing.
 
-The **Load Balancer** practice bundle is **`sandbox/system-design/load-balancer/`** (concept **`system-design/load-balancing`**, ZIP name **`tracelab-load-balancer-practice.zip`**, folder **`load-balancer`**, files include **`present.go`** / **`bad.go`**). Sync with the same tool, e.g. **`cd services/api && go run ./cmd/sync-sandbox-practice -repo ../.. -sandbox system-design/load-balancer -concept system-design/load-balancing -zip tracelab-load-balancer-practice.zip -folder load-balancer -files go.mod,LAB.md,main.go,main_test.go,solution.go,present.go,bad.go`**. The **Implementation** panel shows only merged **`codeFiles`** from **`Labs`** / **`Concepts`** (e.g. **`present.go`** and **`bad.go`** for read-only comparison — keep **`main.go`** in the downloadable **`practice`** ZIP only). If **`practice.folder`** is **`load-balancer`**, the **round-robin** simulation is used even when **`vizType`** is **`lesson`** (see **`resolveVizComponent`** in **`ConceptDetailPage.tsx`**).
+**Caching** example:
+
+`make sync-sandbox-mongo SANDBOX=system-design/caching-practice CONCEPT=system-design/caching ZIP=tracelab-caching-practice.zip FOLDER=caching-practice FILES=go.mod,LAB.md,main.go,main_test.go,solution.go`
+
+**Load balancer** example (adds **`present.go`** / **`bad.go`**):
+
+`make sync-sandbox-mongo SANDBOX=system-design/load-balancer CONCEPT=system-design/load-balancing ZIP=tracelab-load-balancer-practice.zip FOLDER=load-balancer FILES=go.mod,LAB.md,main.go,main_test.go,solution.go,present.go,bad.go`
+
+Equivalent: **`cd services/api && go run ./cmd/sync-sandbox-practice -repo ../..`** plus **`-sandbox`**, **`-concept`**, **`-zip`**, **`-folder`**, **`-files`**. Client ZIP build in the browser: `apps/web/src/lib/practiceZip.ts`.
+
+The **Implementation** panel shows only merged **`codeFiles`** from **`Labs`** / **`Concepts`** (e.g. **`present.go`** and **`bad.go`** for read-only comparison — keep **`main.go`** in the downloadable **`practice`** ZIP only). If **`practice.folder`** is **`load-balancer`**, the **round-robin** simulation is used even when **`vizType`** is **`lesson`** (see **`resolveVizComponent`** in **`ConceptDetailPage.tsx`**).
 
 ### 3. Frontend — routing and UI
 
