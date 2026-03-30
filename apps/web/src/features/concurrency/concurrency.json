@@ -1,1 +1,166 @@
-[]
+{
+  "panelPrefix": "conc",
+  "navSections": [
+    {
+      "id": "foundations",
+      "title": "Foundations",
+      "blurb": "Core concepts for understanding concurrent execution — how work is interleaved, scheduled, and mapped onto CPUs (distinct from distributed load balancing in System Design).",
+      "items": [
+        {
+          "label": "Concurrency vs Parallelism"
+        },
+        {
+          "label": "Threads vs Processes"
+        },
+        {
+          "label": "Context Switching"
+        },
+        {
+          "label": "Goroutines (Go)"
+        },
+        {
+          "label": "Scheduling (how work gets executed)"
+        }
+      ]
+    },
+    {
+      "id": "synchronization",
+      "title": "Synchronization",
+      "blurb": "Controlling access to shared memory and mutable state safely inside one process.",
+      "items": [
+        {
+          "label": "Race Conditions"
+        },
+        {
+          "label": "Mutexes and Locks"
+        },
+        {
+          "label": "Read/Write Locks"
+        },
+        {
+          "label": "Atomic Operations"
+        },
+        {
+          "label": "Deadlocks"
+        },
+        {
+          "label": "Livelocks"
+        }
+      ]
+    },
+    {
+      "id": "communication",
+      "title": "Communication",
+      "blurb": "How concurrent components coordinate work — channels and patterns on top of them.",
+      "items": [
+        {
+          "label": "Channels (Go)"
+        },
+        {
+          "label": "Buffered vs Unbuffered Channels"
+        },
+        {
+          "label": "Select Statement (Go)"
+        },
+        {
+          "label": "Producer / Consumer Pattern"
+        },
+        {
+          "label": "Fan-out / Fan-in"
+        }
+      ]
+    },
+    {
+      "id": "execution-patterns",
+      "title": "Execution Patterns",
+      "blurb": "Reusable structures for concurrent work — complements message queues between services (System Design) with in-memory queues and worker pools inside a binary.",
+      "items": [
+        {
+          "label": "Worker Pools"
+        },
+        {
+          "label": "Pipelines"
+        },
+        {
+          "label": "Task Queues (In-Memory)"
+        },
+        {
+          "label": "Backpressure"
+        },
+        {
+          "label": "Rate Limiting (Concurrency Control)"
+        },
+        {
+          "label": "Batching"
+        }
+      ]
+    },
+    {
+      "id": "performance",
+      "title": "Performance & Scaling",
+      "blurb": "How parallelism and contention affect a single service — complements system-wide latency/throughput and caching in System Design.",
+      "items": [
+        {
+          "label": "Throughput vs Latency"
+        },
+        {
+          "label": "CPU-bound vs I/O-bound Work"
+        },
+        {
+          "label": "Parallelism Limits"
+        },
+        {
+          "label": "Contention and Lock Overhead"
+        },
+        {
+          "label": "Goroutine Leaks"
+        }
+      ]
+    },
+    {
+      "id": "reliability",
+      "title": "Reliability & Safety",
+      "blurb": "Avoiding bugs and partial failures when many goroutines share work and shutdown paths.",
+      "items": [
+        {
+          "label": "Data Races in Practice"
+        },
+        {
+          "label": "Deadlock Detection & Prevention"
+        },
+        {
+          "label": "Cancellation & Timeouts (Context in Go)"
+        },
+        {
+          "label": "Graceful Shutdown"
+        },
+        {
+          "label": "Idempotent Work Execution"
+        }
+      ]
+    },
+    {
+      "id": "advanced",
+      "title": "Advanced",
+      "blurb": "Deeper runtime and memory-order topics — still in-process; distributed consensus stays under System Design.",
+      "items": [
+        {
+          "label": "Work Stealing"
+        },
+        {
+          "label": "Actor Model"
+        },
+        {
+          "label": "Event Loop vs Thread Pool"
+        },
+        {
+          "label": "Lock-Free Data Structures"
+        },
+        {
+          "label": "Memory Models (Visibility & Ordering)"
+        }
+      ]
+    }
+  ],
+  "concepts": []
+}

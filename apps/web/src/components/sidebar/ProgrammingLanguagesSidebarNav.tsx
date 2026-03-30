@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
-import {
-  PROGRAMMING_LANGUAGES,
-  PROGRAMMING_LANGUAGES_DEFAULT_OPEN,
-} from '@/features/programming-languages/programmingLanguagesNav'
+import { getCatalogNavConfig } from '@/features/lessons/lessonCatalog'
+
+const _plNav = getCatalogNavConfig('programming-languages')
+const PROGRAMMING_LANGUAGES     = _plNav?.languages      ?? []
+const PROGRAMMING_LANGUAGES_DEFAULT_OPEN = _plNav?.defaultOpenSectionIds ?? []
 import { LanguageLogo } from '@/features/programming-languages/LanguageLogo'
 import { countSectionNavProgress } from '@/features/concepts/navSectionProgress'
 import { filterProgrammingLanguages } from '@/lib/navCurriculumFilter'
