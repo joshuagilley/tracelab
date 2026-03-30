@@ -33,7 +33,7 @@ func main() {
 				_ = mongoClient.Disconnect(ctx)
 				cancel()
 			}()
-			log.Printf("mongo: connected (db=%q users=%q concepts=%q)", cfg.MongoDBName, cfg.UsersColl, cfg.ConceptsColl)
+			log.Printf("mongo: connected (db=%q users=%q completed=%q)", cfg.MongoDBName, cfg.UsersColl, cfg.CompletedColl)
 		}
 	} else {
 		log.Printf("mongo: MONGO_DB_URI not set; auth persistence disabled")

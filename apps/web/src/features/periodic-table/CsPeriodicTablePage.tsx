@@ -5,23 +5,19 @@ import { LAB_OPTIONS, type LabId } from '@/contexts/lab'
 
 type PublicationFilter = 'all' | 'published' | 'soon'
 type ProgressFilter = 'all' | 'complete' | 'incomplete'
-import {
-  CONCEPT_DONE_SECTION_ID,
-  labTracksConceptProgress,
-} from '@/features/concepts/conceptSectionExpectations'
-import { TRACELAB_CONCEPT_PROGRESS_EVENT, fetchLabConceptProgress } from '@/features/concepts/conceptProgressApi'
+import { labTracksConceptProgress } from '@/features/concepts/conceptSectionExpectations'
+import { TRACELAB_COMPLETED_EVENT, fetchLabCompleted } from '@/features/concepts/completedApi'
 import { getAllCatalogTiles, tileSymbol, type CatalogTile } from '@/lib/catalogTiles'
 import { LAB_ACCENT_HEX } from '@/lib/labAccentHex'
 import styles from './CsPeriodicTablePage.module.css'
 
-function isTileComplete(
-  tile: CatalogTile,
-  byLab: Partial<Record<LabId, Record<string, string[]>>>,
-): boolean {
+// byLab maps labId → Set of completed slugs
+type ByLab = Partial<Record<LabId, Set<string>>>
+
+function isTileComplete(tile: CatalogTile, byLab: ByLab): boolean {
   if (tile.status !== 'available') return false
   if (!labTracksConceptProgress(tile.labId)) return false
-  const sections = byLab[tile.labId]?.[tile.slug] ?? []
-  return sections.includes(CONCEPT_DONE_SECTION_ID)
+  return byLab[tile.labId]?.has(tile.slug) ?? false
 }
 
 function tileMatchesFilters(
@@ -29,7 +25,7 @@ function tileMatchesFilters(
   labId: LabId | 'all',
   publication: PublicationFilter,
   progress: ProgressFilter,
-  byLab: Partial<Record<LabId, Record<string, string[]>>>,
+  byLab: ByLab,
 ): boolean {
   if (labId !== 'all' && tile.labId !== labId) return false
   if (publication === 'published' && tile.status !== 'available') return false
@@ -105,7 +101,7 @@ function TileView({
 
 export default function CsPeriodicTablePage() {
   const { user } = useAuth()
-  const [byLab, setByLab] = useState<Partial<Record<LabId, Record<string, string[]>>>>({})
+  const [byLab, setByLab] = useState<ByLab>({})
   const [labFilter, setLabFilter] = useState<LabId | 'all'>('all')
   const [publicationFilter, setPublicationFilter] = useState<PublicationFilter>('all')
   const [progressFilter, setProgressFilter] = useState<ProgressFilter>('all')
@@ -118,15 +114,16 @@ export default function CsPeriodicTablePage() {
       }
       const entries = await Promise.all(
         LAB_OPTIONS.map(async ({ id }) => {
+          if (!labTracksConceptProgress(id)) return [id, new Set<string>()] as const
           try {
-            const p = await fetchLabConceptProgress(id)
-            return [id, p] as const
+            const slugs = await fetchLabCompleted(id)
+            return [id, new Set(slugs)] as const
           } catch {
-            return [id, {}] as const
+            return [id, new Set<string>()] as const
           }
         }),
       )
-      setByLab(Object.fromEntries(entries) as Partial<Record<LabId, Record<string, string[]>>>)
+      setByLab(Object.fromEntries(entries) as ByLab)
     },
     [user],
   )
@@ -137,8 +134,8 @@ export default function CsPeriodicTablePage() {
 
   useEffect(() => {
     const onUpd = () => void reload()
-    window.addEventListener(TRACELAB_CONCEPT_PROGRESS_EVENT, onUpd)
-    return () => window.removeEventListener(TRACELAB_CONCEPT_PROGRESS_EVENT, onUpd)
+    window.addEventListener(TRACELAB_COMPLETED_EVENT, onUpd)
+    return () => window.removeEventListener(TRACELAB_COMPLETED_EVENT, onUpd)
   }, [reload])
 
   const tiles = useMemo(() => {

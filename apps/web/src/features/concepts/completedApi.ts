@@ -1,0 +1,58 @@
+import type { LabId } from '@/contexts/lab'
+import { API_BASE } from '@/lib/apiBase'
+
+export const TRACELAB_COMPLETED_EVENT = 'tracelab-completed'
+
+export interface CompletedStatus {
+  completed: boolean
+  completedAt: string | null // ISO-8601 or null
+}
+
+export function dispatchCompletedUpdated(labId: LabId): void {
+  window.dispatchEvent(
+    new CustomEvent(TRACELAB_COMPLETED_EVENT, { detail: { labId } }),
+  )
+}
+
+/**
+ * Fetches all completed concept slugs for the given lab.
+ * Returns an empty array when the user is not signed in or on error.
+ */
+export async function fetchLabCompleted(lab: LabId): Promise<string[]> {
+  const q = new URLSearchParams({ lab })
+  const res = await fetch(`${API_BASE}/completed?${q}`, { credentials: 'include' })
+  if (!res.ok) return []
+  const data = (await res.json()) as { completedSlugs?: string[] }
+  return data.completedSlugs ?? []
+}
+
+/**
+ * Fetches the completion status for one concept.
+ * Returns { completed: false, completedAt: null } when not signed in or on error.
+ */
+export async function fetchConceptCompleted(lab: LabId, slug: string): Promise<CompletedStatus> {
+  const q = new URLSearchParams({ lab, slug })
+  const res = await fetch(`${API_BASE}/completed?${q}`, { credentials: 'include' })
+  if (!res.ok) return { completed: false, completedAt: null }
+  return (await res.json()) as CompletedStatus
+}
+
+/**
+ * Marks or unmarks a concept as complete.
+ * Returns the updated status, or null when the user is not signed in (401).
+ */
+export async function putConceptCompleted(
+  lab: LabId,
+  slug: string,
+  completed: boolean,
+): Promise<CompletedStatus | null> {
+  const res = await fetch(`${API_BASE}/completed`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ lab, slug, completed }),
+  })
+  if (res.status === 401) return null
+  if (!res.ok) throw new Error(`completed: ${res.status}`)
+  return (await res.json()) as CompletedStatus
+}

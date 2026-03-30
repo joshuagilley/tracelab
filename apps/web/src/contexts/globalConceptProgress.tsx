@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 import { useAuth } from '@/contexts/auth'
-import { TRACELAB_CONCEPT_PROGRESS_EVENT } from '@/features/concepts/conceptProgressApi'
+import { TRACELAB_COMPLETED_EVENT } from '@/features/concepts/completedApi'
 import { fetchGlobalConceptTotals } from '@/features/concepts/globalProgressAggregation'
 
 export interface GlobalConceptProgressValue {
@@ -47,8 +47,8 @@ export function GlobalConceptProgressProvider({ children }: { children: ReactNod
 
   useEffect(() => {
     const onUpdate = () => void reload()
-    window.addEventListener(TRACELAB_CONCEPT_PROGRESS_EVENT, onUpdate)
-    return () => window.removeEventListener(TRACELAB_CONCEPT_PROGRESS_EVENT, onUpdate)
+    window.addEventListener(TRACELAB_COMPLETED_EVENT, onUpdate)
+    return () => window.removeEventListener(TRACELAB_COMPLETED_EVENT, onUpdate)
   }, [reload])
 
   const value = useMemo(

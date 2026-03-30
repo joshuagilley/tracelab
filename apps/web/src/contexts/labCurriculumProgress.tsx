@@ -9,10 +9,10 @@ import {
 } from 'react'
 import { fetchSectionConcepts } from '@/features/sections/api'
 import {
-  fetchLabConceptProgress,
-  TRACELAB_CONCEPT_PROGRESS_EVENT,
-} from '@/features/concepts/conceptProgressApi'
-import { completedSlugsForLab } from '@/features/concepts/conceptSectionExpectations'
+  fetchLabCompleted,
+  TRACELAB_COMPLETED_EVENT,
+} from '@/features/concepts/completedApi'
+import { labTracksConceptProgress } from '@/features/concepts/conceptSectionExpectations'
 import { useAuth } from '@/contexts/auth'
 import { useLab, type LabId } from '@/contexts/lab'
 import type { Concept } from '@/types/concept'
@@ -24,7 +24,6 @@ export interface LabTotals {
 
 interface LabCurriculumProgressValue {
   concepts: Concept[]
-  progressBySlug: Record<string, string[]>
   completedSlugs: ReadonlySet<string>
   labTotals: LabTotals
   reloadProgress: () => Promise<void>
@@ -36,7 +35,7 @@ export function LabCurriculumProgressProvider({ children }: { children: ReactNod
   const { labId } = useLab()
   const { user } = useAuth()
   const [concepts, setConcepts] = useState<Concept[]>([])
-  const [progressBySlug, setProgressBySlug] = useState<Record<string, string[]>>({})
+  const [completedSlugsList, setCompletedSlugsList] = useState<string[]>([])
 
   useEffect(() => {
     const load = async () => {
@@ -50,14 +49,14 @@ export function LabCurriculumProgressProvider({ children }: { children: ReactNod
   }, [labId])
 
   const reloadProgress = useCallback(async () => {
-    if (!user) {
-      setProgressBySlug({})
+    if (!user || !labTracksConceptProgress(labId)) {
+      setCompletedSlugsList([])
       return
     }
     try {
-      setProgressBySlug(await fetchLabConceptProgress(labId))
+      setCompletedSlugsList(await fetchLabCompleted(labId))
     } catch {
-      setProgressBySlug({})
+      setCompletedSlugsList([])
     }
   }, [user, labId])
 
@@ -70,13 +69,13 @@ export function LabCurriculumProgressProvider({ children }: { children: ReactNod
       const ce = e as CustomEvent<{ labId?: LabId }>
       if (ce.detail?.labId === labId) void reloadProgress()
     }
-    window.addEventListener(TRACELAB_CONCEPT_PROGRESS_EVENT, onUpdate)
-    return () => window.removeEventListener(TRACELAB_CONCEPT_PROGRESS_EVENT, onUpdate)
+    window.addEventListener(TRACELAB_COMPLETED_EVENT, onUpdate)
+    return () => window.removeEventListener(TRACELAB_COMPLETED_EVENT, onUpdate)
   }, [labId, reloadProgress])
 
   const completedSlugs = useMemo(
-    () => completedSlugsForLab(labId, concepts, progressBySlug),
-    [labId, concepts, progressBySlug],
+    () => new Set(completedSlugsList),
+    [completedSlugsList],
   )
 
   const labTotals = useMemo((): LabTotals => {
@@ -92,12 +91,11 @@ export function LabCurriculumProgressProvider({ children }: { children: ReactNod
   const value = useMemo(
     () => ({
       concepts,
-      progressBySlug,
       completedSlugs,
       labTotals,
       reloadProgress,
     }),
-    [concepts, progressBySlug, completedSlugs, labTotals, reloadProgress],
+    [concepts, completedSlugs, labTotals, reloadProgress],
   )
 
   return (

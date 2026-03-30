@@ -11,14 +11,15 @@ import {
 import type { LabId } from '@/contexts/lab'
 import { useAuth } from '@/contexts/auth'
 import {
-  dispatchConceptProgressUpdated,
-  fetchConceptProgress,
-  patchConceptSection,
-} from '@/features/concepts/conceptProgressApi'
-import { CONCEPT_DONE_SECTION_ID } from '@/features/concepts/conceptSectionExpectations'
+  dispatchCompletedUpdated,
+  fetchConceptCompleted,
+  putConceptCompleted,
+  type CompletedStatus,
+} from '@/features/concepts/completedApi'
 
 interface ConceptProgressContextValue {
   conceptFullyDone: boolean
+  completedAt: Date | null
   canPersist: boolean
   loaded: boolean
   toggleConceptDone: () => Promise<void>
@@ -36,18 +37,18 @@ export function ConceptProgressProvider({
   children: ReactNode
 }) {
   const { user } = useAuth()
-  const [completedSections, setCompletedSections] = useState<string[]>([])
+  const [status, setStatus] = useState<CompletedStatus>({ completed: false, completedAt: null })
   const [loaded, setLoaded] = useState(false)
-  const sectionsRef = useRef(completedSections)
-  sectionsRef.current = completedSections
+  const statusRef = useRef(status)
+  statusRef.current = status
 
   useEffect(() => {
     let cancelled = false
     setLoaded(false)
     void (async () => {
-      const list = await fetchConceptProgress(labId, conceptSlug)
+      const s = await fetchConceptCompleted(labId, conceptSlug)
       if (!cancelled) {
-        setCompletedSections(list)
+        setStatus(s)
         setLoaded(true)
       }
     })()
@@ -56,48 +57,45 @@ export function ConceptProgressProvider({
     }
   }, [labId, conceptSlug, user?.id])
 
-  const setConceptFlag = useCallback(
+  const setCompleted = useCallback(
     async (completed: boolean) => {
       if (!user) return
-      const prev = sectionsRef.current
-      setCompletedSections(() => (completed ? [CONCEPT_DONE_SECTION_ID] : []))
+      const prev = statusRef.current
+      // Optimistic update
+      setStatus({ completed, completedAt: completed ? new Date().toISOString() : null })
       try {
-        const next = await patchConceptSection(
-          labId,
-          conceptSlug,
-          CONCEPT_DONE_SECTION_ID,
-          completed,
-        )
+        const next = await putConceptCompleted(labId, conceptSlug, completed)
         if (next == null) {
-          setCompletedSections(prev)
+          setStatus(prev)
           return
         }
-        setCompletedSections(next)
-        dispatchConceptProgressUpdated(labId)
+        setStatus(next)
+        dispatchCompletedUpdated(labId)
       } catch {
-        setCompletedSections(prev)
+        setStatus(prev)
       }
     },
     [user, labId, conceptSlug],
   )
 
-  const conceptFullyDone = useMemo(
-    () => completedSections.includes(CONCEPT_DONE_SECTION_ID),
-    [completedSections],
-  )
-
   const toggleConceptDone = useCallback(async () => {
-    await setConceptFlag(!conceptFullyDone)
-  }, [conceptFullyDone, setConceptFlag])
+    await setCompleted(!statusRef.current.completed)
+  }, [setCompleted])
+
+  const completedAt = useMemo(
+    () => (status.completedAt ? new Date(status.completedAt) : null),
+    [status.completedAt],
+  )
 
   const value = useMemo<ConceptProgressContextValue>(
     () => ({
-      conceptFullyDone,
+      conceptFullyDone: status.completed,
+      completedAt,
       canPersist: !!user,
       loaded,
       toggleConceptDone,
     }),
-    [conceptFullyDone, user, loaded, toggleConceptDone],
+    [status.completed, completedAt, user, loaded, toggleConceptDone],
   )
 
   return (
