@@ -4,155 +4,143 @@
 
 # TraceLab
 
-> **Live:** [tracelab-web-1033528334340.us-east1.run.app](https://tracelab-web-1033528334340.us-east1.run.app/concept/caching)
-
-A lightweight interactive learning tool for system design concepts.
-
-## Stack
-
-| Layer    | Tech                    |
-|----------|-------------------------|
-| Frontend | React + TypeScript + Vite |
-| Backend  | Go (net/http)           |
-| Database | MongoDB (users + future progress; see `.env.example`) |
-
-## Running Locally
-
-### Prerequisites
-- Go 1.25+ (matches `services/api/go.mod` and the API Dockerfile)
-- Node.js 18+
-
-### Quick Start
-
-```bash
-# Install frontend dependencies
-make install
-
-# Optional: copy .env.example → .env and fill in secrets (Mongo, GitHub OAuth, JWT)
-# Start both API and web in parallel
-make dev
-```
-
-Or run individually:
-
-```bash
-make api   # Go API on :8080 — loads repo-root `.env` if present (exports vars for Go)
-make web   # Vite dev server on :5173
-```
-
-You no longer need to run `set -a && source .env && set +a` by hand; `make api` and `make dev` do that when `.env` exists.
-
-**Docker (API only)** — then run `make web` for Vite:
-
-```bash
-make compose-up   # api :8080
-```
-
-## Project Structure
-
-```
-tracelab/
-  apps/web/              React + TypeScript frontend (lesson catalog JSON + UI + bundled source tabs)
-  labs/                  Optional local sandboxes (see labs/CONCEPT.md); not required for the web app
-  services/api/          Go backend (health, auth, concept progress); no lesson payload APIs
-  docker-compose.yml
-  context/               Design references
-  Makefile
-```
-
-## API Routes
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | /health | Health check |
-| GET | /api/auth/github | Start GitHub OAuth (redirect) |
-| GET | /api/auth/github/callback | OAuth callback (redirect + session cookie) |
-| GET | /api/auth/me | Current user JSON (`user` or `null`) |
-| POST | /api/auth/logout | Clear session |
-
-Lesson metadata ships as `{lab-id}.json` next to each feature (e.g. `apps/web/src/features/system-design/system-design.json`); `present`/`bad` sources live under `components/…`.
-
-## Sample catalog (per-lab JSON under `apps/web/src/features/<lab>/`)
-
-**System design** (macro): Caching, Load Balancing, Pub/Sub, Sharding, Message Queues, …
-
-**API design** (HTTP surface): Rate Limiting (lesson with middleware sketch), Retries, Circuit Breaker, …
-
-**Operating systems** (simulations): Processes & threads, memory, scheduling, file systems, shell — see `docs/os-section.md` and `features/operating-systems/operating-systems.json`.
+Interactive curriculum UI backed by a Go API and MongoDB. This README covers **local development** and **everything you need to wire a new concept** so it appears in the library, sidebar, and lesson page.
 
 ---
 
-## Developer guide: adding or extending a concept
+## Local development
 
-Use this when you promote a topic from “coming soon” to a real lesson or add a brand-new slug (example below: **Database Sharding** in **System Design**, slug `sharding`).
+### Prerequisites
 
-### 1. Catalog entry (metadata)
+- **Go** 1.25+ (see `services/api/go.mod`)
+- **Node.js** 18+
+- **MongoDB** reachable from your machine (Atlas or local)
 
-Edit the lab’s JSON array in:
+### Environment
 
-`apps/web/src/features/<lab-id>/<lab-id>.json`
+Create a **`.env` file at the repository root** (same level as the `Makefile`). The **`make api`** recipe (including when started via **`make dev`**) runs `set -a && source .env` so the Go process sees these variables. The Vite dev server does not read the repo-root `.env` unless you configure it separately.
 
-Each concept is one object. Important fields:
+| Variable | Required for | Purpose |
+|----------|----------------|---------|
+| `MONGO_DB_URI` | Catalog + auth | Mongo connection string. Without it the API starts but **does not** register `/api/catalog/*` (the app will not load lessons). |
+| `MONGO_DB_NAME` | Mongo | Database name (default `tracelab`). |
+| `LABS_COLLECTION` | Catalog | Lab catalog documents (default `Labs`). |
+| `CONCEPTS_COLLECTION` | Lesson merge | Per-concept detail documents (default `Concepts`). |
+| `USERS_COLLECTION` | Auth | Users (default `Users`). |
+| `COMPLETED_COLLECTION` | Progress | Completed concepts (default `Completed`). |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | Auth | GitHub OAuth. |
+| `OAUTH_CALLBACK_URL` | Auth | Registered callback URL (e.g. `http://localhost:5173/api/auth/github/callback` when using the Vite proxy). |
+| `AUTH_JWT_SECRET` | Auth | Secret for session JWT. |
+| `FRONTEND_ORIGIN` | CORS | SPA origin (default `http://localhost:5173`). |
+| `AUTH_COOKIE_CROSS_SITE` | Auth | Set to `true` if API and SPA are on different sites (cookies `SameSite=None; Secure`). |
 
-| Field | Purpose |
-|--------|---------|
-| `slug` | URL segment for `/concept/:slug` (must be unique within that lab). |
-| `title`, `summary`, `difficulty`, `tags` | Library card + lesson header. |
-| `status` | `available` or `coming-soon` (library and sidebar treat these differently). |
-| `labKind` | Usually the same as the lab id (e.g. `system-design`). |
-| `vizType` | Discriminator for **which layout** runs on the detail page (conventions differ by lab; see §4). |
-| `codeFiles` | Tabs in the code panel: `{ "name": "present.go", "lang": "go" }`, etc. Omit or use `[]` if there is no source strip yet. |
-| `parameters` | Optional; used for interactive controls (e.g. Data Science sliders/selects). |
+### Run
 
-`apps/web/src/features/lessons/lessonCatalog.ts` imports these files as a bundle—you only maintain the JSON; no extra registry row for “listing” concepts.
+```bash
+make install    # npm install in apps/web
+make dev        # API :8080 + Vite :5173 (sources .env when present)
+```
 
-### 2. Sidebar / curriculum links
+Or separately:
 
-Concepts appear in the library from JSON, but **sidebar rows that deep-link to a lesson** must carry the same `slug`:
+```bash
+make api        # Go API on :8080
+make web        # Vite on :5173 (proxies `/api` to the API in dev)
+```
 
-- **System Design** — `apps/web/src/features/system-design/systemDesignNav.ts` (used by `SystemDesignSidebarNav`). Set `slug: 'your-slug'` on the row that should open `/concept/your-slug`.
-- **Other labs with topic accordions** — the matching `*Nav.ts` under `apps/web/src/features/<lab>/` plus `CurriculumTopicPane.tsx` (already wired per lab).
+**Docker (API only):** `make compose-up`, then `make web` for the frontend.
 
-If the nav item has no `slug`, it stays label-only until you add one.
+### Repo layout (short)
 
-### 3. Source files for the code panel (`present` / `bad`)
+| Path | Role |
+|------|------|
+| `apps/web/` | React + Vite SPA |
+| `services/api/` | Go HTTP API (`cmd/server`) |
+| `labs/` | Optional on-disk examples (e.g. practice lab file trees); not served by the API |
 
-When `codeFiles` lists named files, the UI fills tab contents from the web bundle:
+On startup the SPA calls **`GET /api/catalog/labs`**, caches each lab document, then uses **`GET /api/catalog/lesson?lab=&slug=`** for concept detail.
 
-1. Add the files under `apps/web/src/components/…` next to that topic’s UI (same idea as existing lessons).
-2. Register them in `apps/web/src/features/lessons/lessonSourceRegistry.ts`: under the lab id, add `[slug]: { 'present.go': importedRaw, 'bad.go': importedRaw }` using Vite `?raw` imports.
+---
 
-File names in JSON, registry keys, and disk names must match.
+## Adding a new concept
 
-### 4. Visualizer and lesson UI (the large left panel)
+A concept shows “properly” when: (1) it exists in the **Labs** catalog in Mongo, (2) the **sidebar** can link to its `slug`, (3) the **lesson API** returns a merged payload, and (4) the **frontend** knows how to render that lab/slug (layout + optional code tabs + optional practice ZIP).
 
-Routing is **`apps/web/src/features/concepts/pages/ConceptDetailPage.tsx`**. It chooses layout by **`labId`** and then **`vizType` and/or `slug`**, depending on the lab:
+### 1. MongoDB — `Labs` collection
 
-| Lab | How detail UI is chosen |
-|-----|-------------------------|
-| **API Design**, **Cloud Architecture**, **Database Design**, **Low-Level Systems** | `ConceptDetailPage` renders a shared `*LessonPanel` that **switches on `slug`** to the real lesson component or a placeholder (`LessonPlaceholder`). Add a new `if (slug === '…')` branch and import your lesson module. |
-| **Design Patterns**, **Data Science** | `ConceptDetailPage` has **separate branches per `vizType`** (e.g. `singleton`, `dependency-injection`, `numerical`). New lessons need a **new `vizType` string** in JSON and a **new `if` block** in `ConceptDetailPage` (panels + visualizer + state). |
-| **System Design** | Today, **every** system-design lesson uses the **Caching** simulation layout in one block. To ship **Database Sharding** (or load balancing, etc.), **refactor that block**: branch on `lesson.slug` or introduce distinct `vizType` values and render `Sharding…` (or placeholder) vs caching—same idea as the other labs. |
+There is **one document per lab**. Its **`_id`** must match a frontend lab id (e.g. `system-design`, `api-design`, … — the same strings as in `apps/web/src/contexts/lab.tsx`).
 
-Also note **`LABS_AWAITING_LESSON_UI`** in `ConceptDetailPage.tsx`: for those labs, if **no earlier branch** matches the loaded lesson, users see “This lesson layout is not available yet” instead of an endless spinner. Your new layout must be handled **above** that check (new `if` on `labId` / `vizType` / `slug`, or an extended `*LessonPanel`).
+That document should include:
 
-### 5. Optional extras
+- **`concepts`** — array of concept rows (library cards + base lesson metadata).
+- **`navSections`** — sidebar structure. Any item with a **`slug`** becomes a link to `/concept/<slug>` for the current lab.
+- **`panelPrefix`**, and optionally **`languages`**, **`defaultOpenSectionIds`**, etc., as you already use for other labs.
 
-- **Downloadable practice bundle** (see caching): e.g. `CachingPracticeDownload` + `cachingPracticeZip.ts` co-located with the lesson; pass `extraActions` into `DynamicCodePanel` when needed.
-- **“Mark concept done” / progress** — `apps/web/src/features/concepts/conceptSectionExpectations.ts`: labs in `LABS_WITH_WHOLE_CONCEPT_PROGRESS` get sidebar completion when the user marks the concept finished (backend stores progress).
-- **Data Science Python pins** — `make labs-sync` copies `labs/data-science/requirements.txt` next to the numerical lesson sources under `components/…` (see `Makefile`).
+Each entry in **`concepts`** should include at least what the UI expects on the list and detail request (see `apps/web/src/features/lessons/labCatalogTypes.ts` and `apps/web/src/types/concept.ts`):
 
-### 6. Optional: local sandbox in `labs/`
+| Field | Notes |
+|-------|--------|
+| `id` | Stable string (often the same as `slug` if you do not need a separate key). |
+| `slug` | URL segment; **must be unique within the lab** and must match `navSections[].items[].slug` when you want a sidebar link. |
+| `title`, `summary`, `difficulty`, `tags`, `status` | `status`: `available` or `coming-soon`. |
+| `labKind` | Usually the lab id string (e.g. `system-design`). |
+| `vizType` | Frontend uses this with `labId` to pick a layout in `ConceptDetailPage`. |
+| `codeFiles` | Array of `{ "name", "lang" }` for tab labels. Actual source text usually comes from the **Concepts** document (next step). |
 
-For runnable `go run` / `python` sandboxes outside the browser, see `labs/CONCEPT.md`. Point comments at the canonical `present` / `bad` paths under `apps/web/src/components/…`.
+After inserting or editing the lab document, restart or refresh the app so **`fetchLabsCatalogIntoCache`** runs again (full page load).
 
-### Example checklist: “Database Sharding” (`sharding`) in System Design
+### 2. MongoDB — `Concepts` collection (detail merge)
 
-1. In `features/system-design/system-design.json`, set **`status`** to `available`, fill **`vizType`** (or plan to branch on **`slug` `sharding`** only), and add **`codeFiles`** if you want tabs.
-2. Confirm **`systemDesignNav.ts`** already links **Database Sharding** with **`slug: 'sharding'`** (or add it).
-3. Add `present.go` / `bad.go` (or other languages) under something like `components/system-design/…/sharding/` and wire **`lessonSourceRegistry.ts`**.
-4. Implement **`Sharding…` visualizer + any control panel** under that folder.
-5. **Refactor** the **`labId === 'system-design'`** section in **`ConceptDetailPage.tsx`** so `sharding` does not reuse the caching simulator—e.g. `if (lesson.slug === 'caching') { … } else if (lesson.slug === 'sharding') { … } else { … }`.
-6. Run `npm run build` in `apps/web` and click through **Library → Sharding** with the System Design lab selected.
+Optional for a bare listing, but you need it for **filled code tabs**, **practice ZIP**, and other detail-only fields.
 
-Until step 5 is done, opening `/concept/sharding` will still show the caching lesson chrome even if the catalog says “Sharding,” because the page layout is not yet branched per slug.
+- **`_id`**: **`"<labId>/<slug>"`** (e.g. `system-design/caching`). The API builds this when loading a lesson.
+- Fields on this document are **merged on top of** the matching row from `Labs.concepts`. The API does not copy `_id`, `lab`, or `slug` from the Concepts document into the response.
+- **`codeFiles`**: Same file **names** as in the lab row; each object can include **`code`** (and optional **`role`**: `present` | `bad` | `exercise`). If the Concepts doc has no `codeFiles`, the API still returns tabs but with **empty** `code` strings shaped from the lab row’s names.
+
+**Practice download** — on the same Concepts document, optional **`practice`**:
+
+```json
+{
+  "zipName": "my-lab.zip",
+  "folder": "my-lab",
+  "files": [
+    { "name": "README.md", "content": "..." },
+    { "name": "pkg/stub.go", "content": "..." }
+  ]
+}
+```
+
+Use normal subpaths in `name` (no `.` or `..` segments). Reference tree: `labs/system-design/caching-practice/`. Client build: `apps/web/src/lib/practiceZip.ts`.
+
+### 3. Frontend — routing and UI
+
+All of this lives under **`apps/web/src/features/concepts/`** and related lesson modules.
+
+1. **`ConceptDetailPage.tsx`**  
+   Your **`labId`** + **`vizType`** and/or **`slug`** must hit an existing branch: lesson panel + visualizer, not the generic “layout is not available yet” path (see **`LABS_AWAITING_LESSON_UI`** in that file). Until that branch exists, the catalog can list the concept but the detail page will look broken or wrong.
+
+2. **Code panel source files** (when you want non-empty tabs)  
+   - Add raw files under `apps/web/src/components/…` (follow existing lessons).  
+   - Register them in **`apps/web/src/features/lessons/lessonSourceRegistry.ts`** with **`?raw`** imports.  
+   - Keys must match the **`name`** values in `codeFiles` from Mongo.
+
+3. **Optional: “mark done” / sidebar completion**  
+   If this lab should participate in whole-concept progress, update **`apps/web/src/features/concepts/conceptSectionExpectations.ts`** (`LABS_WITH_WHOLE_CONCEPT_PROGRESS`).
+
+### 4. Quick verification
+
+1. Open the app, select the lab, confirm the concept appears in the **library**.  
+2. Open the **sidebar** link (item must have **`slug`** set).  
+3. Confirm **`/api/catalog/lesson?lab=…&slug=…`** returns JSON with the fields you expect (`codeFiles`, `practice`, etc.).  
+4. Confirm the **detail page** shows the correct lesson layout and code/practice behavior.
+
+---
+
+## API routes (reference)
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/health` | Health check |
+| GET | `/api/catalog/labs` | All lab catalog documents (drives library + sidebar cache) |
+| GET | `/api/catalog/lesson?lab=&slug=` | Merged lesson for one concept |
+| GET/POST | `/api/auth/*` | GitHub OAuth + session (when auth env is complete) |

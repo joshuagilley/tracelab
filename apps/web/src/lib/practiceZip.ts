@@ -1,11 +1,32 @@
 import { strToU8, zipSync } from 'fflate'
 import type { PracticeConfig } from '@/types/labConcept'
 
+/** Zip entry path inside the archive: "<folder>/<relative path>". Rejects ".." and other unsafe segments. */
+export function practiceZipEntryPath(folder: string, fileName: string): string {
+  const normFolder = folder.trim().replace(/\\/g, '/')
+  const folderParts = normFolder.split('/').filter(Boolean)
+  if (!normFolder || folderParts.some(p => p === '..' || p === '.')) {
+    throw new Error(`Invalid practice folder: ${JSON.stringify(folder)}`)
+  }
+
+  const rel = fileName.replace(/\\/g, '/')
+  const fileParts = rel.split('/').filter(Boolean)
+  if (fileParts.length === 0) {
+    throw new Error(`Invalid practice file name: ${JSON.stringify(fileName)}`)
+  }
+  if (fileParts.some(p => p === '..' || p === '.')) {
+    throw new Error(`Invalid practice file name: ${JSON.stringify(fileName)}`)
+  }
+
+  return [...folderParts, ...fileParts].join('/')
+}
+
 /** Build a ZIP archive from a PracticeConfig and return the raw bytes. */
 export function buildPracticeZip(config: PracticeConfig): Uint8Array {
   const entries: Record<string, Uint8Array> = {}
   for (const file of config.files) {
-    entries[`${config.folder}/${file.name}`] = strToU8(file.content)
+    const zipPath = practiceZipEntryPath(config.folder, file.name)
+    entries[zipPath] = strToU8(file.content)
   }
   return zipSync(entries)
 }
