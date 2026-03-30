@@ -11,6 +11,7 @@ export interface CatalogTile {
   status: 'available' | 'coming-soon'
 }
 
+/** Build tiles from the in-memory lab catalog (load catalog from API before calling). */
 export function getAllCatalogTiles(): CatalogTile[] {
   const out: CatalogTile[] = []
   for (const { id, label } of LAB_OPTIONS) {

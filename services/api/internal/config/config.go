@@ -14,6 +14,9 @@ type Config struct {
 	UsersColl string
 	// CompletedColl stores one document per completed concept (see completed).
 	CompletedColl string
+	// LabsColl / ConceptsColl hold curriculum catalog documents (see catalog).
+	LabsColl     string
+	ConceptsColl string
 
 	GitHubClientID     string
 	GitHubClientSecret string
@@ -54,6 +57,8 @@ func Load() *Config {
 		MongoDBName:         firstNonEmpty(os.Getenv("MONGO_DB_NAME"), "tracelab"),
 		UsersColl:           firstNonEmpty(os.Getenv("USERS_COLLECTION"), "Users"),
 		CompletedColl:       firstNonEmpty(os.Getenv("COMPLETED_COLLECTION"), "Completed"),
+		LabsColl:            firstNonEmpty(os.Getenv("LABS_COLLECTION"), "Labs"),
+		ConceptsColl:        firstNonEmpty(os.Getenv("CONCEPTS_COLLECTION"), "Concepts"),
 		GitHubClientID:      strings.TrimSpace(os.Getenv("GITHUB_CLIENT_ID")),
 		GitHubClientSecret:  strings.TrimSpace(os.Getenv("GITHUB_CLIENT_SECRET")),
 		OAuthCallbackURL:    trimTrailingSlash(strings.TrimSpace(os.Getenv("OAUTH_CALLBACK_URL"))),

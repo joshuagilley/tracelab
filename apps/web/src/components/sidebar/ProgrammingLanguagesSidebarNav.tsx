@@ -1,23 +1,19 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
-import { getCatalogNavConfig } from '@/features/lessons/lessonCatalog'
-
-const _plNav = getCatalogNavConfig('programming-languages')
-const PROGRAMMING_LANGUAGES     = _plNav?.languages      ?? []
-const PROGRAMMING_LANGUAGES_DEFAULT_OPEN = _plNav?.defaultOpenSectionIds ?? []
-import { LanguageLogo } from '@/features/programming-languages/LanguageLogo'
+import { LanguageLogo } from '@/components/programming-languages/LanguageLogo'
 import { countSectionNavProgress } from '@/features/concepts/navSectionProgress'
 import { filterProgrammingLanguages } from '@/lib/navCurriculumFilter'
 import type { Concept } from '@/types/concept'
+import type { ProgrammingLanguage } from '@/types/programmingLanguage'
 import styles from '@/components/sidebar/ProgrammingLanguagesSidebarNav.module.css'
 
-function initialOpenLangs(): Record<string, boolean> {
+function buildInitialOpen(langs: ProgrammingLanguage[], defaultOpen: string[] | undefined) {
   const o: Record<string, boolean> = {}
-  for (const lang of PROGRAMMING_LANGUAGES) {
+  for (const lang of langs) {
     o[lang.id] = false
   }
-  for (const id of PROGRAMMING_LANGUAGES_DEFAULT_OPEN) {
+  for (const id of defaultOpen ?? []) {
     o[id] = true
   }
   return o
@@ -26,17 +22,30 @@ function initialOpenLangs(): Record<string, boolean> {
 interface Props {
   concepts: Concept[]
   completedSlugs?: ReadonlySet<string>
+  languages: ProgrammingLanguage[]
+  defaultOpenSectionIds?: string[]
 }
 
-export default function ProgrammingLanguagesSidebarNav({ concepts, completedSlugs }: Props) {
+export default function ProgrammingLanguagesSidebarNav({
+  concepts,
+  completedSlugs,
+  languages,
+  defaultOpenSectionIds,
+}: Props) {
   const navigate = useNavigate()
   const { publishedOnly } = useCurriculumVisibility()
   const bySlug = useMemo(() => Object.fromEntries(concepts.map(c => [c.slug, c])), [concepts])
   const visibleLangs = useMemo(
-    () => filterProgrammingLanguages(PROGRAMMING_LANGUAGES, bySlug, publishedOnly),
-    [bySlug, publishedOnly],
+    () => filterProgrammingLanguages(languages, bySlug, publishedOnly),
+    [languages, bySlug, publishedOnly],
   )
-  const [open, setOpen] = useState<Record<string, boolean>>(initialOpenLangs)
+  const [open, setOpen] = useState<Record<string, boolean>>(() =>
+    buildInitialOpen(languages, defaultOpenSectionIds),
+  )
+
+  useEffect(() => {
+    setOpen(buildInitialOpen(languages, defaultOpenSectionIds))
+  }, [languages, defaultOpenSectionIds])
 
   const toggle = (id: string) => {
     setOpen(s => ({ ...s, [id]: !s[id] }))

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/tracelab/api/internal/auth"
+	"github.com/tracelab/api/internal/catalog"
 	"github.com/tracelab/api/internal/completed"
 	"github.com/tracelab/api/internal/config"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,6 +21,12 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{"status": "ok", "service": "tracelab-api"})
 	})
+
+	if mongoClient != nil {
+		labsColl := mongoClient.Database(cfg.MongoDBName).Collection(cfg.LabsColl)
+		conceptsColl := mongoClient.Database(cfg.MongoDBName).Collection(cfg.ConceptsColl)
+		catalog.NewHandler(labsColl, conceptsColl).Register(mux)
+	}
 
 	if cfg.AuthConfigured() && mongoClient != nil {
 		coll := mongoClient.Database(cfg.MongoDBName).Collection(cfg.UsersColl)

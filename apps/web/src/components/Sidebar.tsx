@@ -76,9 +76,18 @@ export default function Sidebar() {
     setMenuOpen(false)
   }
 
+  const plNav = labId === 'programming-languages' ? getCatalogNavConfig('programming-languages') : null
+
   let topicNav: ReactNode = null
   if (labId === 'programming-languages') {
-    topicNav = <ProgrammingLanguagesSidebarNav concepts={concepts} completedSlugs={completedSlugs} />
+    topicNav = (
+      <ProgrammingLanguagesSidebarNav
+        concepts={concepts}
+        completedSlugs={completedSlugs}
+        languages={plNav?.languages ?? []}
+        defaultOpenSectionIds={plNav?.defaultOpenSectionIds}
+      />
+    )
   } else {
     const navConfig = getCatalogNavConfig(labId)
     if (navConfig && navConfig.navSections.length > 0) {
