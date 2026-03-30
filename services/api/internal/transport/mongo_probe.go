@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -81,4 +82,39 @@ func splitHostPorts(raw string) []string {
 		out = append(out, p)
 	}
 	return out
+}
+
+// mongoTLSProbeHandler dials each Mongo host with TLS (like the driver does after TCP).
+// If TCP /mongo-probe is OK but this fails with x509 errors, the image lacks CA certs (see Dockerfile).
+func mongoTLSProbeHandler(cfg *config.Config) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		hosts := hostsForMongoProbe(cfg)
+		if len(hosts) == 0 {
+			http.Error(w, "no hosts to probe: set MONGO_DB_URI or MONGO_PROBE_HOSTS", http.StatusServiceUnavailable)
+			return
+		}
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		dialer := &net.Dialer{Timeout: 8 * time.Second}
+		for _, addr := range hosts {
+			host, _, err := net.SplitHostPort(addr)
+			if err != nil {
+				fmt.Fprintf(w, "%s -> TLS FAIL: split host: %v\n", addr, err)
+				continue
+			}
+			conn, err := tls.DialWithDialer(dialer, "tcp", addr, &tls.Config{
+				ServerName: host,
+				MinVersion: tls.VersionTLS12,
+			})
+			if err != nil {
+				fmt.Fprintf(w, "%s -> TLS FAIL: %v\n", addr, err)
+				continue
+			}
+			_ = conn.Close()
+			fmt.Fprintf(w, "%s -> TLS OK\n", addr)
+		}
+	}
 }

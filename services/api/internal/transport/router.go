@@ -54,11 +54,17 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 	})
 
 	mux.HandleFunc("/mongo-probe", mongoProbeHandler(cfg))
+	mux.HandleFunc("/mongo-tls-probe", mongoTLSProbeHandler(cfg))
 
 	if mongoClient != nil {
+		log.Printf("catalog: registering /api/catalog/* (mongo connected)")
 		labsColl := mongoClient.Database(cfg.MongoDBName).Collection(cfg.LabsColl)
 		conceptsColl = mongoClient.Database(cfg.MongoDBName).Collection(cfg.ConceptsColl)
 		catalog.NewHandler(labsColl, conceptsColl).Register(mux)
+	} else {
+		log.Printf("catalog: mongoClient is nil — /api/catalog/* serves 503 stubs (see startup mongo: connect log)")
+		mux.HandleFunc("/api/catalog/labs", catalogUnavailableLabs)
+		mux.HandleFunc("/api/catalog/lesson", catalogUnavailableLesson)
 	}
 
 	if cfg.AuthConfigured() && mongoClient != nil {
@@ -111,5 +117,24 @@ func withCORS(cfg *config.Config, next http.Handler) http.Handler {
 			return
 		}
 		next.ServeHTTP(w, r)
+	})
+}
+
+func catalogUnavailableLabs(w http.ResponseWriter, r *http.Request) {
+	if !auth.RequireMethod(w, r, http.MethodGet) {
+		return
+	}
+	auth.WriteJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"error": "mongo_unavailable",
+		"labs":  []any{},
+	})
+}
+
+func catalogUnavailableLesson(w http.ResponseWriter, r *http.Request) {
+	if !auth.RequireMethod(w, r, http.MethodGet) {
+		return
+	}
+	auth.WriteJSON(w, http.StatusServiceUnavailable, map[string]string{
+		"error": "mongo_unavailable",
 	})
 }

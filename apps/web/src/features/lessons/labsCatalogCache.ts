@@ -20,7 +20,17 @@ function normalizeLabDoc(raw: Record<string, unknown>): LabCatalogFile {
 export async function fetchLabsCatalogIntoCache(): Promise<void> {
   const res = await fetch(`${API_BASE}/catalog/labs`)
   if (!res.ok) {
-    throw new Error(`catalog/labs: ${res.status}`)
+    let hint = ''
+    try {
+      const j = (await res.json()) as { error?: string }
+      if (j.error === 'mongo_unavailable') {
+        hint =
+          ' The API is running but MongoDB did not connect at startup (check Cloud Run logs for db.Connect and MONGO_DB_URI / Atlas).'
+      }
+    } catch {
+      /* non-JSON body */
+    }
+    throw new Error(`catalog/labs: ${res.status}${hint}`)
   }
   const data = (await res.json()) as { labs?: unknown[] }
   const labs = data.labs ?? []
