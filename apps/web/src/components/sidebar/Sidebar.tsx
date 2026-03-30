@@ -8,8 +8,8 @@ import {
   firstPublishedLabId,
   labHasPublishedConcepts,
 } from '@/lib/labPickerFilter'
-import TopicSidebarNav from './sidebar/TopicSidebarNav'
-import ProgrammingLanguagesSidebarNav from './sidebar/ProgrammingLanguagesSidebarNav'
+import TopicSidebarNav from '@/components/sidebar/TopicSidebarNav'
+import ProgrammingLanguagesSidebarNav from '@/components/sidebar/ProgrammingLanguagesSidebarNav'
 import { getCatalogNavConfig } from '@/features/lessons/lessonCatalog'
 import styles from './Sidebar.module.css'
 
@@ -32,7 +32,6 @@ const LIBRARY_LINK_LABEL: Record<LabId, string> = {
   'database-design': 'All lessons',
   'cloud-architecture': 'All lessons',
 }
-
 
 function BrandGridIcon() {
   const cells = Array.from({ length: 36 }, (_, i) => (

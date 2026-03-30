@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
-import AuthErrorBanner from './AuthErrorBanner'
-import FooterLabProgress from './FooterLabProgress'
-import GitHubAuthControl from './GitHubAuthControl'
-import PeriodicTableNavButton from './PeriodicTableNavButton'
-import Sidebar from './Sidebar'
+import AuthErrorBanner from '@/components/auth/AuthErrorBanner'
+import FooterLabProgress from '@/components/layout/FooterLabProgress'
+import GitHubAuthControl from '@/components/auth/GitHubAuthControl'
+import PeriodicTableNavButton from '@/components/layout/PeriodicTableNavButton'
+import Sidebar from '@/components/sidebar/Sidebar'
 import styles from './AppShell.module.css'
 
 interface AppShellProps {

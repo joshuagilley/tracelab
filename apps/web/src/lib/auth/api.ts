@@ -1,5 +1,5 @@
 import { API_BASE } from '@/lib/apiBase'
-import type { AuthUser } from './types'
+import type { AuthUser } from '@/lib/auth/types'
 
 export async function fetchAuthMe(): Promise<AuthUser | null> {
   const res = await fetch(`${API_BASE}/auth/me`, {

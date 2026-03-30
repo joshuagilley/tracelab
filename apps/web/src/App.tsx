@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import AppShell from '@/components/AppShell'
+import AppShell from '@/components/layout/AppShell'
 import { AuthProvider } from '@/contexts/auth'
 import { GlobalConceptProgressProvider } from '@/contexts/globalConceptProgress'
 import { LabCurriculumProgressProvider } from '@/contexts/labCurriculumProgress'

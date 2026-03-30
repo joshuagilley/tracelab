@@ -7,8 +7,8 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { fetchAuthMe, githubLoginHref, logout as apiLogout } from '@/features/auth/api'
-import type { AuthUser } from '@/features/auth/types'
+import { fetchAuthMe, githubLoginHref, logout as apiLogout } from '@/lib/auth/api'
+import type { AuthUser } from '@/lib/auth/types'
 
 interface AuthContextValue {
   user: AuthUser | null
