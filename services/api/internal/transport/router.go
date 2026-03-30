@@ -53,6 +53,8 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 		w.Write(body)
 	})
 
+	mux.HandleFunc("/mongo-probe", mongoProbeHandler(cfg))
+
 	if mongoClient != nil {
 		labsColl := mongoClient.Database(cfg.MongoDBName).Collection(cfg.LabsColl)
 		conceptsColl = mongoClient.Database(cfg.MongoDBName).Collection(cfg.ConceptsColl)
