@@ -22,7 +22,9 @@ export interface LabParameter {
 export interface LabCodeFile {
   name: string
   lang: string
+  /** Lesson body; Mongo may send `content` instead — UI/API normalize to `code`. */
   code: string
+  content?: string
   /** 'present' = idiomatic, 'bad' = anti-pattern, 'exercise' = starter */
   role?: 'present' | 'bad' | 'exercise'
 }

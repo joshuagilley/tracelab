@@ -4,6 +4,26 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import type { LabCodeFile } from '@/types/labConcept'
 import styles from './CodePanel.module.css'
 
+function inferLangFromFileName(name: string): string {
+  if (name.endsWith('.go')) return 'go'
+  if (name.endsWith('.md')) return 'markdown'
+  if (name.endsWith('.mod')) return 'go'
+  return 'text'
+}
+
+function resolvedCode(f: LabCodeFile): string {
+  if (f.code != null && f.code !== '') return f.code
+  if (f.content != null && f.content !== '') return f.content
+  return ''
+}
+
+function resolvedLang(f: LabCodeFile): string {
+  if (f.lang && f.lang.trim() !== '') {
+    return f.lang === 'markdown' ? 'markdown' : f.lang
+  }
+  return inferLangFromFileName(f.name)
+}
+
 interface Props {
   files: LabCodeFile[]
   /** Extra header controls (e.g. practice sandbox download for specific concepts). */
@@ -14,7 +34,7 @@ export default function DynamicCodePanel({ files, extraActions }: Props) {
   const map = useMemo(() => {
     const m: Record<string, { lang: string; code: string }> = {}
     for (const f of files) {
-      m[f.name] = { lang: f.lang === 'markdown' ? 'markdown' : f.lang, code: f.code }
+      m[f.name] = { lang: resolvedLang(f), code: resolvedCode(f) }
     }
     return m
   }, [files])

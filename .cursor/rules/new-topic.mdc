@@ -1,0 +1,185 @@
+---
+description: End-to-end flow for a new TraceLab topic — sandbox → practice bundle → Mongo Concepts → lesson + viz registries → simulation from a flow diagram.
+globs: sandbox/**/*
+alwaysApply: false
+---
+
+# New topic: sandbox → practice lesson → Mongo → registries → visualization
+
+Use this when a developer has iterated on **`main.go`** (or a small runnable) under **`sandbox/<lab>/<topic>/`** and wants a full **TraceLab concept**: downloadable practice, editor **`codeFiles`**, optional **simulation**, and curriculum wiring.
+
+Path examples: **`sandbox/system-design/load-balancer/`** (topic folder name is usually short; URL slug may differ, e.g. **`load-balancing`**).
+
+---
+
+## Files you will touch (every new topic)
+
+This is the **complete list** of files that change for a typical new topic. Use it as a checklist:
+
+| Area | File(s) | What you do |
+|------|---------|-------------|
+| **Sandbox** | `sandbox/<lab>/<topic>/go.mod`, `main.go`, `main_test.go`, `solution.go`, `present.go`, `bad.go`, `LAB.md` | Create the practice bundle (§1). |
+| **Sync script** | `scripts/sync-<topic>-practice.sh` | Shell wrapper around `sync-sandbox-practice` to push `practice` into Mongo. |
+| **Makefile** | `Makefile` | Add `sync-<topic>-mongo` target calling the script above; add to `.PHONY`. |
+| **Lesson panel** | `apps/web/src/components/lessons/<lab>/<Topic>Lesson.tsx` | New text-lesson component (`LessonRoot` / `LessonProblem` / `LessonDiagram` / `LessonTradeoffs`). |
+| **Lesson registry** | `apps/web/src/features/lessons/lessonRegistry.ts` | Import + register `"<slug>": <Topic>Lesson`. |
+| **Simulation** | `apps/web/src/components/simulations/<lab>/<Topic>Simulation.tsx` + `.module.css` | SVG sim matching the user's PNG; reuse `CachingSimulation.module.css` panel chrome; rAF packet animation; `onMetrics` emitting metric ids. |
+| **Viz registry** | `apps/web/src/features/concepts/vizRegistry.tsx` | Thin adapter (`VizComponent`) + `VIZ_REGISTRY['<vizType>']` entry. |
+| **Detail page** | `apps/web/src/features/concepts/pages/ConceptDetailPage.tsx` | Only if a new `practice.folder` fallback is needed in `resolveVizComponent`; otherwise **no change**. |
+| **API** | `services/api/internal/catalog/handler.go` | Only if new `normalizeCodeFilesForLesson` edge cases appear; otherwise **no change**. |
+| **SPA types** | `apps/web/src/types/labConcept.ts` | Only if new fields are added to the lesson payload; otherwise **no change**. |
+| **Code panel** | `apps/web/src/components/code/DynamicCodePanel.tsx` | Only if new lang/content fallback rules; otherwise **no change**. |
+| **Mongo** | `Labs` doc (concepts[] row + navSections item), `Concepts` doc (_id, vizType, codeFiles, parameters, metricGroups) | Manual or via one-off script (delete after). |
+| **README** | `README.md`, `sandbox/README.md` | Document the new bundle + sync target. |
+
+Items marked **"no change"** are already generic enough from previous topics. The first six rows are always new files or edits.
+
+---
+
+## 1. Practice bundle (under `sandbox/<lab>/<topic>/`)
+
+| File | Role |
+|------|------|
+| **`go.mod`** | Small module (e.g. `module <topic>-practice`, matching Go version). |
+| **`main.go`** | **Student starter**: `func main()`, types/API to implement, **`TODO`s**. Must pass **`go test ./...`** when solved (no long-running servers in default test build). |
+| **`main_test.go`** | Tests for the **testable core** only (pure logic; no binding ports in tests). |
+| **`solution.go`** | **`//go:build ignore`** at top; full solution, **same API as `main.go`**. Must be **test-valid by definition** (see below). |
+| **`present.go`** | **`//go:build ignore`**: idiomatic “good” code — typically evolved from the prototype **`main.go`** you were happy with. Runnable with **`go run present.go`**. |
+| **`bad.go`** | **`//go:build ignore`**: one clear anti-pattern or wrong approach; same rough shape as **`present.go`** so comparison teaches. **`go run bad.go`**. |
+| **`LAB.md`** | Goals, file table, **`go test` / `go run`** commands, pointers to **`present`** vs **`bad`**. |
+
+### Editor `codeFiles` vs ZIP
+
+- **`Concepts` / `Labs`** **`codeFiles`** (Implementation panel) should expose **read-only teaching slices**: usually **`present.go`** and **`bad.go`** with optional **`role`**: `present` / `bad`.
+- The working **`main.go`** (starter) lives in the **practice ZIP** (`practice.files`), not merged into **`codeFiles`** for editing in the same way — see **`DynamicCodePanel`** + API **`normalizeCodeFilesForLesson`**.
+- Practically: once **`main.go`** is stable as the student exercise, **copy/refine that logic into `present.go`** for the “good” reference; **`bad.go`** is a deliberate broken variant.
+
+### `solution.go` and `main_test.go` (required invariant)
+
+**`solution.go` must pass the lesson tests by construction:** if you take the solution body (everything that belongs in the student file — types, functions, **`main`** as needed) and **paste it into `main.go`** in place of the starter stubs, then **`go test ./...`** must pass. The reference implementation and **`main_test.go`** must stay in lockstep: same exported/unexported surface the tests exercise, no extra manual steps. Keep **`//go:build ignore`** on **`solution.go`** so the default package build stays the student **`main.go`**.
+
+### HTTP / servers
+
+Extract a **small testable API** into **`main.go`** / tests; keep servers or demos in **`present.go`** so **`go test ./...`** stays hermetic.
+
+---
+
+## 2. `parameters` and `metricGroups` (Mongo / `LabConceptDetail`)
+
+Define these on the merged lesson payload (typically **`Concepts`** document **`_id`**: `"<labId>/<slug>"` — detail fields override **`Labs`** row where both set the same key).
+
+**`parameters`** drive **`ParametersPanel`** (`LabParameter` in **`apps/web/src/types/labConcept.ts`**). Example pattern (caching-style):
+
+```json
+"parameters": [
+  {
+    "id": "hitRate",
+    "type": "slider",
+    "label": "HIT RATE",
+    "min": 0,
+    "max": 100,
+    "unit": "%",
+    "default": 70
+  },
+  {
+    "id": "spawnRate",
+    "type": "slider",
+    "label": "SPAWN RATE",
+    "min": 200,
+    "max": 2000,
+    "unit": "ms",
+    "default": 900,
+    "readOnly": true
+  }
+]
+```
+
+**`metricGroups`** drive **`MetricsPanel`**. Each **`metrics[].id`** must match **string keys** emitted by your viz adapter’s **`onMetrics`** (see **`vizRegistry.tsx`**). Example (caching):
+
+```json
+"metricGroups": [
+  {
+    "label": "PERFORMANCE METRICS",
+    "metrics": [
+      { "id": "latency", "label": "LATENCY", "accent": true },
+      { "id": "throughput", "label": "THROUGHPUT", "accent": true },
+      { "id": "cacheHit", "label": "CACHE HIT", "accent": true },
+      { "id": "successRate", "label": "SUCCESS RATE", "accent": true }
+    ]
+  },
+  {
+    "label": "REQUEST LOG",
+    "metrics": [
+      { "id": "hits", "label": "HITS", "color": "var(--accent)" },
+      { "id": "misses", "label": "MISSES", "color": "var(--color-hard)" },
+      { "id": "total", "label": "TOTAL" }
+    ]
+  }
+]
+```
+
+For a **new** simulation, define **`metricGroups` last**, after you know the exact ids your component or adapter emits (or stub the viz first, then align Mongo).
+
+---
+
+## 3. Syncing to Mongo
+
+### A. Practice ZIP + `practice` field (keep in repo)
+
+Use **`services/api/cmd/sync-sandbox-practice`** (and optionally a thin **`scripts/sync-<topic>-practice.sh`** + **`make sync-<topic>-mongo`**) to **`$set`** **`practice`** (`zipName`, `folder`, `files[]`) on **`Concepts._id`**.
+
+- Example script: **`scripts/sync-load-balancer-practice.sh`**.
+- **`-files`** order is the ZIP contents; include **`go.mod`**, **`LAB.md`**, **`main.go`**, **`main_test.go`**, **`solution.go`**, **`present.go`**, **`bad.go`** as needed.
+
+### B. One-off metadata (`parameters`, `vizType`, `metricGroups`, …)
+
+For first-time wiring, a **temporary** helper is fine: small **`go run`** (Mongo update), **`mongosh`**, or a throwaway script that **`$set`s** the fields on **`Concepts`** (and **`Labs.concepts[]`** row if you keep catalog there).
+
+**After values are correct in the database, remove the throwaway script** and any **`Makefile`** target that only existed to run it. **Do not** remove the durable **`sync-sandbox-practice`** script unless the topic is dropped entirely.
+
+---
+
+## 4. `lessonRegistry` (text panel)
+
+In **`apps/web/src/features/lessons/lessonRegistry.ts`**, map **`slug` → component** for concepts whose **`vizType`** is **`lesson`**, empty, or not a registered sim (see **`resolveLessonPanelComponent`** in **`ConceptDetailPage.tsx`**).
+
+- Slug **must match** **`Labs.concepts[].slug`** and **`/concept/<slug>`**.
+
+---
+
+## 5. Visualization + `vizRegistry`
+
+The user provides a **PNG (or sketch) of the architecture flow**. This is the primary design input for the simulation SVG.
+
+1. **Study the PNG**: identify nodes (boxes), edges (arrows / dashed lines), request flow direction, and any labels. The SVG must reproduce this layout — same node count, same topology, same labeling style.
+2. **Implement** under **`apps/web/src/components/simulations/<lab>/`**:
+   - Wrap in the **Architecture Visualizer** panel header (reuse **`CachingSimulation.module.css`** panel chrome — header with **READY / SIMULATION LIVE** dot + **EXECUTE SIMULATION / STOP** button). See **`CachingSimulation.tsx`** and **`LoadBalancerRoundRobinSimulation.tsx`** as references.
+   - Animate **request packets** (small glowing circles via `requestAnimationFrame`) traveling the edges in the SVG, matching the flow shown in the PNG.
+   - Emit **`onMetrics`** with string values keyed to the **`metricGroups`** ids defined in step 2.
+3. **Register** in **`apps/web/src/features/concepts/vizRegistry.tsx`**:
+   - Add a thin **`VizComponent`** adapter that maps **`paramValues`** → sim props and stringifies **`onMetrics`**.
+   - **`VIZ_REGISTRY[vizType]`** key must match **`vizType`** in Mongo (or use **`practice.folder`** special cases in **`resolveVizComponent`**).
+4. **Set `vizType`** on the concept to that registry key (e.g. **`load-balancer`**). If **`Concepts`** overrides **`Labs`**, ensure **`Concepts`** does not leave **`vizType`** as **`""`** if it would wipe a good value from **`Labs`**.
+
+---
+
+## 6. Curriculum checklist
+
+- **`Labs`** document: **`concepts[]`** row (**`slug`**, **`title`**, **`status`**, **`labKind`**, **`vizType`**, **`codeFiles`** names/roles as needed).
+- **`navSections`**: item **`slug`** equals concept **`slug`** for a working sidebar link.
+- **`Concepts._id`**: `"<labId>/<slug>"` for merged detail + **`practice`**.
+- Root **`README.md`** § curriculum / sync if you add a **new** permanent sync script.
+
+---
+
+## Prompt snippet for the agent
+
+> I have a working **`main.go`** under **`sandbox/<lab>/<topic>/`**. Here is a PNG of the architecture flow I want the simulation to match: *(attach PNG)*.
+>
+> 1. Turn the sandbox into a **practice bundle**: **`go.mod`**, **`main.go`** (student starter with TODOs), **`main_test.go`**, **`solution.go`** (`//go:build ignore` — must pass `go test` when pasted into `main.go`), **`present.go`** (idiomatic demo), **`bad.go`** (anti-pattern), **`LAB.md`**.
+> 2. Wire **`sync-sandbox-practice`** for **`Concepts._id` `<labId>/<slug>`**.
+> 3. Define **`parameters`** and **`metricGroups`** for the simulation. Metric ids must match what the viz component emits via **`onMetrics`**.
+> 4. Build the **SVG simulation** matching the attached PNG — nodes, edges, animated request packets — inside the **Architecture Visualizer** panel header. Register it in **`vizRegistry.tsx`** under **`vizType` `<key>`**.
+> 5. Register the **text lesson** panel in **`lessonRegistry.ts`** (slug **`<slug>`**).
+
+Adjust **`<lab>`**, **`<topic>`**, **`<labId>/<slug>`**, **`vizType`**, and sim vs text-only.

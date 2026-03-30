@@ -12,7 +12,7 @@ import { LAB_OPTIONS, useLab, type LabId } from '@/contexts/lab'
 import DynamicCodePanel from '@/components/code/DynamicCodePanel'
 import ParametersPanel from '@/components/panels/ParametersPanel'
 import MetricsPanel from '@/components/panels/MetricsPanel'
-import { VIZ_REGISTRY } from '@/features/concepts/vizRegistry'
+import { VIZ_REGISTRY, type VizComponent } from '@/features/concepts/vizRegistry'
 import { LESSON_REGISTRY, type LessonPanelProps } from '@/features/lessons/lessonRegistry'
 import type { LabConceptDetail } from '@/types/labConcept'
 import { ConceptProgressProvider } from '@/contexts/conceptProgress'
@@ -51,6 +51,16 @@ function resolveLessonPanelComponent(
   if (vt === 'lesson') return panel
   if (vt == null || vt === '') return panel
   if (typeof vt === 'string' && !VIZ_REGISTRY[vt]) return panel
+  return undefined
+}
+
+/** Prefer explicit vizType; else practice.folder-specific sims (e.g. load-balancer bundle). */
+function resolveVizComponent(lesson: LabConceptDetail): VizComponent | undefined {
+  const direct = VIZ_REGISTRY[lesson.vizType]
+  if (direct) return direct
+  if (lesson.practice?.folder === 'load-balancer' && VIZ_REGISTRY['load-balancer']) {
+    return VIZ_REGISTRY['load-balancer']
+  }
   return undefined
 }
 
@@ -180,7 +190,7 @@ export default function ConceptDetailPage() {
   // ── Interactive visualizer path ───────────────────────────────────────────
   // Any concept whose vizType is in VIZ_REGISTRY renders here (caching, singleton, DI, numerical…).
   // To add a new one: write a thin adapter in vizRegistry.tsx and add concept JSON config.
-  const VizComp = lesson ? VIZ_REGISTRY[lesson.vizType] : undefined
+  const VizComp = lesson ? resolveVizComponent(lesson) : undefined
   if (VizComp && lesson) {
     return (
       <WithProgress labId={labId} slug={slug}>
@@ -213,9 +223,7 @@ export default function ConceptDetailPage() {
             </div>
             {dragHandle}
             <div className={styles.right}>
-              <DynamicCodePanel
-                files={lesson.codeFiles ?? []}
-              />
+              <DynamicCodePanel files={lesson.codeFiles ?? []} />
             </div>
           </div>
         </ConceptLessonLayout>
@@ -248,7 +256,11 @@ export default function ConceptDetailPage() {
   }
 
   // Lesson loaded from API but no visualizer / lesson panel is registered — avoid infinite "Loading…"
-  if (lesson) {
+  if (
+    lesson &&
+    !resolveVizComponent(lesson) &&
+    !resolveLessonPanelComponent(lesson)
+  ) {
     return (
       <div className={styles.page}>
         <div className={styles.errorPage}>
@@ -258,7 +270,8 @@ export default function ConceptDetailPage() {
           </p>
           <p className={styles.errorHint}>
             Add the slug to <code>LESSON_REGISTRY</code> (if <code>vizType</code> is <code>lesson</code>) or register{' '}
-            <code>vizType</code> in <code>VIZ_REGISTRY</code>.
+            <code>vizType</code> in <code>VIZ_REGISTRY</code>. Practice bundles with <code>folder: load-balancer</code>{' '}
+            also pick up the round-robin simulation.
           </p>
           <Link to="/" className={styles.backLink}>← Back to library</Link>
         </div>

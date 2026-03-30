@@ -6,6 +6,7 @@ import DependencyInjectionSimulation, {
   type StorageBackend,
 } from '@/components/simulations/design-patterns/DependencyInjectionSimulation'
 import NumericalComputingSimulation from '@/components/simulations/data-science/NumericalComputingSimulation'
+import LoadBalancerRoundRobinSimulation from '@/components/simulations/system-design/LoadBalancerRoundRobinSimulation'
 import type { NumpyFn } from '@/lib/numpyDemo'
 
 /**
@@ -124,6 +125,16 @@ function DependencyInjectionViz({ paramValues, onMetrics, isRunning, onToggleRun
   )
 }
 
+function LoadBalancerRRViz({ onMetrics, isRunning, onToggleRun }: VizProps) {
+  return (
+    <LoadBalancerRoundRobinSimulation
+      isRunning={isRunning}
+      onToggleRun={onToggleRun}
+      onMetrics={onMetrics}
+    />
+  )
+}
+
 function NumericalViz({ paramValues, isRunning, onToggleRun }: VizProps) {
   const numpyFn = (paramValues.numpy_fn  as NumpyFn) ?? 'ones'
   const length  = (paramValues.array_len as number)  ?? 8
@@ -146,4 +157,5 @@ export const VIZ_REGISTRY: Record<string, VizComponent> = {
   singleton:              SingletonViz,
   'dependency-injection': DependencyInjectionViz,
   numerical:              NumericalViz,
+  'load-balancer':        LoadBalancerRRViz,
 }

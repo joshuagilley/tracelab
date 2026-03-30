@@ -105,7 +105,7 @@ Optional for a bare listing, but you need it for **filled code tabs**, **practic
 
 - **`_id`**: **`"<labId>/<slug>"`** (e.g. `system-design/caching`). The API builds this when loading a lesson.
 - Fields on this document are **merged on top of** the matching row from `Labs.concepts`. The API does not copy `_id`, `lab`, or `slug` from the Concepts document into the response.
-- **`codeFiles`**: Same file **names** as in the lab row; each object can include **`code`** (and optional **`role`**: `present` | `bad` | `exercise`). If the Concepts doc has no `codeFiles`, the API still returns tabs but with **empty** `code` strings shaped from the lab row’s names.
+- **`codeFiles`**: Same file **names** as in the lab row; each object should include the file body as **`code`** (or **`content`** — the API maps that to **`code`** for the SPA) and optional **`lang`** (inferred from the filename, e.g. `.go` → `go`, when omitted). Optional **`role`**: `present` | `bad` | `exercise`. If the Concepts doc has no `codeFiles`, the API still returns tabs but with **empty** `code` strings shaped from the lab row’s names.
 
 **Practice download** — on the same Concepts document, optional **`practice`**:
 
@@ -125,13 +125,15 @@ Optional for a bare listing, but you need it for **filled code tabs**, **practic
 
 Use normal subpaths in `name` (no `.` or `..` segments). The **Caching** template in-repo is **`sandbox/system-design/caching-practice/`** (`go.mod`, `LAB.md`, `main.go`, `main_test.go`, `solution.go` with `//go:build ignore`). To push that tree into Mongo as the downloadable bundle for **`system-design/caching`**, run **`make sync-caching-mongo`** (loads repo `.env`, updates only the **`practice`** field on **`Concepts._id`** `system-design/caching`). Client ZIP: `apps/web/src/lib/practiceZip.ts`.
 
+The **Load Balancer** practice bundle is **`sandbox/system-design/load-balancer/`**; sync with **`make sync-load-balancer-mongo`** (updates **`Concepts._id`** **`system-design/load-balancing`**). The **Implementation** panel shows only merged **`codeFiles`** from **`Labs`** / **`Concepts`** (e.g. **`present.go`** and **`bad.go`** for read-only comparison — keep **`main.go`** in the downloadable **`practice`** ZIP only). If **`practice.folder`** is **`load-balancer`**, the **round-robin** simulation is used even when **`vizType`** is **`lesson`** (see **`resolveVizComponent`** in **`ConceptDetailPage.tsx`**).
+
 ### 3. Frontend — routing and UI
 
 Rendering is driven by **`apps/web/src/features/concepts/pages/ConceptDetailPage.tsx`**. After **`GET /api/catalog/lesson`** returns a merged lesson, the page picks **one** of:
 
 | Kind | When | Where you register |
 |------|------|---------------------|
-| **Interactive simulation** | `vizType` is a key in **`VIZ_REGISTRY`** (e.g. `caching`, `singleton`) | **`apps/web/src/features/concepts/vizRegistry.tsx`** — add an adapter + entry. |
+| **Interactive simulation** | `vizType` is a key in **`VIZ_REGISTRY`** (e.g. `caching`, `singleton`, **`load-balancer`**) — or **`practice.folder`** is **`load-balancer`** for the bundled lab | **`apps/web/src/features/concepts/vizRegistry.tsx`** — add an adapter + entry. |
 | **Text lesson** | `vizType` is `"lesson"`, **or** missing/empty, **or** not a simulation key — and the **`slug`** has a panel in **`LESSON_REGISTRY`** | **`apps/web/src/features/lessons/lessonRegistry.ts`** — **required** for every new text lesson. |
 
 If nothing matches, the user sees **“This concept is not wired to a lesson UI yet”** with the **`vizType`** and **`slug`** from the API — use that to fix Mongo vs registry mismatch.
@@ -153,7 +155,7 @@ Do this for “read the lesson on the left, optional code tabs on the right” (
    You can also set **`vizType`** on the **`Concepts`** document; it merges over the lab row.  
    If **`vizType`** is omitted, the app still resolves a **`LESSON_REGISTRY`** panel when the **`slug`** is registered (see **`resolveLessonPanelComponent`** in **`ConceptDetailPage.tsx`**). Simulation types (`caching`, …) must still set **`vizType`** correctly so the sim branch wins.
 
-4. **Code tabs (optional)** — put **`codeFiles`** on **`Labs`** and/or **`Concepts`** with **`name`**, **`lang`**, and **`code`** strings. The right-hand **`DynamicCodePanel`** renders whatever the API returns; no separate “source registry” file.
+4. **Code tabs (optional)** — put **`codeFiles`** on **`Labs`** and/or **`Concepts`** with **`name`**, **`lang`**, and **`code`** strings. The lesson page **Implementation** editor uses **only** this merged **`codeFiles`** list (not the **`practice`** ZIP file list).
 
 #### Frontend: interactive simulation (not a text lesson)
 

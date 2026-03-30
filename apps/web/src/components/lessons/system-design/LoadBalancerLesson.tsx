@@ -6,8 +6,8 @@ import {
   LessonEm,
 } from '@/components/lesson-panels/LessonPanel'
 
-/** System Design — algorithms (round robin, least connections, etc.) */
-export default function LoadBalancingAlgorithmsLesson({ summary }: { summary: string }) {
+/** System Design — Load Balancer: policies (round robin, least connections, …). Pairs with slug `load-balancing`. */
+export default function LoadBalancerLesson({ summary }: { summary: string }) {
   return (
     <LessonRoot>
       <LessonProblem>{summary}</LessonProblem>

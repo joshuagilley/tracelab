@@ -1,4 +1,4 @@
-.PHONY: dev api web install build clean compose-up compose-down test sync-caching-mongo
+.PHONY: dev api web install build clean compose-up compose-down test sync-caching-mongo sync-load-balancer-mongo
 
 # Bash so `api` can `source .env` (GitHub OAuth, Mongo, JWT, etc.)
 SHELL := /bin/bash
@@ -40,6 +40,10 @@ test:
 # $set Concepts.practice for system-design/caching from sandbox/system-design/caching-practice/
 sync-caching-mongo:
 	@bash -c 'if [[ -f "$(CURDIR)/.env" ]]; then set -a && source "$(CURDIR)/.env" && set +a; fi; cd "$(CURDIR)/services/api" && go run ./cmd/sync-caching-practice -repo "$(CURDIR)"'
+
+# $set Concepts.practice for system-design/load-balancing from sandbox/system-design/load-balancer/
+sync-load-balancer-mongo:
+	@$(CURDIR)/scripts/sync-load-balancer-practice.sh
 
 clean:
 	rm -rf apps/web/dist

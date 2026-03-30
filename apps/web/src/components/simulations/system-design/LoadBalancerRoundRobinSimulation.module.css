@@ -1,0 +1,100 @@
+/* Diagram only — panel chrome comes from CachingSimulation.module.css */
+
+.svg {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.node {
+  fill: var(--bg-base);
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+
+.nodeAccent {
+  fill: color-mix(in srgb, var(--accent) 12%, var(--bg-base));
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+
+.nodeLabel {
+  font-size: 11px;
+  fill: var(--text-secondary);
+  font-weight: 500;
+}
+
+.nodeTitle {
+  font-size: 12px;
+  fill: var(--text-primary);
+  font-weight: 600;
+}
+
+.nodeSub {
+  font-size: 9px;
+  fill: var(--text-muted);
+}
+
+.backend {
+  fill: var(--bg-subtle);
+  stroke: var(--border);
+  stroke-width: 1.5;
+  transition:
+    fill 0.2s ease,
+    stroke 0.2s ease,
+    filter 0.2s ease;
+}
+
+.backendHot {
+  fill: color-mix(in srgb, var(--accent) 28%, var(--bg-subtle));
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  transition:
+    fill 0.2s ease,
+    stroke 0.2s ease,
+    filter 0.2s ease;
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--accent) 35%, transparent));
+}
+
+.backendLabel {
+  font-size: 10px;
+  fill: var(--text-primary);
+  font-weight: 600;
+}
+
+.edge {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.edgeDim {
+  stroke: color-mix(in srgb, var(--border) 70%, var(--accent));
+  stroke-width: 1.2;
+  stroke-dasharray: 4 3;
+  fill: none;
+  opacity: 0.55;
+}
+
+.legend {
+  display: flex;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}

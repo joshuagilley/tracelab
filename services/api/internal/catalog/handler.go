@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/tracelab/api/internal/auth"
 	"go.mongodb.org/mongo-driver/bson"
@@ -143,12 +144,59 @@ func mergeLesson(row, detail bson.M) bson.M {
 
 	detailCF := codeFilesFromDoc(detail)
 	rowCF := codeFilesFromDoc(row)
+	var merged []any
 	if len(detailCF) > 0 {
-		out["codeFiles"] = detailCF
+		merged = detailCF
 	} else {
-		out["codeFiles"] = emptyCodeFiles(rowCF)
+		merged = emptyCodeFiles(rowCF)
+	}
+	out["codeFiles"] = normalizeCodeFilesForLesson(merged)
+	return out
+}
+
+// normalizeCodeFilesForLesson maps Mongo shapes to the SPA contract: body in "code",
+// optional "lang" (inferred from filename when missing). Some docs use "content" like practice.files.
+func normalizeCodeFilesForLesson(files []any) []any {
+	if len(files) == 0 {
+		return []any{}
+	}
+	out := make([]any, 0, len(files))
+	for _, item := range files {
+		cm, ok := item.(bson.M)
+		if !ok {
+			continue
+		}
+		m := bson.M{}
+		for k, v := range cm {
+			m[k] = v
+		}
+		code, _ := m["code"].(string)
+		if strings.TrimSpace(code) == "" {
+			if c, ok := m["content"].(string); ok {
+				m["code"] = c
+			}
+		}
+		lang, _ := m["lang"].(string)
+		if strings.TrimSpace(lang) == "" {
+			name, _ := m["name"].(string)
+			m["lang"] = inferCodeLangFromName(name)
+		}
+		out = append(out, m)
 	}
 	return out
+}
+
+func inferCodeLangFromName(name string) string {
+	switch {
+	case strings.HasSuffix(name, ".go"):
+		return "go"
+	case strings.HasSuffix(name, ".md"):
+		return "markdown"
+	case strings.HasSuffix(name, ".mod"):
+		return "go"
+	default:
+		return "text"
+	}
 }
 
 func codeFilesFromDoc(doc bson.M) []any {
