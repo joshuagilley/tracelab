@@ -1,0 +1,19 @@
+{
+  "_id": "api-design",
+  "panelPrefix": "API Design",
+  "practice": { "zipName": "x.zip", "folder": "f", "files": [{ "name": "a", "content": "" }] },
+  "concepts": [
+    {
+      "id": "x",
+      "slug": "x",
+      "title": "X",
+      "summary": "",
+      "difficulty": "easy",
+      "tags": [],
+      "status": "available",
+      "labKind": "api-design",
+      "vizType": "lesson"
+    }
+  ],
+  "navSections": []
+}

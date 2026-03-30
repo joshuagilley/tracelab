@@ -60,6 +60,27 @@ make web        # Vite on :5173 (proxies `/api` to the API in dev)
 
 On startup the SPA calls **`GET /api/catalog/labs`**, caches each lab document, then uses **`GET /api/catalog/lesson?lab=&slug=`** for concept detail.
 
+### Tests (curriculum config)
+
+```bash
+make test
+```
+
+Runs **`go test ./...`** in `services/api` (including `internal/curriculumconfig`) and **`npm test`** in `apps/web`.
+
+Both suites validate **Mongo-shaped JSON** using shared fixtures under **`services/api/internal/curriculumconfig/testdata/`**:
+
+- **`labs/*.json`** — full lab documents: `concepts`, `navSections`, no stray top-level `practice`, matching slugs between nav items and concepts, required concept fields, `labKind` vs `lab._id`, etc.
+- **`concepts/*.json`** — Concepts documents: optional `practice` (ZIP shape, safe paths, non-empty `files`, string `content`) and optional `codeFiles` entries.
+
+File names must start with **`ok_`** (expect zero validation errors) or **`err_`** (expect at least one error). Add a new pair when you introduce a new rule.
+
+TypeScript checks reuse the same files and align **`practice` path rules** with `practiceZipEntryPath` in `apps/web/src/lib/practiceZip.ts`.
+
+These tests do **not** connect to Mongo; they guard structure only. To validate a live export, paste documents into temporary `ok_` / `err_` fixtures or run the validators in a REPL.
+
+**GitHub Actions:** `.github/workflows/ci.yml` runs the same Go tests, `npm test`, and `npm run build` on **pull requests** and on **pushes to branches other than `main`**. Pushes to **`main`** run **`.github/workflows/deploy.yml`**, which runs those tests first, then deploys the API and web to Cloud Run.
+
 ---
 
 ## Adding a new concept

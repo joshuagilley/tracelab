@@ -1,0 +1,11 @@
+{
+  "_id": "system-design/caching",
+  "practice": {
+    "zipName": "lab.zip",
+    "folder": "caching-practice",
+    "files": [
+      { "name": "README.md", "content": "# Lab" },
+      { "name": "cache/cache.go", "content": "package cache\n" }
+    ]
+  }
+}

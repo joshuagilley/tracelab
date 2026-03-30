@@ -1,0 +1,18 @@
+{
+  "_id": "api-design",
+  "panelPrefix": "API Design",
+  "concepts": [
+    {
+      "id": "x",
+      "slug": "x",
+      "title": "X",
+      "summary": "",
+      "difficulty": "easy",
+      "tags": [],
+      "status": "draft",
+      "labKind": "api-design",
+      "vizType": "lesson"
+    }
+  ],
+  "navSections": []
+}

@@ -1,0 +1,25 @@
+{
+  "_id": "api-design",
+  "panelPrefix": "API Design",
+  "concepts": [
+    {
+      "id": "retries",
+      "slug": "retries",
+      "title": "Retries",
+      "summary": "Summary",
+      "difficulty": "easy",
+      "tags": [],
+      "status": "available",
+      "labKind": "api-design",
+      "vizType": "lesson"
+    }
+  ],
+  "navSections": [
+    {
+      "id": "sec",
+      "title": "Section",
+      "blurb": "",
+      "items": [{ "label": "Ghost", "slug": "not-a-concept" }]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-.PHONY: dev api web install build clean compose-up compose-down labs-sync
+.PHONY: dev api web install build clean compose-up compose-down labs-sync test
 
 # Bash so `api` can `source .env` (GitHub OAuth, Mongo, JWT, etc.)
 SHELL := /bin/bash
@@ -39,6 +39,10 @@ install:
 build: labs-sync
 	cd apps/web && npm run build
 	cd services/api && go build -o bin/server ./cmd/server
+
+test:
+	cd services/api && go test ./...
+	cd apps/web && npm test
 
 clean:
 	rm -rf apps/web/dist
