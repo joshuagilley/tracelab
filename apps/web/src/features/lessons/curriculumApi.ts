@@ -4,10 +4,12 @@ import type { LabId } from '@/contexts/lab'
 import { API_BASE } from '@/lib/apiBase'
 import { getCatalogConcepts } from '@/features/lessons/lessonCatalog'
 
+/** Concept list for one lab (from cached Mongo-backed catalog). */
 export async function fetchSectionConcepts(section: LabId): Promise<Concept[]> {
   return getCatalogConcepts(section)
 }
 
+/** Full lesson payload for a concept (catalog row + detail merged by API). */
 export async function fetchSectionLesson(section: LabId, slug: string): Promise<LabConceptDetail> {
   const q = new URLSearchParams({ lab: section, slug })
   const res = await fetch(`${API_BASE}/catalog/lesson?${q}`)

@@ -8,7 +8,7 @@ import { CurriculumVisibilityProvider } from '@/contexts/curriculumVisibility'
 import { LabProvider } from '@/contexts/lab'
 import ConceptLibraryPage from '@/features/concepts/pages/ConceptLibraryPage'
 import ConceptDetailPage from '@/features/concepts/pages/ConceptDetailPage'
-import CsPeriodicTablePage from '@/features/periodic-table/CsPeriodicTablePage'
+import CsPeriodicTablePage from '@/features/concepts/pages/CsPeriodicTablePage'
 import { fetchLabsCatalogIntoCache } from '@/features/lessons/labsCatalogCache'
 
 function CatalogGate({ children }: { children: ReactNode }) {

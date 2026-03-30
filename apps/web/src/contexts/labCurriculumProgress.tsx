@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { fetchSectionConcepts } from '@/features/sections/api'
+import { fetchSectionConcepts } from '@/features/lessons/curriculumApi'
 import {
   fetchLabCompleted,
   TRACELAB_COMPLETED_EVENT,

@@ -2,14 +2,14 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/auth'
 import { LAB_OPTIONS, type LabId } from '@/contexts/lab'
-
-type PublicationFilter = 'all' | 'published' | 'soon'
-type ProgressFilter = 'all' | 'complete' | 'incomplete'
 import { labTracksConceptProgress } from '@/features/concepts/conceptSectionExpectations'
 import { TRACELAB_COMPLETED_EVENT, fetchLabCompleted } from '@/features/concepts/completedApi'
 import { getAllCatalogTiles, tileSymbol, type CatalogTile } from '@/lib/catalogTiles'
 import { LAB_ACCENT_HEX } from '@/lib/labAccentHex'
 import styles from './CsPeriodicTablePage.module.css'
+
+type PublicationFilter = 'all' | 'published' | 'soon'
+type ProgressFilter = 'all' | 'complete' | 'incomplete'
 
 // byLab maps labId → Set of completed slugs
 type ByLab = Partial<Record<LabId, Set<string>>>

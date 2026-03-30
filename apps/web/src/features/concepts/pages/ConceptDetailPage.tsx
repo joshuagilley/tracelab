@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
-import { fetchSectionLesson } from '@/features/sections/api'
+import { fetchSectionLesson } from '@/features/lessons/curriculumApi'
 import { LAB_OPTIONS, useLab, type LabId } from '@/contexts/lab'
 import DynamicCodePanel from '@/components/code/DynamicCodePanel'
 import PracticeDownloadButton from '@/components/panels/PracticeDownloadButton'

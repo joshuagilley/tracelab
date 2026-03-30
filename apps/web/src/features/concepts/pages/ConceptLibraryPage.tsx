@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
-import { fetchSectionConcepts } from '@/features/sections/api'
+import { fetchSectionConcepts } from '@/features/lessons/curriculumApi'
 import { useLab, type LabId } from '@/contexts/lab'
 import ConceptCard from '../components/ConceptCard'
 import type { Concept } from '@/types/concept'

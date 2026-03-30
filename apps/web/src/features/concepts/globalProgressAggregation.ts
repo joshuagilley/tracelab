@@ -2,7 +2,7 @@ import { LAB_OPTIONS, type LabId } from '@/contexts/lab'
 import type { AuthUser } from '@/lib/auth/types'
 import { fetchLabCompleted } from '@/features/concepts/completedApi'
 import { labTracksConceptProgress } from '@/features/concepts/conceptSectionExpectations'
-import { fetchSectionConcepts } from '@/features/sections/api'
+import { fetchSectionConcepts } from '@/features/lessons/curriculumApi'
 
 export interface GlobalConceptTotals {
   completed: number
