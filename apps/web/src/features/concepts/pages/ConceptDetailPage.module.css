@@ -33,10 +33,9 @@
 .markDoneBar {
   flex-shrink: 0;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
   padding: 10px 14px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
@@ -45,6 +44,15 @@
     border-color 0.25s ease,
     box-shadow 0.25s ease,
     background 0.25s ease;
+}
+
+.markDoneBarRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  width: 100%;
 }
 
 .markDoneBarComplete {
@@ -86,6 +94,56 @@
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+}
+
+.markDoneStatus {
+  width: 100%;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.submitOutputWrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.submitOutputLabel {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.submitTestOutputFail,
+.submitTestOutputPass {
+  width: 100%;
+  max-height: min(50vh, 320px);
+  overflow: auto;
+  margin: 0;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.submitTestOutputFail {
+  background: color-mix(in srgb, var(--error, #c44) 8%, var(--bg-base));
+  border-color: color-mix(in srgb, var(--error, #c44) 35%, var(--border));
+}
+
+.submitTestOutputPass {
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-base));
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
 }
 
 .markDoneHint {

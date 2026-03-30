@@ -9,7 +9,6 @@ import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { fetchSectionLesson } from '@/features/lessons/curriculumApi'
 import { LAB_OPTIONS, useLab, type LabId } from '@/contexts/lab'
 import DynamicCodePanel from '@/components/code/DynamicCodePanel'
-import PracticeDownloadButton from '@/components/panels/PracticeDownloadButton'
 import ParametersPanel from '@/components/panels/ParametersPanel'
 import MetricsPanel from '@/components/panels/MetricsPanel'
 import { VIZ_REGISTRY } from '@/features/concepts/vizRegistry'
@@ -170,7 +169,7 @@ export default function ConceptDetailPage() {
   if (VizComp && lesson) {
     return (
       <WithProgress labId={labId} slug={slug}>
-        <ConceptLessonLayout>
+        <ConceptLessonLayout labId={labId} conceptSlug={slug ?? ''} practice={lesson.practice}>
           {pageHeader}
           <div className={styles.mainArea} style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}>
             <div className={styles.leftCol}>
@@ -201,7 +200,6 @@ export default function ConceptDetailPage() {
             <div className={styles.right}>
               <DynamicCodePanel
                 files={lesson.codeFiles ?? []}
-                extraActions={lesson.practice ? <PracticeDownloadButton practice={lesson.practice} /> : undefined}
               />
             </div>
           </div>
@@ -218,7 +216,7 @@ export default function ConceptDetailPage() {
   if (LessonComp && lesson) {
     return (
       <WithProgress labId={labId} slug={slug}>
-        <ConceptLessonLayout>
+        <ConceptLessonLayout labId={labId} conceptSlug={slug ?? ''} practice={lesson.practice}>
           {pageHeader}
           <div className={styles.mainArea} style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}>
             <div className={styles.leftCol}>

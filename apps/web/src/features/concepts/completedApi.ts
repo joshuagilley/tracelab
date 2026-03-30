@@ -8,6 +8,18 @@ export interface CompletedStatus {
   completedAt: string | null // ISO-8601 or null
 }
 
+export interface SubmittedFile {
+  name: string
+  content: string
+}
+
+export interface SubmitLabResult {
+  passed: boolean
+  completed: boolean
+  completedAt: string | null
+  output: string
+}
+
 export function dispatchCompletedUpdated(labId: LabId): void {
   window.dispatchEvent(
     new CustomEvent(TRACELAB_COMPLETED_EVENT, { detail: { labId } }),
@@ -55,4 +67,20 @@ export async function putConceptCompleted(
   if (res.status === 401) return null
   if (!res.ok) throw new Error(`completed: ${res.status}`)
   return (await res.json()) as CompletedStatus
+}
+
+export async function submitConceptLab(
+  lab: LabId,
+  slug: string,
+  files: SubmittedFile[],
+): Promise<SubmitLabResult | null> {
+  const res = await fetch(`${API_BASE}/completed/submit`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ lab, slug, files }),
+  })
+  if (res.status === 401) return null
+  if (!res.ok) throw new Error(`submit: ${res.status}`)
+  return (await res.json()) as SubmitLabResult
 }

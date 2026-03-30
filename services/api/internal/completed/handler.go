@@ -8,19 +8,22 @@ import (
 
 	"github.com/tracelab/api/internal/auth"
 	"github.com/tracelab/api/internal/config"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Handler struct {
-	cfg   *config.Config
-	store *Store
+	cfg          *config.Config
+	store        *Store
+	conceptsColl *mongo.Collection
 }
 
-func NewHandler(cfg *config.Config, store *Store) *Handler {
-	return &Handler{cfg: cfg, store: store}
+func NewHandler(cfg *config.Config, store *Store, conceptsColl *mongo.Collection) *Handler {
+	return &Handler{cfg: cfg, store: store, conceptsColl: conceptsColl}
 }
 
 func (h *Handler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("/api/completed", h.handle)
+	mux.HandleFunc("/api/completed/submit", h.submitLab)
 }
 
 // statusResponse is returned for single-concept queries and after PUT.

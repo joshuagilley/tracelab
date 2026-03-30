@@ -16,6 +16,7 @@ import (
 
 func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 	mux := http.NewServeMux()
+	var conceptsColl *mongo.Collection
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -24,7 +25,7 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 
 	if mongoClient != nil {
 		labsColl := mongoClient.Database(cfg.MongoDBName).Collection(cfg.LabsColl)
-		conceptsColl := mongoClient.Database(cfg.MongoDBName).Collection(cfg.ConceptsColl)
+		conceptsColl = mongoClient.Database(cfg.MongoDBName).Collection(cfg.ConceptsColl)
 		catalog.NewHandler(labsColl, conceptsColl).Register(mux)
 	}
 
@@ -45,7 +46,7 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 			log.Printf("completed: indexes failed db=%q coll=%q: %v", cfg.MongoDBName, cfg.CompletedColl, err)
 		}
 		cancel2()
-		completed.NewHandler(cfg, completedStore).Register(mux)
+		completed.NewHandler(cfg, completedStore, conceptsColl).Register(mux)
 	} else {
 		if !cfg.AuthConfigured() {
 			log.Printf("auth: disabled (incomplete env); /api/auth/* stubs")

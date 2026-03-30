@@ -22,7 +22,8 @@ interface ConceptProgressContextValue {
   completedAt: Date | null
   canPersist: boolean
   loaded: boolean
-  toggleConceptDone: () => Promise<void>
+  setConceptDone: (completed: boolean) => Promise<void>
+  applyCompletionStatus: (next: CompletedStatus) => void
 }
 
 const ConceptProgressContext = createContext<ConceptProgressContextValue | null>(null)
@@ -78,10 +79,6 @@ export function ConceptProgressProvider({
     [user, labId, conceptSlug],
   )
 
-  const toggleConceptDone = useCallback(async () => {
-    await setCompleted(!statusRef.current.completed)
-  }, [setCompleted])
-
   const completedAt = useMemo(
     () => (status.completedAt ? new Date(status.completedAt) : null),
     [status.completedAt],
@@ -93,9 +90,10 @@ export function ConceptProgressProvider({
       completedAt,
       canPersist: !!user,
       loaded,
-      toggleConceptDone,
+      setConceptDone: setCompleted,
+      applyCompletionStatus: setStatus,
     }),
-    [status.completed, completedAt, user, loaded, toggleConceptDone],
+    [status.completed, completedAt, user, loaded, setCompleted],
   )
 
   return (

@@ -19,7 +19,7 @@ Implement a tiny string cache in **`main.go`** using a map. When it works, `go t
 | **go.mod** | Go module |
 | **main.go** | Your code — `Cache`, `NewCache`, `Set`, `Get`, and `main` |
 | **main_test.go** | Specs (read-only in TraceLab; do not edit for submission) |
-| **solution.go** | Optional reference (`//go:build ignore` — not part of `go test`) |
+| **solution.go** | Optional working reference (same API as **main.go**; `//go:build ignore` keeps it out of `go test` locally — TraceLab strips that line when you submit) |
 
 ## API to implement
 
