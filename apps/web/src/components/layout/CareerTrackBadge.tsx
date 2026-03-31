@@ -23,7 +23,7 @@ export default function CareerTrackBadge() {
         </button>
       )}
       <div className={styles.menu}>
-        <button type="button" className={styles.action} onClick={() => navigate('/cs-periodic-table')}>
+        <button type="button" className={styles.action} onClick={() => navigate('/metrics')}>
           View Metrics
         </button>
         <label className={styles.changeWrap}>

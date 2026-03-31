@@ -2,6 +2,16 @@ package certifications
 
 var DefaultCertifications = []Certification{
 	{
+		ID:          "generalist",
+		Title:       "Generalist",
+		RoleKey:     "generalist",
+		Description: "Complete all published concepts across TraceLab libraries.",
+		ImagePath:   "/certifications/tl_software_engineer.png",
+		TrackTags:   []string{},
+		SortOrder:   5,
+		Active:      true,
+	},
+	{
 		ID:          "backend-engineer",
 		Title:       "Backend Engineer",
 		RoleKey:     "backend_engineer",
@@ -78,5 +88,15 @@ var DefaultCertifications = []Certification{
 		},
 		SortOrder: 60,
 		Active:    true,
+	},
+	{
+		ID:          "expert",
+		Title:       "TraceLab Expert",
+		RoleKey:     "expert",
+		Description: "Reserved for learners who complete all published TraceLab material.",
+		ImagePath:   "/certifications/tl_expert.png",
+		TrackTags:   []string{},
+		SortOrder:   999,
+		Active:      true,
 	},
 }

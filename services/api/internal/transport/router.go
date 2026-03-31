@@ -33,13 +33,23 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 	usersColl := db.Collection(cfg.UsersColl)
 	certificationsColl := db.Collection(cfg.CertificationsColl)
 	completedColl := db.Collection(cfg.CompletedColl)
+	badgeEmailsColl := db.Collection(cfg.BadgeEmailsColl)
 
 	registerCatalogRoutes(mux, labsColl, conceptsColl)
 	registerCertificationsRoutes(mux, cfg, certificationsColl)
 
 	if cfg.AuthConfigured() {
 		registerAuthRoutes(mux, cfg, usersColl)
-		registerCompletedRoutes(mux, cfg, completedColl, conceptsColl)
+		registerCompletedRoutes(
+			mux,
+			cfg,
+			completedColl,
+			labsColl,
+			conceptsColl,
+			usersColl,
+			certificationsColl,
+			badgeEmailsColl,
+		)
 	} else {
 		registerAuthFallbackRoutes(mux, cfg, true)
 	}
@@ -92,11 +102,22 @@ func registerAuthRoutes(mux *http.ServeMux, cfg *config.Config, usersColl *mongo
 func registerCompletedRoutes(
 	mux *http.ServeMux,
 	cfg *config.Config,
-	completedColl, conceptsColl *mongo.Collection,
+	completedColl, labsColl, conceptsColl, usersColl, certificationsColl, badgeEmailsColl *mongo.Collection,
 ) {
 	store := completed.NewStore(completedColl)
 	ensureIndexes("completed", cfg.MongoDBName, cfg.CompletedColl, store.EnsureIndexes)
-	completed.NewHandler(cfg, store, conceptsColl).Register(mux)
+	receiptStore := completed.NewBadgeEmailStore(badgeEmailsColl)
+	ensureIndexes("badge-email", cfg.MongoDBName, cfg.BadgeEmailsColl, receiptStore.EnsureIndexes)
+	notifier := completed.NewBadgeNotifier(
+		cfg,
+		auth.NewUserStore(usersColl),
+		store,
+		certifications.NewStore(certificationsColl),
+		receiptStore,
+		labsColl,
+		conceptsColl,
+	)
+	completed.NewHandler(cfg, store, conceptsColl, notifier).Register(mux)
 }
 
 // registerAuthFallbackRoutes mounts auth stubs when full auth is not active.

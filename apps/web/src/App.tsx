@@ -10,6 +10,7 @@ import { LabProvider } from '@/contexts/lab'
 import LibraryPage from '@/features/learning/pages/library-page'
 import LessonPage from '@/features/learning/pages/lesson-page'
 import CsPeriodicTablePage from '@/features/learning/pages/cs-periodic-table-page'
+import MetricsPage from '@/features/learning/pages/MetricsPage'
 import { fetchLabsCatalogIntoCache } from '@/features/curriculum/catalog-cache'
 
 function CatalogGate({ children }: { children: ReactNode }) {
@@ -59,6 +60,7 @@ export default function App() {
                     <Routes>
                       <Route path="/" element={<LibraryPage />} />
                       <Route path="/cs-periodic-table" element={<CsPeriodicTablePage />} />
+                      <Route path="/metrics" element={<MetricsPage />} />
                       <Route path="/concept/:slug" element={<LessonPage />} />
                     </Routes>
                   </AppShell>

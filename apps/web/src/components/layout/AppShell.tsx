@@ -14,7 +14,7 @@ interface AppShellProps {
 
 export default function AppShell({ children }: AppShellProps) {
   const { pathname } = useLocation()
-  const mainScrollable = pathname === '/cs-periodic-table'
+  const mainScrollable = pathname === '/cs-periodic-table' || pathname === '/metrics'
 
   return (
     <div className={styles.shell}>

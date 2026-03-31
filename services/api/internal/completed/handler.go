@@ -11,16 +11,22 @@ import (
 )
 
 type Handler struct {
-	cfg     *config.Config
-	store   *Store
-	service *Service
+	cfg      *config.Config
+	store    *Store
+	service  *Service
+	notifier *BadgeNotifier
 }
 
-func NewHandler(cfg *config.Config, store *Store, conceptsColl *mongo.Collection) *Handler {
+func NewHandler(
+	cfg *config.Config,
+	store *Store,
+	conceptsColl *mongo.Collection,
+	notifier *BadgeNotifier,
+) *Handler {
 	repo := NewPracticeRepository(conceptsColl)
 	runner := NewGoRunner(defaultPracticeRunTimeout)
 	svc := NewService(store, repo, runner)
-	return &Handler{cfg: cfg, store: store, service: svc}
+	return &Handler{cfg: cfg, store: store, service: svc, notifier: notifier}
 }
 
 func (h *Handler) Register(mux *http.ServeMux) {
@@ -131,6 +137,7 @@ func (h *Handler) putCompleted(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "internal_error")
 			return
 		}
+		h.notifier.NotifyNewlyEarnedBadges(r.Context(), uid)
 		auth.WriteJSON(w, http.StatusOK, buildStatusResponse(true, completedAt))
 		return
 	}
@@ -181,6 +188,9 @@ func (h *Handler) submitLab(w http.ResponseWriter, r *http.Request) {
 	if result.CompletedAt != nil {
 		ts := result.CompletedAt.UTC().Format(time.RFC3339)
 		completedAt = &ts
+	}
+	if result.Completed {
+		h.notifier.NotifyNewlyEarnedBadges(r.Context(), uid)
 	}
 
 	auth.WriteJSON(w, http.StatusOK, submitPracticeResponse{

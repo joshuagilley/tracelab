@@ -18,6 +18,8 @@ type Config struct {
 	// LabsColl / ConceptsColl hold curriculum catalog documents (see catalog).
 	LabsColl     string
 	ConceptsColl string
+	// BadgeEmailsColl stores sent badge email receipts for idempotency.
+	BadgeEmailsColl string
 
 	GitHubClientID     string
 	GitHubClientSecret string
@@ -31,6 +33,12 @@ type Config struct {
 	JWTSecret string
 	// AuthCookieCrossSite: when true, session cookies use SameSite=None; Secure (needed if the SPA and API are on different hosts, e.g. two Cloud Run services).
 	AuthCookieCrossSite bool
+
+	SMTPHost string
+	SMTPPort string
+	SMTPUser string
+	SMTPPass string
+	SMTPFrom string
 }
 
 func Load() *Config {
@@ -46,6 +54,7 @@ func Load() *Config {
 		CompletedColl:       envDefault("COMPLETED_COLLECTION", "Completed"),
 		LabsColl:            envDefault("LABS_COLLECTION", "Labs"),
 		ConceptsColl:        envDefault("CONCEPTS_COLLECTION", "Concepts"),
+		BadgeEmailsColl:     envDefault("BADGE_EMAILS_COLLECTION", "BadgeEmails"),
 		GitHubClientID:      env("GITHUB_CLIENT_ID"),
 		GitHubClientSecret:  env("GITHUB_CLIENT_SECRET"),
 		OAuthCallbackURL:    normalizeURLish(env("OAUTH_CALLBACK_URL")),
@@ -53,6 +62,11 @@ func Load() *Config {
 		CORSExtraOrigins:    envCSV("CORS_EXTRA_ORIGINS"),
 		JWTSecret:           env("AUTH_JWT_SECRET"),
 		AuthCookieCrossSite: envBool("AUTH_COOKIE_CROSS_SITE"),
+		SMTPHost:            env("SMTP_HOST"),
+		SMTPPort:            envDefault("SMTP_PORT", "587"),
+		SMTPUser:            env("SMTP_USER"),
+		SMTPPass:            env("SMTP_PASS"),
+		SMTPFrom:            env("SMTP_FROM"),
 	}
 }
 

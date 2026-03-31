@@ -1,4 +1,5 @@
 import { API_BASE } from '@/lib/api-base'
+import { withDefaultCertifications } from '@/lib/certifications/defaults'
 
 export interface CertificationOption {
   id: string
@@ -15,7 +16,7 @@ export async function fetchCertifications(): Promise<CertificationOption[]> {
   const res = await fetch(`${API_BASE}/certifications`, {
     credentials: 'include',
   })
-  if (!res.ok) return []
+  if (!res.ok) return withDefaultCertifications([])
   const data = (await res.json()) as { certifications?: CertificationOption[] }
-  return Array.isArray(data.certifications) ? data.certifications : []
+  return withDefaultCertifications(Array.isArray(data.certifications) ? data.certifications : [])
 }
