@@ -1,4 +1,4 @@
-import type { LabParameter } from '@/types/labConcept'
+import type { LabParameter } from '@/types/lab-concept'
 import styles from './ParametersPanel.module.css'
 
 interface Props {

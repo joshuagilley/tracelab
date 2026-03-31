@@ -6,10 +6,10 @@ import { GlobalConceptProgressProvider } from '@/contexts/globalConceptProgress'
 import { LabCurriculumProgressProvider } from '@/contexts/labCurriculumProgress'
 import { CurriculumVisibilityProvider } from '@/contexts/curriculumVisibility'
 import { LabProvider } from '@/contexts/lab'
-import ConceptLibraryPage from '@/features/concepts/pages/ConceptLibraryPage'
-import ConceptDetailPage from '@/features/concepts/pages/ConceptDetailPage'
-import CsPeriodicTablePage from '@/features/concepts/pages/CsPeriodicTablePage'
-import { fetchLabsCatalogIntoCache } from '@/features/lessons/labsCatalogCache'
+import LibraryPage from '@/features/learning/pages/library-page'
+import LessonPage from '@/features/learning/pages/lesson-page'
+import CsPeriodicTablePage from '@/features/learning/pages/cs-periodic-table-page'
+import { fetchLabsCatalogIntoCache } from '@/features/curriculum/catalog-cache'
 
 function CatalogGate({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false)
@@ -55,9 +55,9 @@ export default function App() {
               <GlobalConceptProgressProvider>
                 <AppShell>
                   <Routes>
-                    <Route path="/" element={<ConceptLibraryPage />} />
+                    <Route path="/" element={<LibraryPage />} />
                     <Route path="/cs-periodic-table" element={<CsPeriodicTablePage />} />
-                    <Route path="/concept/:slug" element={<ConceptDetailPage />} />
+                    <Route path="/concept/:slug" element={<LessonPage />} />
                   </Routes>
                 </AppShell>
               </GlobalConceptProgressProvider>

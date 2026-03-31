@@ -7,17 +7,17 @@ import {
   type ReactNode,
 } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
-import { fetchSectionLesson } from '@/features/lessons/curriculumApi'
+import { fetchSectionLesson } from '@/features/curriculum/curriculum-api'
 import { LAB_OPTIONS, useLab, type LabId } from '@/contexts/lab'
 import DynamicCodePanel from '@/components/code/DynamicCodePanel'
 import ParametersPanel from '@/components/panels/ParametersPanel'
 import MetricsPanel from '@/components/panels/MetricsPanel'
 import { VIZ_REGISTRY, type VizComponent } from '@/lib/simulation-registry'
-import { LESSON_REGISTRY, type LessonPanelProps } from '@/features/lessons/lessonRegistry'
-import type { LabConceptDetail } from '@/types/labConcept'
+import { LESSON_REGISTRY, type LessonPanelProps } from '@/features/curriculum/lesson-registry'
+import type { LabConceptDetail } from '@/types/lab-concept'
 import { ConceptProgressProvider } from '@/contexts/conceptProgress'
-import ConceptLessonLayout from '@/components/lesson-panels/ConceptLessonLayout'
-import styles from './ConceptDetailPage.module.css'
+import LessonLayout from '@/components/lesson-panels/lesson-layout'
+import styles from './lesson-page.module.css'
 
 function WithProgress({
   labId,
@@ -84,7 +84,7 @@ const LIBRARY_LABELS: Record<LabId, string> = {
   'cloud-architecture':    'Cloud Architecture',
 }
 
-export default function ConceptDetailPage() {
+export default function LessonPage() {
   const { slug } = useParams<{ slug: string }>()
   const [searchParams] = useSearchParams()
   const { labId, setLabId } = useLab()
@@ -95,7 +95,7 @@ export default function ConceptDetailPage() {
     setLabId(labQuery as LabId)
   }, [labQuery, setLabId])
 
-  const [lesson, setLesson] = useState<import('@/types/labConcept').LabConceptDetail | null>(null)
+  const [lesson, setLesson] = useState<import('@/types/lab-concept').LabConceptDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const [isRunning, setRunning] = useState(false)
@@ -194,7 +194,7 @@ export default function ConceptDetailPage() {
   if (VizComp && lesson) {
     return (
       <WithProgress labId={labId} slug={slug}>
-        <ConceptLessonLayout labId={labId} conceptSlug={slug ?? ''} practice={lesson.practice}>
+        <LessonLayout labId={labId} conceptSlug={slug ?? ''} practice={lesson.practice}>
           {pageHeader}
           <div className={styles.mainArea} style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}>
             <div className={styles.leftCol}>
@@ -226,7 +226,7 @@ export default function ConceptDetailPage() {
               <DynamicCodePanel files={lesson.codeFiles ?? []} />
             </div>
           </div>
-        </ConceptLessonLayout>
+        </LessonLayout>
       </WithProgress>
     )
   }
@@ -237,7 +237,7 @@ export default function ConceptDetailPage() {
   if (LessonComp && lesson) {
     return (
       <WithProgress labId={labId} slug={slug}>
-        <ConceptLessonLayout labId={labId} conceptSlug={slug ?? ''} practice={lesson.practice}>
+        <LessonLayout labId={labId} conceptSlug={slug ?? ''} practice={lesson.practice}>
           {pageHeader}
           <div className={styles.mainArea} style={{ gridTemplateColumns: `1fr 6px ${rightWidth}px` }}>
             <div className={styles.leftCol}>
@@ -250,7 +250,7 @@ export default function ConceptDetailPage() {
               <DynamicCodePanel files={lesson.codeFiles ?? []} />
             </div>
           </div>
-        </ConceptLessonLayout>
+        </LessonLayout>
       </WithProgress>
     )
   }

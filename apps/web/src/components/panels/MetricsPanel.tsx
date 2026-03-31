@@ -1,4 +1,4 @@
-import type { MetricGroupDef } from '@/types/labConcept'
+import type { MetricGroupDef } from '@/types/lab-concept'
 import styles from './MetricsPanel.module.css'
 
 interface Props {

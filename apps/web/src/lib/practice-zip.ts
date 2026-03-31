@@ -1,5 +1,5 @@
 import { strToU8, zipSync } from 'fflate'
-import type { PracticeConfig } from '@/types/labConcept'
+import type { PracticeConfig } from '@/types/lab-concept'
 
 /** Zip entry path inside the archive: "<folder>/<relative path>". Rejects ".." and other unsafe segments. */
 export function practiceZipEntryPath(folder: string, fileName: string): string {

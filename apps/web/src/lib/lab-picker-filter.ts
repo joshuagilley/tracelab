@@ -1,5 +1,5 @@
 import type { LabGroup, LabId } from '@/contexts/lab'
-import { getCatalogConcepts } from '@/features/lessons/lessonCatalog'
+import { getCatalogConcepts } from '@/features/curriculum/lesson-catalog'
 
 export function labHasPublishedConcepts(labId: LabId): boolean {
   return getCatalogConcepts(labId).some(c => c.status === 'available')

@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
 import { LanguageLogo } from '@/components/programming-languages/LanguageLogo'
-import { countSectionNavProgress } from '@/features/concepts/navSectionProgress'
-import { filterProgrammingLanguages } from '@/lib/navCurriculumFilter'
+import { countSectionNavProgress } from '@/features/learning/progress/nav-section-progress'
+import { filterProgrammingLanguages } from '@/lib/nav-curriculum-filter'
 import type { Concept } from '@/types/concept'
-import type { ProgrammingLanguage } from '@/types/programmingLanguage'
+import type { ProgrammingLanguage } from '@/types/programming-language'
 import styles from '@/components/sidebar/ProgrammingLanguagesSidebarNav.module.css'
 
 function buildInitialOpen(langs: ProgrammingLanguage[], defaultOpen: string[] | undefined) {

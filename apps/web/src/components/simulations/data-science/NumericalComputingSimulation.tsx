@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import type { NumpyFn } from '@/lib/numpyDemo'
-import { computeArray, stats } from '@/lib/numpyDemo'
+import type { NumpyFn } from '@/lib/numpy-demo'
+import { computeArray, stats } from '@/lib/numpy-demo'
 import styles from './NumericalComputingSimulation.module.css'
 
 interface Props {

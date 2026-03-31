@@ -7,10 +7,10 @@ import {
   filterLabGroupsForPublishedOnly,
   firstPublishedLabId,
   labHasPublishedConcepts,
-} from '@/lib/labPickerFilter'
+} from '@/lib/lab-picker-filter'
 import TopicSidebarNav from '@/components/sidebar/TopicSidebarNav'
 import ProgrammingLanguagesSidebarNav from '@/components/sidebar/ProgrammingLanguagesSidebarNav'
-import { getCatalogNavConfig } from '@/features/lessons/lessonCatalog'
+import { getCatalogNavConfig } from '@/features/curriculum/lesson-catalog'
 import styles from './Sidebar.module.css'
 
 const LIBRARY_LINK_LABEL: Record<LabId, string> = {

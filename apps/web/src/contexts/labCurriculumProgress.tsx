@@ -7,12 +7,12 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { fetchSectionConcepts } from '@/features/lessons/curriculumApi'
+import { fetchSectionConcepts } from '@/features/curriculum/curriculum-api'
 import {
   fetchLabCompleted,
   TRACELAB_COMPLETED_EVENT,
-} from '@/features/concepts/completedApi'
-import { labTracksConceptProgress } from '@/features/concepts/conceptSectionExpectations'
+} from '@/features/learning/api/completed-api'
+import { labTracksConceptProgress } from '@/features/learning/progress/section-expectations'
 import { useAuth } from '@/contexts/auth'
 import { useLab, type LabId } from '@/contexts/lab'
 import type { Concept } from '@/types/concept'

@@ -86,7 +86,7 @@ That document should include:
 - **`navSections`** — sidebar structure. Any item with a **`slug`** becomes a link to `/concept/<slug>` for the current lab.
 - **`panelPrefix`**, and optionally **`languages`**, **`defaultOpenSectionIds`**, etc., as you already use for other labs.
 
-Each entry in **`concepts`** should include at least what the UI expects on the list and detail request (see `apps/web/src/features/lessons/labCatalogTypes.ts` and `apps/web/src/types/concept.ts`):
+Each entry in **`concepts`** should include at least what the UI expects on the list and detail request (see `apps/web/src/features/curriculum/lab-catalog-types.ts` and `apps/web/src/types/concept.ts`):
 
 | Field                                              | Notes                                                                                                                                                                                                 |
 | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -94,7 +94,7 @@ Each entry in **`concepts`** should include at least what the UI expects on the 
 | `slug`                                             | URL segment; **must be unique within the lab** and must match `navSections[].items[].slug` when you want a sidebar link.                                                                              |
 | `title`, `summary`, `difficulty`, `tags`, `status` | `status`: `available` or `coming-soon`.                                                                                                                                                               |
 | `labKind`                                          | Usually the lab id string (e.g. `system-design`).                                                                                                                                                     |
-| `vizType`                                          | How the detail page renders: `"lesson"` for a **text lesson** (must register **`slug`** in `lessonRegistry.ts` — see §3 below), or a simulation key (e.g. `caching`) registered in `lib/simulation-registry/`. |
+| `vizType`                                          | How the detail page renders: `"lesson"` for a **text lesson** (must register **`slug`** in `lesson-registry.ts` — see §3 below), or a simulation key (e.g. `caching`) registered in `lib/simulation-registry/`. |
 | `codeFiles`                                        | Array of `{ "name", "lang" }` for tab labels. Actual source text usually comes from the **Concepts** document (next step).                                                                            |
 
 After inserting or editing the lab document, restart or refresh the app so **`fetchLabsCatalogIntoCache`** runs again (full page load).
@@ -133,18 +133,18 @@ Use normal subpaths in `name` (no `.` or `..` segments). **One command** syncs a
 
 `make sync-sandbox-mongo SANDBOX=system-design/load-balancer CONCEPT=system-design/load-balancing ZIP=tracelab-load-balancer-practice.zip FOLDER=load-balancer FILES=go.mod,LAB.md,main.go,main_test.go,solution.go,present.go,bad.go`
 
-Equivalent: **`cd services/api && go run ./cmd/sync-sandbox-practice -repo ../..`** plus **`-sandbox`**, **`-concept`**, **`-zip`**, **`-folder`**, **`-files`**. Client ZIP build in the browser: `apps/web/src/lib/practiceZip.ts`.
+Equivalent: **`cd services/api && go run ./cmd/sync-sandbox-practice -repo ../..`** plus **`-sandbox`**, **`-concept`**, **`-zip`**, **`-folder`**, **`-files`**. Client ZIP build in the browser: `apps/web/src/lib/practice-zip.ts`.
 
-The **Implementation** panel shows only merged **`codeFiles`** from **`Labs`** / **`Concepts`** (e.g. **`present.go`** and **`bad.go`** for read-only comparison — keep **`main.go`** in the downloadable **`practice`** ZIP only). If **`practice.folder`** is **`load-balancer`**, the **round-robin** simulation is used even when **`vizType`** is **`lesson`** (see **`resolveVizComponent`** in **`ConceptDetailPage.tsx`**).
+The **Implementation** panel shows only merged **`codeFiles`** from **`Labs`** / **`Concepts`** (e.g. **`present.go`** and **`bad.go`** for read-only comparison — keep **`main.go`** in the downloadable **`practice`** ZIP only). If **`practice.folder`** is **`load-balancer`**, the **round-robin** simulation is used even when **`vizType`** is **`lesson`** (see **`resolveVizComponent`** in **`lesson-page.tsx`**).
 
 ### 3. Frontend — routing and UI
 
-Rendering is driven by **`apps/web/src/features/concepts/pages/ConceptDetailPage.tsx`**. After **`GET /api/catalog/lesson`** returns a merged lesson, the page picks **one** of:
+Rendering is driven by **`apps/web/src/features/learning/pages/lesson-page.tsx`**. After **`GET /api/catalog/lesson`** returns a merged lesson, the page picks **one** of:
 
 | Kind                       | When                                                                                                                                                              | Where you register                                                                              |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | **Interactive simulation** | `vizType` is a key in **`VIZ_REGISTRY`** (e.g. `caching`, `singleton`, **`load-balancer`**) — or **`practice.folder`** is **`load-balancer`** for the bundled lab | **`apps/web/src/lib/simulation-registry/`** — add an adapter + **`index.ts`** entry.                  |
-| **Text lesson**            | `vizType` is `"lesson"`, **or** missing/empty, **or** not a simulation key — and the **`slug`** has a panel in **`LESSON_REGISTRY`**                              | **`apps/web/src/features/lessons/lessonRegistry.ts`** — **required** for every new text lesson. |
+| **Text lesson**            | `vizType` is `"lesson"`, **or** missing/empty, **or** not a simulation key — and the **`slug`** has a panel in **`LESSON_REGISTRY`**                              | **`apps/web/src/features/curriculum/lesson-registry.ts`** — **required** for every new text lesson. |
 
 If nothing matches, the user sees **“This concept is not wired to a lesson UI yet”** with the **`vizType`** and **`slug`** from the API — use that to fix Mongo vs registry mismatch.
 
@@ -153,17 +153,17 @@ If nothing matches, the user sees **“This concept is not wired to a lesson UI 
 Do this for “read the lesson on the left, optional code tabs on the right” (most catalog concepts).
 
 1. **Create a lesson component** under **`apps/web/src/components/lessons/<lab>/YourLessonName.tsx`**.
-   - Props must match **`LessonPanelProps`** in **`lessonRegistry.ts`** (today: **`{ summary: string }`** — the catalog **`summary`** is passed through).
+   - Props must match **`LessonPanelProps`** in **`lesson-registry.ts`** (today: **`{ summary: string }`** — the catalog **`summary`** is passed through).
    - Reuse **`LessonRoot`**, **`LessonProblem`**, **`LessonDiagram`**, etc. from **`apps/web/src/components/lesson-panels/LessonPanel.tsx`** like **`LoadBalancerL4L7Lesson.tsx`**.
 
-2. **Register it by slug** in **`apps/web/src/features/lessons/lessonRegistry.ts`**:
+2. **Register it by slug** in **`apps/web/src/features/curriculum/lesson-registry.ts`**:
    - Import your component.
    - Add a line: **`'your-concept-slug': YourLessonComponent`**
    - The **object key must match exactly** the **`slug`** in **`Labs.concepts[]`** and in the URL **`/concept/<slug>`** (kebab-case). One slug ⇒ one registry entry. If Mongo uses a different slug (e.g. `load-balancing` vs `load-balancer`), add **another line** or change the catalog slug.
 
 3. **Set `vizType` in Mongo** (recommended): on the **`Labs`** concept row, set **`"vizType": "lesson"`**.  
    You can also set **`vizType`** on the **`Concepts`** document; it merges over the lab row.  
-   If **`vizType`** is omitted, the app still resolves a **`LESSON_REGISTRY`** panel when the **`slug`** is registered (see **`resolveLessonPanelComponent`** in **`ConceptDetailPage.tsx`**). Simulation types (`caching`, …) must still set **`vizType`** correctly so the sim branch wins.
+   If **`vizType`** is omitted, the app still resolves a **`LESSON_REGISTRY`** panel when the **`slug`** is registered (see **`resolveLessonPanelComponent`** in **`lesson-page.tsx`**). Simulation types (`caching`, …) must still set **`vizType`** correctly so the sim branch wins.
 
 4. **Code tabs (optional)** — put **`codeFiles`** on **`Labs`** and/or **`Concepts`** with **`name`**, **`lang`**, and **`code`** strings. The lesson page **Implementation** editor uses **only** this merged **`codeFiles`** list (not the **`practice`** ZIP file list).
 
@@ -173,7 +173,7 @@ Add **`vizType`** in Mongo to match a key in **`VIZ_REGISTRY`**, and implement t
 
 #### Optional: per-concept completion (sidebar / progress)
 
-If this lab should track **completed concepts**, ensure the lab id is listed in **`apps/web/src/features/concepts/conceptSectionExpectations.ts`** (`LABS_WITH_CONCEPT_COMPLETION`).
+If this lab should track **completed concepts**, ensure the lab id is listed in **`apps/web/src/features/learning/progress/section-expectations.ts`** (`LABS_WITH_CONCEPT_COMPLETION`).
 
 ### 4. Quick verification
 
@@ -181,7 +181,7 @@ If this lab should track **completed concepts**, ensure the lab id is listed in 
 2. Open the **sidebar** link (item must have **`slug`** set).
 3. Confirm **`/api/catalog/lesson?lab=…&slug=…`** returns JSON with the fields you expect (`codeFiles`, `practice`, etc.).
 4. Confirm the **detail page** shows the correct lesson layout (not the “not wired” error) and code/practice behavior.
-5. If you added a **text lesson**, confirm **`lessonRegistry.ts`** contains an entry whose key equals the concept **`slug`**.
+5. If you added a **text lesson**, confirm **`lesson-registry.ts`** contains an entry whose key equals the concept **`slug`**.
 
 ---
 

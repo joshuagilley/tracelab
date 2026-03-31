@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 import type { Concept } from '@/types/concept'
-import styles from './ConceptCard.module.css'
+import styles from './lesson-card.module.css'
 
 interface Props {
   concept: Concept
 }
 
-export default function ConceptCard({ concept }: Props) {
+export default function LessonCard({ concept }: Props) {
   const navigate = useNavigate()
   const available = concept.status === 'available'
 

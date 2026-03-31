@@ -1,9 +1,9 @@
 import type { Concept } from '@/types/concept'
 import type { LabId } from '@/contexts/lab'
-import type { LabNavConfig, LessonCatalogRow } from '@/features/lessons/labCatalogTypes'
-import { getCachedLabCatalog } from '@/features/lessons/labsCatalogCache'
+import type { LabNavConfig, LessonCatalogRow } from '@/features/curriculum/lab-catalog-types'
+import { getCachedLabCatalog } from '@/features/curriculum/catalog-cache'
 
-export type { LabNavConfig, LessonCatalogRow, LabCatalogFile } from '@/features/lessons/labCatalogTypes'
+export type { LabNavConfig, LessonCatalogRow, LabCatalogFile } from '@/features/curriculum/lab-catalog-types'
 
 export function getCatalogConcepts(section: LabId): Concept[] {
   const file = getCachedLabCatalog(section)

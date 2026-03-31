@@ -2,17 +2,17 @@ import { Children, useRef, useState, type ChangeEvent, type ReactNode } from 're
 import { useAuth } from '@/contexts/auth'
 import type { LabId } from '@/contexts/lab'
 import { useConceptProgress } from '@/contexts/conceptProgress'
-import { downloadPracticeZip } from '@/lib/practiceZip'
+import { downloadPracticeZip } from '@/lib/practice-zip'
 import {
   dispatchCompletedUpdated,
   submitConceptLab,
   type SubmittedFile,
-} from '@/features/concepts/completedApi'
-import type { PracticeConfig } from '@/types/labConcept'
-import styles from '@/features/concepts/pages/ConceptDetailPage.module.css'
+} from '@/features/learning/api/completed-api'
+import type { PracticeConfig } from '@/types/lab-concept'
+import styles from '@/features/learning/pages/lesson-page.module.css'
 
-/** Wraps the concept detail page shell; mark-done under the header + full-page “done” styling. */
-export default function ConceptLessonLayout({
+/** Wraps the lesson page shell; mark-done under the header + full-page “done” styling. */
+export default function LessonLayout({
   children,
   labId,
   conceptSlug,

@@ -15,7 +15,7 @@ import {
   fetchConceptCompleted,
   putConceptCompleted,
   type CompletedStatus,
-} from '@/features/concepts/completedApi'
+} from '@/features/learning/api/completed-api'
 
 interface ConceptProgressContextValue {
   conceptFullyDone: boolean

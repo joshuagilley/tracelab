@@ -1,5 +1,5 @@
 import type { LabId } from '@/contexts/lab'
-import { API_BASE } from '@/lib/apiBase'
+import { API_BASE } from '@/lib/api-base'
 
 export const TRACELAB_COMPLETED_EVENT = 'tracelab-completed'
 

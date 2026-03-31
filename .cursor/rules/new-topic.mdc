@@ -21,12 +21,12 @@ This is the **complete list** of files that change for a typical new topic. Use 
 | **Sandbox** | `sandbox/<lab>/<topic>/go.mod`, `main.go`, `main_test.go`, `solution.go`, `present.go`, `bad.go`, `LAB.md` | Create the practice bundle (§1). |
 | **Practice → Mongo** | *(command only)* | **`make sync-sandbox-mongo`** with **`SANDBOX`**, **`CONCEPT`**, **`ZIP`**, **`FOLDER`**, **`FILES`** (see **`README.md`**), or **`go run ./cmd/sync-sandbox-practice`** with the same values as flags. No per-topic binaries or Makefile targets. |
 | **Lesson panel** | `apps/web/src/components/lessons/<lab>/<Topic>Lesson.tsx` | New text-lesson component (`LessonRoot` / `LessonProblem` / `LessonDiagram` / `LessonTradeoffs`). |
-| **Lesson registry** | `apps/web/src/features/lessons/lessonRegistry.ts` | Import + register `"<slug>": <Topic>Lesson`. |
+| **Lesson registry** | `apps/web/src/features/curriculum/lesson-registry.ts` | Import + register `"<slug>": <Topic>Lesson`. |
 | **Simulation** | `apps/web/src/components/simulations/<lab>/<Topic>Simulation.tsx` + `.module.css` | SVG sim matching the user's PNG; reuse `CachingSimulation.module.css` panel chrome; rAF packet animation; `onMetrics` emitting metric ids. |
 | **Simulation registry** | `apps/web/src/lib/simulation-registry/` | Thin adapter (`VizComponent`) + `VIZ_REGISTRY['<vizType>']` in `index.ts`. |
-| **Detail page** | `apps/web/src/features/concepts/pages/ConceptDetailPage.tsx` | Only if a new `practice.folder` fallback is needed in `resolveVizComponent`; otherwise **no change**. |
+| **Lesson page** | `apps/web/src/features/learning/pages/lesson-page.tsx` | Only if a new `practice.folder` fallback is needed in `resolveVizComponent`; otherwise **no change**. |
 | **API** | `services/api/internal/catalog/handler.go` | Only if new `normalizeCodeFilesForLesson` edge cases appear; otherwise **no change**. |
-| **SPA types** | `apps/web/src/types/labConcept.ts` | Only if new fields are added to the lesson payload; otherwise **no change**. |
+| **SPA types** | `apps/web/src/types/lab-concept.ts` | Only if new fields are added to the lesson payload; otherwise **no change**. |
 | **Code panel** | `apps/web/src/components/code/DynamicCodePanel.tsx` | Only if new lang/content fallback rules; otherwise **no change**. |
 | **Mongo** | `Labs` doc (concepts[] row + navSections item), `Concepts` doc (_id, vizType, codeFiles, parameters, metricGroups) | Manual or via one-off script (delete after). |
 | **README** | `sandbox/README.md` | Document the new sandbox path if useful; practice sync stays generic (**`make sync-sandbox-mongo`**). |
@@ -67,7 +67,7 @@ Extract a **small testable API** into **`main.go`** / tests; keep servers or dem
 
 Define these on the merged lesson payload (typically **`Concepts`** document **`_id`**: `"<labId>/<slug>"` — detail fields override **`Labs`** row where both set the same key).
 
-**`parameters`** drive **`ParametersPanel`** (`LabParameter` in **`apps/web/src/types/labConcept.ts`**). Example pattern (caching-style):
+**`parameters`** drive **`ParametersPanel`** (`LabParameter` in **`apps/web/src/types/lab-concept.ts`**). Example pattern (caching-style):
 
 ```json
 "parameters": [
@@ -139,9 +139,9 @@ For first-time wiring, a **temporary** helper is fine: small **`go run`** (Mongo
 
 ---
 
-## 4. `lessonRegistry` (text panel)
+## 4. `lesson-registry` (text panel)
 
-In **`apps/web/src/features/lessons/lessonRegistry.ts`**, map **`slug` → component** for concepts whose **`vizType`** is **`lesson`**, empty, or not a registered sim (see **`resolveLessonPanelComponent`** in **`ConceptDetailPage.tsx`**).
+In **`apps/web/src/features/curriculum/lesson-registry.ts`**, map **`slug` → component** for concepts whose **`vizType`** is **`lesson`**, empty, or not a registered sim (see **`resolveLessonPanelComponent`** in **`lesson-page.tsx`**).
 
 - Slug **must match** **`Labs.concepts[].slug`** and **`/concept/<slug>`**.
 
@@ -180,6 +180,6 @@ The user provides a **PNG (or sketch) of the architecture flow**. This is the pr
 > 2. Wire **`sync-sandbox-practice`** for **`Concepts._id` `<labId>/<slug>`**.
 > 3. Define **`parameters`** and **`metricGroups`** for the simulation. Metric ids must match what the viz component emits via **`onMetrics`**.
 > 4. Build the **SVG simulation** matching the attached PNG — nodes, edges, animated request packets — inside the **Architecture Visualizer** panel header. Register it in **`lib/simulation-registry/`** under **`vizType` `<key>`**.
-> 5. Register the **text lesson** panel in **`lessonRegistry.ts`** (slug **`<slug>`**).
+> 5. Register the **text lesson** panel in **`features/curriculum/lesson-registry.ts`** (slug **`<slug>`**).
 
 Adjust **`<lab>`**, **`<topic>`**, **`<labId>/<slug>`**, **`vizType`**, and sim vs text-only.

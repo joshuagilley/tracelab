@@ -2,7 +2,7 @@ import type { Concept } from '@/types/concept'
 import type {
   ProgrammingLanguage,
   ProgrammingLanguageCategory,
-} from '@/types/programmingLanguage'
+} from '@/types/programming-language'
 
 export type NavSectionShape = {
   id: string

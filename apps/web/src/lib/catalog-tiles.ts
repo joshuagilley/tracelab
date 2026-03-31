@@ -1,5 +1,5 @@
 import { LAB_OPTIONS, type LabId } from '@/contexts/lab'
-import { getCatalogConcepts } from '@/features/lessons/lessonCatalog'
+import { getCatalogConcepts } from '@/features/curriculum/lesson-catalog'
 
 export interface CatalogTile {
   labId: LabId

@@ -8,8 +8,8 @@ import {
   type ReactNode,
 } from 'react'
 import { useAuth } from '@/contexts/auth'
-import { TRACELAB_COMPLETED_EVENT } from '@/features/concepts/completedApi'
-import { fetchGlobalConceptTotals } from '@/features/concepts/globalProgressAggregation'
+import { TRACELAB_COMPLETED_EVENT } from '@/features/learning/api/completed-api'
+import { fetchGlobalConceptTotals } from '@/features/learning/progress/global-progress-aggregation'
 
 export interface GlobalConceptProgressValue {
   completed: number

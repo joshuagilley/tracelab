@@ -1,8 +1,8 @@
 import type { Concept } from '@/types/concept'
-import type { LabConceptDetail } from '@/types/labConcept'
+import type { LabConceptDetail } from '@/types/lab-concept'
 import type { LabId } from '@/contexts/lab'
-import { API_BASE } from '@/lib/apiBase'
-import { getCatalogConcepts } from '@/features/lessons/lessonCatalog'
+import { API_BASE } from '@/lib/api-base'
+import { getCatalogConcepts } from '@/features/curriculum/lesson-catalog'
 
 /** Concept list for one lab (from cached Mongo-backed catalog). */
 export async function fetchSectionConcepts(section: LabId): Promise<Concept[]> {

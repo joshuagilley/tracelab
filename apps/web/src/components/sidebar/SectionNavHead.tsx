@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { countSectionNavProgress, type NavSlugItem } from '@/features/concepts/navSectionProgress'
+import { countSectionNavProgress, type NavSlugItem } from '@/features/learning/progress/nav-section-progress'
 import type { Concept } from '@/types/concept'
 import styles from './NavSections.module.css'
 

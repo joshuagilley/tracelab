@@ -12,7 +12,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
-  // Matches apiBase.ts: fetches to /api/* go to the Go API on :8080 (make api / make dev).
+  // Matches api-base.ts: fetches to /api/* go to the Go API on :8080 (make api / make dev).
   server: {
     proxy: {
       '/api': {

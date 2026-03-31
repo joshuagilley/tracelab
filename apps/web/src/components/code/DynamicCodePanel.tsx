@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, type ReactNode } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import type { LabCodeFile } from '@/types/labConcept'
+import type { LabCodeFile } from '@/types/lab-concept'
 import styles from './CodePanel.module.css'
 
 function inferLangFromFileName(name: string): string {

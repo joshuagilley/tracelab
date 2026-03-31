@@ -1,5 +1,5 @@
 import NumericalComputingSimulation from '@/components/simulations/data-science/NumericalComputingSimulation'
-import type { NumpyFn } from '@/lib/numpyDemo'
+import type { NumpyFn } from '@/lib/numpy-demo'
 import { getNumber, getString } from '../param-utils'
 import type { VizProps } from '../types'
 

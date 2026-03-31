@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
-import { fetchSectionConcepts } from '@/features/lessons/curriculumApi'
+import { fetchSectionConcepts } from '@/features/curriculum/curriculum-api'
 import { useLab, type LabId } from '@/contexts/lab'
-import ConceptCard from '../components/ConceptCard'
+import LessonCard from '../components/lesson-card'
 import type { Concept } from '@/types/concept'
-import styles from './ConceptLibraryPage.module.css'
+import styles from './library-page.module.css'
 
 const COPY: Record<
   LabId,
@@ -114,7 +114,7 @@ const COPY: Record<
   },
 }
 
-export default function ConceptLibraryPage() {
+export default function LibraryPage() {
   const { labId } = useLab()
   const { publishedOnly } = useCurriculumVisibility()
   const [concepts, setConcepts] = useState<Concept[]>([])
@@ -170,7 +170,7 @@ export default function ConceptLibraryPage() {
       {!loading && !error && displayedConcepts.length > 0 && (
         <div className={styles.grid}>
           {displayedConcepts.map(c => (
-            <ConceptCard key={c.id} concept={c} />
+            <LessonCard key={c.id} concept={c} />
           ))}
         </div>
       )}
