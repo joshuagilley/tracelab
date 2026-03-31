@@ -94,7 +94,7 @@ Each entry in **`concepts`** should include at least what the UI expects on the 
 | `slug`                                             | URL segment; **must be unique within the lab** and must match `navSections[].items[].slug` when you want a sidebar link.                                                                              |
 | `title`, `summary`, `difficulty`, `tags`, `status` | `status`: `available` or `coming-soon`.                                                                                                                                                               |
 | `labKind`                                          | Usually the lab id string (e.g. `system-design`).                                                                                                                                                     |
-| `vizType`                                          | How the detail page renders: `"lesson"` for a **text lesson** (must register **`slug`** in `lessonRegistry.ts` — see §3 below), or a simulation key (e.g. `caching`) registered in `vizRegistry.tsx`. |
+| `vizType`                                          | How the detail page renders: `"lesson"` for a **text lesson** (must register **`slug`** in `lessonRegistry.ts` — see §3 below), or a simulation key (e.g. `caching`) registered in `lib/simulation-registry/`. |
 | `codeFiles`                                        | Array of `{ "name", "lang" }` for tab labels. Actual source text usually comes from the **Concepts** document (next step).                                                                            |
 
 After inserting or editing the lab document, restart or refresh the app so **`fetchLabsCatalogIntoCache`** runs again (full page load).
@@ -143,7 +143,7 @@ Rendering is driven by **`apps/web/src/features/concepts/pages/ConceptDetailPage
 
 | Kind                       | When                                                                                                                                                              | Where you register                                                                              |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| **Interactive simulation** | `vizType` is a key in **`VIZ_REGISTRY`** (e.g. `caching`, `singleton`, **`load-balancer`**) — or **`practice.folder`** is **`load-balancer`** for the bundled lab | **`apps/web/src/features/concepts/vizRegistry.tsx`** — add an adapter + entry.                  |
+| **Interactive simulation** | `vizType` is a key in **`VIZ_REGISTRY`** (e.g. `caching`, `singleton`, **`load-balancer`**) — or **`practice.folder`** is **`load-balancer`** for the bundled lab | **`apps/web/src/lib/simulation-registry/`** — add an adapter + **`index.ts`** entry.                  |
 | **Text lesson**            | `vizType` is `"lesson"`, **or** missing/empty, **or** not a simulation key — and the **`slug`** has a panel in **`LESSON_REGISTRY`**                              | **`apps/web/src/features/lessons/lessonRegistry.ts`** — **required** for every new text lesson. |
 
 If nothing matches, the user sees **“This concept is not wired to a lesson UI yet”** with the **`vizType`** and **`slug`** from the API — use that to fix Mongo vs registry mismatch.
@@ -169,7 +169,7 @@ Do this for “read the lesson on the left, optional code tabs on the right” (
 
 #### Frontend: interactive simulation (not a text lesson)
 
-Add **`vizType`** in Mongo to match a key in **`VIZ_REGISTRY`**, and implement the adapter in **`vizRegistry.tsx`** (parameters + metrics wiring).
+Add **`vizType`** in Mongo to match a key in **`VIZ_REGISTRY`**, and implement the adapter under **`lib/simulation-registry/adapters/`** (parameters + metrics wiring).
 
 #### Optional: per-concept completion (sidebar / progress)
 

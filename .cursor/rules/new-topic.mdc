@@ -23,7 +23,7 @@ This is the **complete list** of files that change for a typical new topic. Use 
 | **Lesson panel** | `apps/web/src/components/lessons/<lab>/<Topic>Lesson.tsx` | New text-lesson component (`LessonRoot` / `LessonProblem` / `LessonDiagram` / `LessonTradeoffs`). |
 | **Lesson registry** | `apps/web/src/features/lessons/lessonRegistry.ts` | Import + register `"<slug>": <Topic>Lesson`. |
 | **Simulation** | `apps/web/src/components/simulations/<lab>/<Topic>Simulation.tsx` + `.module.css` | SVG sim matching the user's PNG; reuse `CachingSimulation.module.css` panel chrome; rAF packet animation; `onMetrics` emitting metric ids. |
-| **Viz registry** | `apps/web/src/features/concepts/vizRegistry.tsx` | Thin adapter (`VizComponent`) + `VIZ_REGISTRY['<vizType>']` entry. |
+| **Simulation registry** | `apps/web/src/lib/simulation-registry/` | Thin adapter (`VizComponent`) + `VIZ_REGISTRY['<vizType>']` in `index.ts`. |
 | **Detail page** | `apps/web/src/features/concepts/pages/ConceptDetailPage.tsx` | Only if a new `practice.folder` fallback is needed in `resolveVizComponent`; otherwise **no change**. |
 | **API** | `services/api/internal/catalog/handler.go` | Only if new `normalizeCodeFilesForLesson` edge cases appear; otherwise **no change**. |
 | **SPA types** | `apps/web/src/types/labConcept.ts` | Only if new fields are added to the lesson payload; otherwise **no change**. |
@@ -93,7 +93,7 @@ Define these on the merged lesson payload (typically **`Concepts`** document **`
 ]
 ```
 
-**`metricGroups`** drive **`MetricsPanel`**. Each **`metrics[].id`** must match **string keys** emitted by your viz adapter’s **`onMetrics`** (see **`vizRegistry.tsx`**). Example (caching):
+**`metricGroups`** drive **`MetricsPanel`**. Each **`metrics[].id`** must match **string keys** emitted by your simulation adapter’s **`onMetrics`** (see **`lib/simulation-registry/`**). Example (caching):
 
 ```json
 "metricGroups": [
@@ -147,7 +147,7 @@ In **`apps/web/src/features/lessons/lessonRegistry.ts`**, map **`slug` → compo
 
 ---
 
-## 5. Visualization + `vizRegistry`
+## 5. Visualization + simulation registry
 
 The user provides a **PNG (or sketch) of the architecture flow**. This is the primary design input for the simulation SVG.
 
@@ -156,7 +156,7 @@ The user provides a **PNG (or sketch) of the architecture flow**. This is the pr
    - Wrap in the **Architecture Visualizer** panel header (reuse **`CachingSimulation.module.css`** panel chrome — header with **READY / SIMULATION LIVE** dot + **EXECUTE SIMULATION / STOP** button). See **`CachingSimulation.tsx`** and **`LoadBalancerRoundRobinSimulation.tsx`** as references.
    - Animate **request packets** (small glowing circles via `requestAnimationFrame`) traveling the edges in the SVG, matching the flow shown in the PNG.
    - Emit **`onMetrics`** with string values keyed to the **`metricGroups`** ids defined in step 2.
-3. **Register** in **`apps/web/src/features/concepts/vizRegistry.tsx`**:
+3. **Register** in **`apps/web/src/lib/simulation-registry/`** (adapter file + **`index.ts`**):
    - Add a thin **`VizComponent`** adapter that maps **`paramValues`** → sim props and stringifies **`onMetrics`**.
    - **`VIZ_REGISTRY[vizType]`** key must match **`vizType`** in Mongo (or use **`practice.folder`** special cases in **`resolveVizComponent`**).
 4. **Set `vizType`** on the concept to that registry key (e.g. **`load-balancer`**). If **`Concepts`** overrides **`Labs`**, ensure **`Concepts`** does not leave **`vizType`** as **`""`** if it would wipe a good value from **`Labs`**.
@@ -179,7 +179,7 @@ The user provides a **PNG (or sketch) of the architecture flow**. This is the pr
 > 1. Turn the sandbox into a **practice bundle**: **`go.mod`**, **`main.go`** (student starter with TODOs), **`main_test.go`**, **`solution.go`** (`//go:build ignore` — must pass `go test` when pasted into `main.go`), **`present.go`** (idiomatic demo), **`bad.go`** (anti-pattern), **`LAB.md`**.
 > 2. Wire **`sync-sandbox-practice`** for **`Concepts._id` `<labId>/<slug>`**.
 > 3. Define **`parameters`** and **`metricGroups`** for the simulation. Metric ids must match what the viz component emits via **`onMetrics`**.
-> 4. Build the **SVG simulation** matching the attached PNG — nodes, edges, animated request packets — inside the **Architecture Visualizer** panel header. Register it in **`vizRegistry.tsx`** under **`vizType` `<key>`**.
+> 4. Build the **SVG simulation** matching the attached PNG — nodes, edges, animated request packets — inside the **Architecture Visualizer** panel header. Register it in **`lib/simulation-registry/`** under **`vizType` `<key>`**.
 > 5. Register the **text lesson** panel in **`lessonRegistry.ts`** (slug **`<slug>`**).
 
 Adjust **`<lab>`**, **`<topic>`**, **`<labId>/<slug>`**, **`vizType`**, and sim vs text-only.

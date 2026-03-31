@@ -12,7 +12,7 @@ import { LAB_OPTIONS, useLab, type LabId } from '@/contexts/lab'
 import DynamicCodePanel from '@/components/code/DynamicCodePanel'
 import ParametersPanel from '@/components/panels/ParametersPanel'
 import MetricsPanel from '@/components/panels/MetricsPanel'
-import { VIZ_REGISTRY, type VizComponent } from '@/features/concepts/vizRegistry'
+import { VIZ_REGISTRY, type VizComponent } from '@/lib/simulation-registry'
 import { LESSON_REGISTRY, type LessonPanelProps } from '@/features/lessons/lessonRegistry'
 import type { LabConceptDetail } from '@/types/labConcept'
 import { ConceptProgressProvider } from '@/contexts/conceptProgress'
@@ -189,7 +189,7 @@ export default function ConceptDetailPage() {
 
   // ── Interactive visualizer path ───────────────────────────────────────────
   // Any concept whose vizType is in VIZ_REGISTRY renders here (caching, singleton, DI, numerical…).
-  // To add a new one: write a thin adapter in vizRegistry.tsx and add concept JSON config.
+  // To add a new one: add an adapter under lib/simulation-registry/adapters/ and register in index.ts.
   const VizComp = lesson ? resolveVizComponent(lesson) : undefined
   if (VizComp && lesson) {
     return (
