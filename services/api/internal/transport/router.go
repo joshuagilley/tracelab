@@ -26,7 +26,7 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 	if mongoClient != nil {
 		labsColl := mongoClient.Database(cfg.MongoDBName).Collection(cfg.LabsColl)
 		conceptsColl = mongoClient.Database(cfg.MongoDBName).Collection(cfg.ConceptsColl)
-		catalog.NewHandler(labsColl, conceptsColl).Register(mux)
+		catalog.NewHandler(catalog.NewStore(labsColl, conceptsColl)).Register(mux)
 	} else {
 		mux.HandleFunc("/api/catalog/labs", catalogUnavailableLabs)
 		mux.HandleFunc("/api/catalog/lesson", catalogUnavailableLesson)
