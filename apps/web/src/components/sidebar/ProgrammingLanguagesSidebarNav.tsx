@@ -134,6 +134,7 @@ export default function ProgrammingLanguagesSidebarNav({
                           <li key={rowKey}>
                             <button
                               type="button"
+                              data-tour="concept-item"
                               className={[styles.patternRow, rowDone ? styles.patternRowComplete : ''].join(' ')}
                               disabled={!canOpen}
                               onClick={() => {

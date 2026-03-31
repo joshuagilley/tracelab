@@ -18,12 +18,16 @@ export default function GitHubAuthControl() {
   const { user, loading, logout, githubLoginHref } = useAuth()
 
   if (loading) {
-    return <span className={styles.muted}>Account…</span>
+    return (
+      <span className={styles.muted} data-tour="github-auth">
+        Account…
+      </span>
+    )
   }
 
   if (user) {
     return (
-      <span className={styles.signedIn}>
+      <span className={styles.signedIn} data-tour="github-auth">
         {user.avatarUrl ? (
           <img src={user.avatarUrl} alt="" className={styles.avatar} width={18} height={18} />
         ) : (
@@ -40,7 +44,7 @@ export default function GitHubAuthControl() {
   }
 
   return (
-    <a href={githubLoginHref} className={styles.signIn}>
+    <a href={githubLoginHref} className={styles.signIn} data-tour="github-auth">
       <GitHubMark />
       <span>GitHub</span>
     </a>

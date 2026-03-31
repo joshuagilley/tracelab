@@ -32,6 +32,7 @@ export default function SectionNavHead({
     <button
       type="button"
       className={styles.sectionHead}
+      data-tour="topic-section"
       aria-expanded={isOpen}
       aria-controls={panelId}
       id={`${panelId}-btn`}

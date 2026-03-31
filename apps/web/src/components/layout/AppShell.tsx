@@ -5,6 +5,7 @@ import CareerTrackBadge from '@/components/layout/CareerTrackBadge'
 import FooterLabProgress from '@/components/layout/FooterLabProgress'
 import GitHubAuthControl from '@/components/auth/GitHubAuthControl'
 import PeriodicTableNavButton from '@/components/layout/PeriodicTableNavButton'
+import TakeTourButton from '@/components/layout/TakeTourButton'
 import Sidebar from '@/components/sidebar/Sidebar'
 import styles from './AppShell.module.css'
 
@@ -22,6 +23,7 @@ export default function AppShell({ children }: AppShellProps) {
       <div className={styles.body}>
         <div className={styles.topBar}>
           <div className={styles.topBarRight}>
+            <TakeTourButton />
             <PeriodicTableNavButton />
             <CareerTrackBadge />
           </div>

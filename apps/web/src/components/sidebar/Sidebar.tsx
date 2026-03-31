@@ -124,6 +124,7 @@ export default function Sidebar() {
             <button
               type="button"
               className={styles.labTrigger}
+              data-tour="lab-picker"
               onClick={() => setMenuOpen(o => !o)}
               aria-expanded={menuOpen}
               aria-haspopup="listbox"
@@ -196,6 +197,7 @@ export default function Sidebar() {
       </div>
       <div
         className={styles.curriculumFilterWrap}
+        data-tour="curriculum-filter"
         title="Filter concepts across sidebar and library"
       >
         <span className={styles.curriculumFilterLabel}>Filter</span>
@@ -242,6 +244,7 @@ export default function Sidebar() {
       <nav className={styles.quickNav} aria-label="Library">
         <NavLink
           to="/"
+          data-tour="library-link"
           end
           className={({ isActive }) =>
             [styles.libLink, isActive ? styles.libLinkActive : ''].join(' ')
@@ -253,7 +256,7 @@ export default function Sidebar() {
 
       <div className={styles.section}>
         <div className={styles.sectionTitle}>{sidebarSectionLabel}</div>
-        {topicNav}
+        <div data-tour="topic-list">{topicNav}</div>
       </div>
     </aside>
   )

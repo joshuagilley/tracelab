@@ -5,6 +5,7 @@ export default function PeriodicTableNavButton() {
   return (
     <NavLink
       to="/cs-periodic-table"
+      data-tour="periodic-table"
       className={({ isActive }) =>
         [styles.link, isActive ? styles.linkActive : ''].join(' ')
       }

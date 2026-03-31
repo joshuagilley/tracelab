@@ -8,7 +8,7 @@ export default function CareerTrackBadge() {
   const title = selectedTrack?.title ?? 'Career Track'
 
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} data-tour="career-track">
       {selectedTrack ? (
         <img
           className={styles.badge}
