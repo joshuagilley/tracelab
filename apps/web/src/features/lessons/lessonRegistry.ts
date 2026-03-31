@@ -11,7 +11,7 @@ import QueueSqsLesson             from '@/components/lessons/cloud-architecture/
 import ServerlessLambdaLesson     from '@/components/lessons/cloud-architecture/ServerlessLambdaLesson'
 import PrimaryKeysForeignKeysLesson from '@/components/lessons/database-design/PrimaryKeysForeignKeysLesson'
 import PointersLesson             from '@/components/lessons/low-level-systems/PointersLesson'
-import LoadBalancingAlgorithmsLesson from '@/components/lessons/system-design/LoadBalancingAlgorithmsLesson'
+import LoadBalancerLesson from '@/components/lessons/system-design/LoadBalancerLesson'
 
 /** All lesson-panel components receive only a summary prop. */
 export interface LessonPanelProps {
@@ -37,7 +37,7 @@ export const LESSON_REGISTRY: Record<string, ComponentType<LessonPanelProps>> = 
   'load-balancer':              LoadBalancerL4L7Lesson,
   /** Catalog slug used in Labs for “Load Balancer” */
   'load-balancing':             LoadBalancerL4L7Lesson,
-  'load-balancing-algorithms':  LoadBalancingAlgorithmsLesson,
+  'load-balancing-algorithms':  LoadBalancerLesson,
   'object-storage-s3':          ObjectStorageS3Lesson,
   'queue-sqs':                  QueueSqsLesson,
   'serverless-lambda':          ServerlessLambdaLesson,

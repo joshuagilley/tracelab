@@ -1,6 +1,6 @@
 import type { Concept } from '@/types/concept'
-import type { CurriculumNavSection } from '@/types/curriculumNav'
-import type { ProgrammingLanguage } from '@/types/programmingLanguage'
+import type { CurriculumNavSection } from '@/types/curriculum-nav'
+import type { ProgrammingLanguage } from '@/types/programming-language'
 
 /** One row from a lab catalog — lightweight list metadata only. */
 export interface LessonCatalogRow extends Concept {

@@ -1,5 +1,5 @@
 import { LAB_OPTIONS, type LabId } from '@/contexts/lab'
-import { API_BASE } from '@/lib/apiBase'
+import { API_BASE } from '@/lib/api-base'
 import type { LabCatalogFile } from '@/features/lessons/labCatalogTypes'
 
 const LAB_IDS = new Set<LabId>(LAB_OPTIONS.map(o => o.id))
