@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo-v2.png" alt="TraceLab" width="340" />
+  <img src="app/web/dist/assets/logo-v2.png" alt="TraceLab" width="340" />
 </p>
 
 # TraceLab
@@ -20,19 +20,19 @@ Interactive curriculum UI backed by a Go API and MongoDB. This README covers **l
 
 Create a **`.env` file at the repository root** (same level as the `Makefile`). The **`make api`** recipe (including when started via **`make dev`**) runs `set -a && source .env` so the Go process sees these variables. The Vite dev server does not read the repo-root `.env` unless you configure it separately.
 
-| Variable | Required for | Purpose |
-|----------|----------------|---------|
-| `MONGO_DB_URI` | Catalog + auth | Mongo connection string. Without it the API starts but **does not** register `/api/catalog/*` (the app will not load lessons). |
-| `MONGO_DB_NAME` | Mongo | Database name (default `tracelab`). |
-| `LABS_COLLECTION` | Catalog | Lab catalog documents (default `Labs`). |
-| `CONCEPTS_COLLECTION` | Lesson merge | Per-concept detail documents (default `Concepts`). |
-| `USERS_COLLECTION` | Auth | Users (default `Users`). |
-| `COMPLETED_COLLECTION` | Progress | Completed concepts (default `Completed`). |
-| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | Auth | GitHub OAuth. |
-| `OAUTH_CALLBACK_URL` | Auth | Registered callback URL (e.g. `http://localhost:5173/api/auth/github/callback` when using the Vite proxy). |
-| `AUTH_JWT_SECRET` | Auth | Secret for session JWT. |
-| `FRONTEND_ORIGIN` | CORS | SPA origin (default `http://localhost:5173`). |
-| `AUTH_COOKIE_CROSS_SITE` | Auth | Set to `true` if API and SPA are on different sites (cookies `SameSite=None; Secure`). |
+| Variable                                   | Required for   | Purpose                                                                                                                        |
+| ------------------------------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `MONGO_DB_URI`                             | Catalog + auth | Mongo connection string. Without it the API starts but **does not** register `/api/catalog/*` (the app will not load lessons). |
+| `MONGO_DB_NAME`                            | Mongo          | Database name (default `tracelab`).                                                                                            |
+| `LABS_COLLECTION`                          | Catalog        | Lab catalog documents (default `Labs`).                                                                                        |
+| `CONCEPTS_COLLECTION`                      | Lesson merge   | Per-concept detail documents (default `Concepts`).                                                                             |
+| `USERS_COLLECTION`                         | Auth           | Users (default `Users`).                                                                                                       |
+| `COMPLETED_COLLECTION`                     | Progress       | Completed concepts (default `Completed`).                                                                                      |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | Auth           | GitHub OAuth.                                                                                                                  |
+| `OAUTH_CALLBACK_URL`                       | Auth           | Registered callback URL (e.g. `http://localhost:5173/api/auth/github/callback` when using the Vite proxy).                     |
+| `AUTH_JWT_SECRET`                          | Auth           | Secret for session JWT.                                                                                                        |
+| `FRONTEND_ORIGIN`                          | CORS           | SPA origin (default `http://localhost:5173`).                                                                                  |
+| `AUTH_COOKIE_CROSS_SITE`                   | Auth           | Set to `true` if API and SPA are on different sites (cookies `SameSite=None; Secure`).                                         |
 
 ### Run
 
@@ -52,11 +52,11 @@ make web        # Vite on :5173 (proxies `/api` to the API in dev)
 
 ### Repo layout (short)
 
-| Path | Role |
-|------|------|
-| `apps/web/` | React + Vite SPA |
-| `services/api/` | Go HTTP API (`cmd/server`) |
-| `sandbox/` | **Dev-only** practice code (see `sandbox/README.md`). Not imported by the app or API. |
+| Path            | Role                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------- |
+| `apps/web/`     | React + Vite SPA                                                                      |
+| `services/api/` | Go HTTP API (`cmd/server`)                                                            |
+| `sandbox/`      | **Dev-only** practice code (see `sandbox/README.md`). Not imported by the app or API. |
 
 On startup the SPA calls **`GET /api/catalog/labs`**, caches each lab document, then uses **`GET /api/catalog/lesson?lab=&slug=`** for concept detail.
 
@@ -88,14 +88,14 @@ That document should include:
 
 Each entry in **`concepts`** should include at least what the UI expects on the list and detail request (see `apps/web/src/features/lessons/labCatalogTypes.ts` and `apps/web/src/types/concept.ts`):
 
-| Field | Notes |
-|-------|--------|
-| `id` | Stable string (often the same as `slug` if you do not need a separate key). |
-| `slug` | URL segment; **must be unique within the lab** and must match `navSections[].items[].slug` when you want a sidebar link. |
-| `title`, `summary`, `difficulty`, `tags`, `status` | `status`: `available` or `coming-soon`. |
-| `labKind` | Usually the lab id string (e.g. `system-design`). |
-| `vizType` | How the detail page renders: `"lesson"` for a **text lesson** (must register **`slug`** in `lessonRegistry.ts` — see §3 below), or a simulation key (e.g. `caching`) registered in `vizRegistry.tsx`. |
-| `codeFiles` | Array of `{ "name", "lang" }` for tab labels. Actual source text usually comes from the **Concepts** document (next step). |
+| Field                                              | Notes                                                                                                                                                                                                 |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                                               | Stable string (often the same as `slug` if you do not need a separate key).                                                                                                                           |
+| `slug`                                             | URL segment; **must be unique within the lab** and must match `navSections[].items[].slug` when you want a sidebar link.                                                                              |
+| `title`, `summary`, `difficulty`, `tags`, `status` | `status`: `available` or `coming-soon`.                                                                                                                                                               |
+| `labKind`                                          | Usually the lab id string (e.g. `system-design`).                                                                                                                                                     |
+| `vizType`                                          | How the detail page renders: `"lesson"` for a **text lesson** (must register **`slug`** in `lessonRegistry.ts` — see §3 below), or a simulation key (e.g. `caching`) registered in `vizRegistry.tsx`. |
+| `codeFiles`                                        | Array of `{ "name", "lang" }` for tab labels. Actual source text usually comes from the **Concepts** document (next step).                                                                            |
 
 After inserting or editing the lab document, restart or refresh the app so **`fetchLabsCatalogIntoCache`** runs again (full page load).
 
@@ -141,10 +141,10 @@ The **Implementation** panel shows only merged **`codeFiles`** from **`Labs`** /
 
 Rendering is driven by **`apps/web/src/features/concepts/pages/ConceptDetailPage.tsx`**. After **`GET /api/catalog/lesson`** returns a merged lesson, the page picks **one** of:
 
-| Kind | When | Where you register |
-|------|------|---------------------|
-| **Interactive simulation** | `vizType` is a key in **`VIZ_REGISTRY`** (e.g. `caching`, `singleton`, **`load-balancer`**) — or **`practice.folder`** is **`load-balancer`** for the bundled lab | **`apps/web/src/features/concepts/vizRegistry.tsx`** — add an adapter + entry. |
-| **Text lesson** | `vizType` is `"lesson"`, **or** missing/empty, **or** not a simulation key — and the **`slug`** has a panel in **`LESSON_REGISTRY`** | **`apps/web/src/features/lessons/lessonRegistry.ts`** — **required** for every new text lesson. |
+| Kind                       | When                                                                                                                                                              | Where you register                                                                              |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| **Interactive simulation** | `vizType` is a key in **`VIZ_REGISTRY`** (e.g. `caching`, `singleton`, **`load-balancer`**) — or **`practice.folder`** is **`load-balancer`** for the bundled lab | **`apps/web/src/features/concepts/vizRegistry.tsx`** — add an adapter + entry.                  |
+| **Text lesson**            | `vizType` is `"lesson"`, **or** missing/empty, **or** not a simulation key — and the **`slug`** has a panel in **`LESSON_REGISTRY`**                              | **`apps/web/src/features/lessons/lessonRegistry.ts`** — **required** for every new text lesson. |
 
 If nothing matches, the user sees **“This concept is not wired to a lesson UI yet”** with the **`vizType`** and **`slug`** from the API — use that to fix Mongo vs registry mismatch.
 
@@ -152,13 +152,13 @@ If nothing matches, the user sees **“This concept is not wired to a lesson UI 
 
 Do this for “read the lesson on the left, optional code tabs on the right” (most catalog concepts).
 
-1. **Create a lesson component** under **`apps/web/src/components/lessons/<lab>/YourLessonName.tsx`**.  
-   - Props must match **`LessonPanelProps`** in **`lessonRegistry.ts`** (today: **`{ summary: string }`** — the catalog **`summary`** is passed through).  
+1. **Create a lesson component** under **`apps/web/src/components/lessons/<lab>/YourLessonName.tsx`**.
+   - Props must match **`LessonPanelProps`** in **`lessonRegistry.ts`** (today: **`{ summary: string }`** — the catalog **`summary`** is passed through).
    - Reuse **`LessonRoot`**, **`LessonProblem`**, **`LessonDiagram`**, etc. from **`apps/web/src/components/lesson-panels/LessonPanel.tsx`** like **`LoadBalancerL4L7Lesson.tsx`**.
 
-2. **Register it by slug** in **`apps/web/src/features/lessons/lessonRegistry.ts`**:  
-   - Import your component.  
-   - Add a line: **`'your-concept-slug': YourLessonComponent`**  
+2. **Register it by slug** in **`apps/web/src/features/lessons/lessonRegistry.ts`**:
+   - Import your component.
+   - Add a line: **`'your-concept-slug': YourLessonComponent`**
    - The **object key must match exactly** the **`slug`** in **`Labs.concepts[]`** and in the URL **`/concept/<slug>`** (kebab-case). One slug ⇒ one registry entry. If Mongo uses a different slug (e.g. `load-balancing` vs `load-balancer`), add **another line** or change the catalog slug.
 
 3. **Set `vizType` in Mongo** (recommended): on the **`Labs`** concept row, set **`"vizType": "lesson"`**.  
@@ -177,19 +177,19 @@ If this lab should track **completed concepts**, ensure the lab id is listed in 
 
 ### 4. Quick verification
 
-1. Open the app, select the lab, confirm the concept appears in the **library**.  
-2. Open the **sidebar** link (item must have **`slug`** set).  
-3. Confirm **`/api/catalog/lesson?lab=…&slug=…`** returns JSON with the fields you expect (`codeFiles`, `practice`, etc.).  
-4. Confirm the **detail page** shows the correct lesson layout (not the “not wired” error) and code/practice behavior.  
+1. Open the app, select the lab, confirm the concept appears in the **library**.
+2. Open the **sidebar** link (item must have **`slug`** set).
+3. Confirm **`/api/catalog/lesson?lab=…&slug=…`** returns JSON with the fields you expect (`codeFiles`, `practice`, etc.).
+4. Confirm the **detail page** shows the correct lesson layout (not the “not wired” error) and code/practice behavior.
 5. If you added a **text lesson**, confirm **`lessonRegistry.ts`** contains an entry whose key equals the concept **`slug`**.
 
 ---
 
 ## API routes (reference)
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| GET | `/health` | Health check |
-| GET | `/api/catalog/labs` | All lab catalog documents (drives library + sidebar cache) |
-| GET | `/api/catalog/lesson?lab=&slug=` | Merged lesson for one concept |
-| GET/POST | `/api/auth/*` | GitHub OAuth + session (when auth env is complete) |
+| Method   | Path                             | Purpose                                                    |
+| -------- | -------------------------------- | ---------------------------------------------------------- |
+| GET      | `/health`                        | Health check                                               |
+| GET      | `/api/catalog/labs`              | All lab catalog documents (drives library + sidebar cache) |
+| GET      | `/api/catalog/lesson?lab=&slug=` | Merged lesson for one concept                              |
+| GET/POST | `/api/auth/*`                    | GitHub OAuth + session (when auth env is complete)         |
