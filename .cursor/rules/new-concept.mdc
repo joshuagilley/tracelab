@@ -1,25 +1,25 @@
 ---
-description: End-to-end flow for a new TraceLab topic — sandbox → practice bundle → Mongo Concepts → lesson + viz registries → simulation from a flow diagram.
+description: End-to-end flow for a new TraceLab concept — sandbox → practice bundle → Mongo Concepts → lesson + viz registries → simulation from a flow diagram.
 globs: sandbox/**/*
 alwaysApply: false
 ---
 
-# New topic: sandbox → practice lesson → Mongo → registries → visualization
+# New concept: sandbox → practice lesson → Mongo → registries → visualization
 
-Use this when a developer has iterated on **`main.go`** (or a small runnable) under **`sandbox/<lab>/<topic>/`** and wants a full **TraceLab concept**: downloadable practice, editor **`codeFiles`**, optional **simulation**, and curriculum wiring.
+Use this when a developer has iterated on **`main.go`** (or a small runnable) under **`sandbox/<lab>/<topic>/`** and wants a full **TraceLab concept**: downloadable practice, editor **`codeFiles`**, optional **simulation**, and curriculum wiring. (**`topic`** here is the sandbox folder name; the catalog **slug** / URL may differ, e.g. **`load-balancing`**.)
 
-Path examples: **`sandbox/system-design/load-balancer/`** (topic folder name is usually short; URL slug may differ, e.g. **`load-balancing`**).
+Path examples: **`sandbox/system-design/load-balancer/`** (folder name is usually short; URL slug may differ, e.g. **`load-balancing`**).
 
 ---
 
-## Files you will touch (every new topic)
+## Files you will touch (every new concept)
 
-This is the **complete list** of files that change for a typical new topic. Use it as a checklist:
+This is the **complete list** of files that change for a typical new concept. Use it as a checklist:
 
 | Area | File(s) | What you do |
 |------|---------|-------------|
 | **Sandbox** | `sandbox/<lab>/<topic>/go.mod`, `main.go`, `main_test.go`, `solution.go`, `present.go`, `bad.go`, `LAB.md` | Create the practice bundle (§1). |
-| **Practice → Mongo** | *(command only)* | **`make sync-sandbox-mongo`** with **`SANDBOX`**, **`CONCEPT`**, **`ZIP`**, **`FOLDER`**, **`FILES`** (see **`README.md`**), or **`go run ./cmd/sync-sandbox-practice`** with the same values as flags. No per-topic binaries or Makefile targets. |
+| **Practice → Mongo** | *(command only)* | **`make sync-sandbox-mongo`** with **`SANDBOX`**, **`CONCEPT`**, **`ZIP`**, **`FOLDER`**, **`FILES`** (see **`README.md`**), or **`go run ./cmd/sync-sandbox-practice`** with the same values as flags. No per-concept binaries or Makefile targets. |
 | **Lesson panel** | `apps/web/src/components/lessons/<lab>/<Topic>Lesson.tsx` | New text-lesson component (`LessonRoot` / `LessonProblem` / `LessonDiagram` / `LessonTradeoffs`). |
 | **Lesson registry** | `apps/web/src/features/curriculum/lesson-registry.ts` | Import + register `"<slug>": <Topic>Lesson`. |
 | **Simulation** | `apps/web/src/components/simulations/<lab>/<Topic>Simulation.tsx` + `.module.css` | SVG sim matching the user's PNG; reuse `CachingSimulation.module.css` panel chrome; rAF packet animation; `onMetrics` emitting metric ids. |
@@ -31,7 +31,7 @@ This is the **complete list** of files that change for a typical new topic. Use 
 | **Mongo** | `Labs` doc (concepts[] row + navSections item), `Concepts` doc (_id, vizType, codeFiles, parameters, metricGroups) | Manual or via one-off script (delete after). |
 | **README** | `sandbox/README.md` | Document the new sandbox path if useful; practice sync stays generic (**`make sync-sandbox-mongo`**). |
 
-Items marked **"no change"** are already generic enough from previous topics. The first six rows are always new files or edits (practice sync is a command, not a new file).
+Items marked **"no change"** are already generic enough from previous concepts. The first six rows are always new files or edits (practice sync is a command, not a new file).
 
 ---
 
@@ -129,7 +129,7 @@ Use **`make sync-sandbox-mongo`** (repo root, **`.env`** as needed) or **`go run
 
 - **`-files`** order is the ZIP contents; include **`go.mod`**, **`LAB.md`**, **`main.go`**, **`main_test.go`**, **`solution.go`**, **`present.go`**, **`bad.go`** as needed.
 
-There is **only** **`cmd/sync-sandbox-practice`** for this — no **`sync-*-practice`** per topic.
+There is **only** **`cmd/sync-sandbox-practice`** for this — no **`sync-*-practice`** per concept.
 
 ### B. One-off metadata (`parameters`, `vizType`, `metricGroups`, …)
 
