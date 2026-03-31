@@ -7,7 +7,12 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { fetchAuthMe, githubLoginHref, logout as apiLogout } from '@/lib/auth/api'
+import {
+  fetchAuthMe,
+  githubLoginHref,
+  logout as apiLogout,
+  updateCareerTrack as apiUpdateCareerTrack,
+} from '@/lib/auth/api'
 import type { AuthUser } from '@/lib/auth/types'
 
 interface AuthContextValue {
@@ -15,6 +20,7 @@ interface AuthContextValue {
   loading: boolean
   refresh: () => Promise<void>
   logout: () => Promise<void>
+  setCareerTrack: (careerTrackId: string) => Promise<void>
   githubLoginHref: string
 }
 
@@ -38,6 +44,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
+  const setCareerTrack = useCallback(async (careerTrackId: string) => {
+    const updated = await apiUpdateCareerTrack(careerTrackId)
+    if (updated) setUser(updated)
+  }, [])
+
   useEffect(() => {
     void refresh()
   }, [refresh])
@@ -48,9 +59,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       refresh,
       logout,
+      setCareerTrack,
       githubLoginHref: githubLoginHref(),
     }),
-    [user, loading, refresh, logout],
+    [user, loading, refresh, logout, setCareerTrack],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

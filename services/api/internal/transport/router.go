@@ -8,6 +8,7 @@ import (
 
 	"github.com/tracelab/api/internal/auth"
 	"github.com/tracelab/api/internal/catalog"
+	"github.com/tracelab/api/internal/certifications"
 	"github.com/tracelab/api/internal/completed"
 	"github.com/tracelab/api/internal/config"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -21,6 +22,7 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 
 	if mongoClient == nil {
 		registerCatalogUnavailableRoutes(mux)
+		registerCertificationsUnavailableRoutes(mux)
 		registerAuthFallbackRoutes(mux, cfg, false)
 		return withCORS(cfg, mux)
 	}
@@ -29,9 +31,11 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 	labsColl := db.Collection(cfg.LabsColl)
 	conceptsColl := db.Collection(cfg.ConceptsColl)
 	usersColl := db.Collection(cfg.UsersColl)
+	certificationsColl := db.Collection(cfg.CertificationsColl)
 	completedColl := db.Collection(cfg.CompletedColl)
 
 	registerCatalogRoutes(mux, labsColl, conceptsColl)
+	registerCertificationsRoutes(mux, cfg, certificationsColl)
 
 	if cfg.AuthConfigured() {
 		registerAuthRoutes(mux, cfg, usersColl)
@@ -59,6 +63,24 @@ func registerCatalogRoutes(mux *http.ServeMux, labsColl, conceptsColl *mongo.Col
 func registerCatalogUnavailableRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/catalog/labs", catalogUnavailableLabs)
 	mux.HandleFunc("/api/catalog/lesson", catalogUnavailableLesson)
+}
+
+func registerCertificationsRoutes(mux *http.ServeMux, cfg *config.Config, coll *mongo.Collection) {
+	store := certifications.NewStore(coll)
+	ensureIndexes("certifications", cfg.MongoDBName, cfg.CertificationsColl, store.EnsureIndexes)
+	certifications.NewHandler(store).Register(mux)
+}
+
+func registerCertificationsUnavailableRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("/api/certifications", func(w http.ResponseWriter, r *http.Request) {
+		if !auth.RequireMethod(w, r, http.MethodGet) {
+			return
+		}
+		auth.WriteJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"error":          "mongo_unavailable",
+			"certifications": []any{},
+		})
+	})
 }
 
 func registerAuthRoutes(mux *http.ServeMux, cfg *config.Config, usersColl *mongo.Collection) {

@@ -274,18 +274,19 @@
   transition: width 0.28s ease;
 }
 
-.curriculumToggleWrap {
+.curriculumFilterWrap {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
   width: 100%;
-  padding: 8px 0 2px;
+  padding: 10px 12px 10px;
   margin-top: 0;
+  border-bottom: 1px solid var(--border);
   border-top: 1px solid var(--border-dim);
 }
 
-.curriculumToggleLabel {
+.curriculumFilterLabel {
   font-family: var(--font-mono);
   font-size: 9px;
   font-weight: 600;
@@ -295,43 +296,49 @@
   line-height: 1.3;
 }
 
-.curriculumSwitch {
-  position: relative;
-  width: 36px;
-  height: 20px;
-  flex-shrink: 0;
-  border-radius: 999px;
-  border: 1px solid var(--border);
+.segmented {
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
   background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+
+.segmentedOption {
+  flex: 1;
+  min-width: 0;
+  height: 26px;
+  border: none;
+  border-radius: calc(var(--radius-sm) - 2px);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 9px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   cursor: pointer;
-  padding: 0;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s, color 0.15s;
+  padding: 0 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.curriculumSwitch:hover {
-  border-color: var(--text-muted);
+.segmentedOption:hover:not(:disabled) {
+  color: var(--text-primary);
 }
 
-.curriculumSwitchOn {
+.segmentedOptionActive {
   background: var(--accent-dim);
-  border-color: var(--accent);
+  color: var(--accent);
 }
 
-.curriculumSwitchThumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--text-secondary);
-  transition: transform 0.15s, background 0.15s;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-}
-
-.curriculumSwitchOn .curriculumSwitchThumb {
-  transform: translateX(16px);
-  background: var(--accent);
+.segmentedOption:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 /* ─── Concept list ────────────────────────────────── */

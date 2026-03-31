@@ -29,6 +29,7 @@ This is the **complete list** of files that change for a typical new concept. Us
 | **SPA types** | `apps/web/src/types/lab-concept.ts` | Only if new fields are added to the lesson payload; otherwise **no change**. |
 | **Code panel** | `apps/web/src/components/code/DynamicCodePanel.tsx` | Only if new lang/content fallback rules; otherwise **no change**. |
 | **Mongo** | `Labs` doc (`topics[]` with `conceptSlugs`; no embedded `concepts[]`), `Concepts` doc (`_id`, `labId`, `topicId`, `slug`, vizType, codeFiles, parameters, metricGroups, practice) | Manual edits in Atlas (or **`mongodump`** / **`mongorestore`** to copy collections between DBs). |
+| **Career tracks** | `services/api/internal/certifications/defaults.go` + Mongo `Certifications.track_tags` | Add concept-aligned tags to relevant tracks, then run **`make seed-certifications`** so Track filter includes the new concept when tags match. |
 | **README** | `sandbox/README.md` | Document the new sandbox path if useful; practice sync stays generic (**`make sync-sandbox-mongo`**). |
 
 Items marked **"no change"** are already generic enough from previous concepts. The first six rows are always new files or edits (practice sync is a command, not a new file).
@@ -137,6 +138,17 @@ For first-time wiring, a **temporary** helper is fine: small **`go run`** (Mongo
 
 **After values are correct in the database, remove** any **throwaway** Mongo-update script. **`sync-sandbox-practice`** stays in the repo as the single practice sync entry.
 
+### C. Career-track tags (`Certifications.track_tags`)
+
+If the new concept should appear in **Track** filtering:
+
+1. Ensure the concept has accurate **`Concepts.tags`** values.
+2. Update relevant defaults in **`services/api/internal/certifications/defaults.go`** (`TrackTags` for each role).
+3. Reseed Mongo from repo root:
+   - **`make seed-certifications`**
+
+The Track filter matches concepts when **any** concept tag overlaps the selected certification's **`track_tags`**.
+
 ---
 
 ## 4. `lesson-registry` (text panel)
@@ -168,6 +180,8 @@ The user provides a **PNG (or sketch) of the architecture flow**. This is the pr
 - **`Labs`** document: **`topics[]`** entry with **`conceptSlugs`** listing each **`slug`** (sidebar order).
 - **`Concepts`** document: full metadata + **`labId`** / **`topicId`** matching the lab shell.
 - **`Concepts._id`**: `"<labId>/<slug>"` for merged detail + **`practice`**.
+- **`Concepts.tags`** includes tags intended for Track filtering.
+- **`Certifications.track_tags`** updated to include those tags for the right careers (via defaults + **`make seed-certifications`**).
 - Practice sync is always **`make sync-sandbox-mongo`** / **`sync-sandbox-practice`** — no new Makefile targets for each lab.
 
 ---

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
+import { useCareerTrack } from '@/contexts/careerTrack'
 import { LanguageLogo } from '@/components/programming-languages/LanguageLogo'
 import { countSectionNavProgress } from '@/features/learning/progress/nav-section-progress'
 import { filterProgrammingLanguages } from '@/lib/nav-curriculum-filter'
@@ -33,11 +34,12 @@ export default function ProgrammingLanguagesSidebarNav({
   defaultOpenSectionIds,
 }: Props) {
   const navigate = useNavigate()
-  const { publishedOnly } = useCurriculumVisibility()
+  const { filterMode } = useCurriculumVisibility()
+  const { selectedTrackTags } = useCareerTrack()
   const bySlug = useMemo(() => Object.fromEntries(concepts.map(c => [c.slug, c])), [concepts])
   const visibleLangs = useMemo(
-    () => filterProgrammingLanguages(languages, bySlug, publishedOnly),
-    [languages, bySlug, publishedOnly],
+    () => filterProgrammingLanguages(languages, bySlug, filterMode, selectedTrackTags),
+    [languages, bySlug, filterMode, selectedTrackTags],
   )
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
     buildInitialOpen(languages, defaultOpenSectionIds),
@@ -54,7 +56,7 @@ export default function ProgrammingLanguagesSidebarNav({
   if (visibleLangs.length === 0) {
     return (
       <p className={styles.filterEmpty} role="status">
-        No published topics in this library yet.
+        No topics match this filter in this library.
       </p>
     )
   }

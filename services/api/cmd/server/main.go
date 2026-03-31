@@ -91,9 +91,10 @@ func connectMongo(cfg *config.Config) *mongo.Client {
 	}
 
 	log.Printf(
-		"mongo: connected (db=%q users=%q completed=%q labs=%q concepts=%q)",
+		"mongo: connected (db=%q users=%q certifications=%q completed=%q labs=%q concepts=%q)",
 		cfg.MongoDBName,
 		cfg.UsersColl,
+		cfg.CertificationsColl,
 		cfg.CompletedColl,
 		cfg.LabsColl,
 		cfg.ConceptsColl,

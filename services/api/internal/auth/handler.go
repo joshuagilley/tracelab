@@ -2,6 +2,9 @@ package auth
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -38,6 +41,7 @@ func (h *Handler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("/api/auth/github", h.githubStart)
 	mux.HandleFunc("/api/auth/github/callback", h.githubCallback)
 	mux.HandleFunc("/api/auth/me", h.currentUser)
+	mux.HandleFunc("/api/auth/me/career-track", h.updateCareerTrack)
 	mux.HandleFunc("/api/auth/logout", h.logout)
 }
 
@@ -164,4 +168,41 @@ func (h *Handler) logout(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, h.clearCookie(r, CookieName))
 	WriteJSON(w, http.StatusOK, logoutResponse{OK: true})
+}
+
+type updateCareerTrackRequest struct {
+	CareerTrackID string `json:"careerTrackId"`
+}
+
+func (h *Handler) updateCareerTrack(w http.ResponseWriter, r *http.Request) {
+	if !requireMethod(w, r, http.MethodPatch) {
+		return
+	}
+	if !h.requireAuthStore(w) {
+		return
+	}
+	uid, err := SessionUserID(h.cfg.JWTSecret, r)
+	if err != nil {
+		WriteJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		return
+	}
+	var body updateCareerTrackRequest
+	r.Body = http.MaxBytesReader(w, r.Body, 1024)
+	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&body); err != nil {
+		WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid_json"})
+		return
+	}
+	if err := dec.Decode(&struct{}{}); err != nil && !errors.Is(err, io.EOF) {
+		WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid_json"})
+		return
+	}
+	u, err := h.users.SetCareerTrack(r.Context(), uid, body.CareerTrackID)
+	if err != nil {
+		log.Printf("auth: update career track user=%s: %v", uid.Hex(), err)
+		http.Error(w, "db", http.StatusInternalServerError)
+		return
+	}
+	WriteJSON(w, http.StatusOK, meResponse{User: userToPublicDTO(u)})
 }

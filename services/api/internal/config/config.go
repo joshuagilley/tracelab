@@ -9,14 +9,15 @@ import (
 type Config struct {
 	Addr string
 
-	MongoURI      string
-	MongoDBName   string
-	UsersColl     string
+	MongoURI           string
+	MongoDBName        string
+	UsersColl          string
+	CertificationsColl string
 	// CompletedColl stores one document per completed concept (see completed).
 	CompletedColl string
 	// LabsColl / ConceptsColl hold curriculum catalog documents (see catalog).
-	LabsColl      string
-	ConceptsColl  string
+	LabsColl     string
+	ConceptsColl string
 
 	GitHubClientID     string
 	GitHubClientSecret string
@@ -36,11 +37,12 @@ func Load() *Config {
 	frontend := envDefault("FRONTEND_ORIGIN", "http://localhost:5173")
 
 	return &Config{
-		Addr:                ":" + envDefault("PORT", "8080"),
-		MongoURI:            env("MONGO_DB_URI"),
+		Addr:     ":" + envDefault("PORT", "8080"),
+		MongoURI: env("MONGO_DB_URI"),
 		// "tracelab" only if MONGO_DB_NAME is unset (see repo-root .env via `make api` / `make dev`).
 		MongoDBName:         envDefault("MONGO_DB_NAME", "tracelab"),
 		UsersColl:           envDefault("USERS_COLLECTION", "Users"),
+		CertificationsColl:  envDefault("CERTIFICATIONS_COLLECTION", "Certifications"),
 		CompletedColl:       envDefault("COMPLETED_COLLECTION", "Completed"),
 		LabsColl:            envDefault("LABS_COLLECTION", "Labs"),
 		ConceptsColl:        envDefault("CONCEPTS_COLLECTION", "Concepts"),

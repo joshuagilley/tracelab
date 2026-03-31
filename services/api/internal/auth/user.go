@@ -13,14 +13,15 @@ import (
 
 // User is stored in MongoDB (collection name from config, default "Users").
 type User struct {
-	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	GitHubID  int64              `json:"githubId" bson:"github_id"`
-	Login     string             `json:"login" bson:"login"`
-	Name      string             `json:"name,omitempty" bson:"name,omitempty"`
-	AvatarURL string             `json:"avatarUrl,omitempty" bson:"avatar_url,omitempty"`
-	Email     string             `json:"email,omitempty" bson:"email,omitempty"`
-	CreatedAt time.Time          `json:"createdAt" bson:"created_at"`
-	UpdatedAt time.Time          `json:"updatedAt" bson:"updated_at"`
+	ID                   primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	GitHubID             int64              `json:"githubId" bson:"github_id"`
+	Login                string             `json:"login" bson:"login"`
+	Name                 string             `json:"name,omitempty" bson:"name,omitempty"`
+	AvatarURL            string             `json:"avatarUrl,omitempty" bson:"avatar_url,omitempty"`
+	Email                string             `json:"email,omitempty" bson:"email,omitempty"`
+	CurrentCareerTrackID string             `json:"currentCareerTrackId,omitempty" bson:"current_career_track_id,omitempty"`
+	CreatedAt            time.Time          `json:"createdAt" bson:"created_at"`
+	UpdatedAt            time.Time          `json:"updatedAt" bson:"updated_at"`
 }
 
 type UserStore struct {
@@ -75,4 +76,25 @@ func (s *UserStore) ByID(ctx context.Context, id primitive.ObjectID) (*User, err
 		return nil, err
 	}
 	return &u, nil
+}
+
+func (s *UserStore) SetCareerTrack(ctx context.Context, id primitive.ObjectID, careerTrackID string) (*User, error) {
+	now := time.Now().UTC()
+	updateDoc := bson.M{
+		"$set": bson.M{
+			"updated_at": now,
+		},
+	}
+	if careerTrackID == "" {
+		updateDoc["$unset"] = bson.M{"current_career_track_id": ""}
+	} else {
+		updateDoc["$set"].(bson.M)["current_career_track_id"] = careerTrackID
+	}
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+	var out User
+	err := s.coll.FindOneAndUpdate(ctx, bson.M{"_id": id}, updateDoc, opts).Decode(&out)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }

@@ -1,4 +1,4 @@
-.PHONY: dev api web install build clean compose-up compose-down test sync-sandbox-mongo
+.PHONY: dev api web install build clean compose-up compose-down test sync-sandbox-mongo seed-certifications
 
 # Bash so `api` can `source .env` (GitHub OAuth, Mongo, JWT, etc.)
 SHELL := /bin/bash
@@ -46,6 +46,9 @@ sync-sandbox-mongo:
 		(echo 'Usage: make sync-sandbox-mongo SANDBOX=<path under sandbox/> CONCEPT=<Concepts _id> ZIP=<zip basename> FOLDER=<dir inside zip> FILES=<comma-separated filenames>'; exit 1)
 	@bash -c 'if [[ -f "$(CURDIR)/.env" ]]; then set -a && source "$(CURDIR)/.env" && set +a; fi; cd "$(CURDIR)/services/api" && go run ./cmd/sync-sandbox-practice -repo "$(CURDIR)" \
 		-sandbox "$(SANDBOX)" -concept "$(CONCEPT)" -zip "$(ZIP)" -folder "$(FOLDER)" -files "$(FILES)"'
+
+seed-certifications:
+	@bash -c 'if [[ -f "$(CURDIR)/.env" ]]; then set -a && source "$(CURDIR)/.env" && set +a; fi; cd "$(CURDIR)/services/api" && go run ./cmd/seed-certifications'
 
 clean:
 	rm -rf apps/web/dist

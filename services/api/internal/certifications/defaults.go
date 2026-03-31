@@ -1,0 +1,82 @@
+package certifications
+
+var DefaultCertifications = []Certification{
+	{
+		ID:          "backend-engineer",
+		Title:       "Backend Engineer",
+		RoleKey:     "backend_engineer",
+		Description: "Build reliable APIs, data services, and distributed systems.",
+		ImagePath:   "/certifications/tl_backend_engineer.png",
+		TrackTags: []string{
+			"apis", "http", "database", "sql", "distributed", "queues",
+			"messaging", "reliability", "resilience", "performance",
+		},
+		SortOrder: 10,
+		Active:    true,
+	},
+	{
+		ID:          "software-engineer",
+		Title:       "Software Engineer",
+		RoleKey:     "software_engineer",
+		Description: "Ship end-to-end product features across frontend, backend, and data boundaries.",
+		ImagePath:   "/certifications/tl_software_engineer.png",
+		TrackTags: []string{
+			"apis", "http", "database", "distributed", "performance",
+			"reliability", "resilience", "patterns", "solid", "go",
+		},
+		SortOrder: 20,
+		Active:    true,
+	},
+	{
+		ID:          "data-engineer",
+		Title:       "Data Engineer",
+		RoleKey:     "data_engineer",
+		Description: "Design data pipelines, storage systems, and analytics-ready platforms.",
+		ImagePath:   "/certifications/tl_data_engineer.png",
+		TrackTags: []string{
+			"database", "sql", "schema", "storage", "relational",
+			"numpy", "performance", "queues", "workers",
+		},
+		SortOrder: 30,
+		Active:    true,
+	},
+	{
+		ID:          "frontend-engineer",
+		Title:       "Frontend Engineer",
+		RoleKey:     "frontend_engineer",
+		Description: "Craft high-quality user interfaces and performant web application experiences.",
+		ImagePath:   "/certifications/tl_frontend_engineer.png",
+		TrackTags: []string{
+			"http", "apis", "performance", "reliability", "resilience",
+			"patterns", "solid", "events",
+		},
+		SortOrder: 40,
+		Active:    true,
+	},
+	{
+		ID:          "platform-engineer",
+		Title:       "Platform Engineer",
+		RoleKey:     "platform_engineer",
+		Description: "Create internal platforms, developer tooling, and cloud delivery foundations.",
+		ImagePath:   "/certifications/tl_platform_engineer.png",
+		TrackTags: []string{
+			"automation", "aws", "serverless", "lambda", "s3", "sqs",
+			"vpc", "subnets", "compute", "storage", "reliability",
+		},
+		SortOrder: 50,
+		Active:    true,
+	},
+	{
+		ID:          "network-engineer",
+		Title:       "Network Engineer",
+		RoleKey:     "network_engineer",
+		Description: "Architect resilient connectivity, traffic routing, and secure network operations.",
+		ImagePath:   "/certifications/tl-network-engineer.png",
+		TrackTags: []string{
+			"networking", "load-balancing", "traffic", "latency",
+			"resilience", "reliability", "http", "vpc", "subnets",
+		},
+		SortOrder: 60,
+		Active:    true,
+	},
+}

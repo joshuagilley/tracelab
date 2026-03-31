@@ -4,4 +4,5 @@ export interface AuthUser {
   login: string
   name?: string
   avatarUrl?: string
+  currentCareerTrackId?: string
 }

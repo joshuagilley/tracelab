@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
+import { useCareerTrack } from '@/contexts/careerTrack'
 import { filterCurriculumSections } from '@/lib/nav-curriculum-filter'
 import type { CurriculumNavSection } from '@/types/curriculum-nav'
 import type { Concept } from '@/types/concept'
@@ -41,11 +42,12 @@ export default function TopicSidebarNav({
   completedSlugs,
 }: TopicSidebarNavProps) {
   const navigate = useNavigate()
-  const { publishedOnly } = useCurriculumVisibility()
+  const { filterMode } = useCurriculumVisibility()
+  const { selectedTrackTags } = useCareerTrack()
   const bySlug = useMemo(() => Object.fromEntries(concepts.map(c => [c.slug, c])), [concepts])
   const visibleSections = useMemo(
-    () => filterCurriculumSections(sections, bySlug, publishedOnly),
-    [sections, bySlug, publishedOnly],
+    () => filterCurriculumSections(sections, bySlug, filterMode, selectedTrackTags),
+    [sections, bySlug, filterMode, selectedTrackTags],
   )
 
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
@@ -59,7 +61,7 @@ export default function TopicSidebarNav({
   if (visibleSections.length === 0) {
     return (
       <p className={styles.filterEmpty} role="status">
-        No published topics in this library yet.
+        No topics match this filter in this library.
       </p>
     )
   }

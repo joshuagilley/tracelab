@@ -26,6 +26,7 @@ Create a **`.env` file at the repository root** (same level as the `Makefile`). 
 | `MONGO_DB_NAME`                            | Mongo          | Database name (default `tracelab`).                                                                                            |
 | `LABS_COLLECTION`                          | Catalog        | Lab catalog documents (default `Labs`).                                                                                        |
 | `CONCEPTS_COLLECTION`                      | Lesson merge   | Per-concept detail documents (default `Concepts`).                                                                             |
+| `CERTIFICATIONS_COLLECTION`                | Career tracks  | Certification/career-track documents (default `Certifications`).                                                               |
 | `USERS_COLLECTION`                         | Auth           | Users (default `Users`).                                                                                                       |
 | `COMPLETED_COLLECTION`                     | Progress       | Completed concepts (default `Completed`).                                                                                      |
 | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | Auth           | GitHub OAuth.                                                                                                                  |
@@ -67,6 +68,16 @@ make test
 ```
 
 Runs **`go test ./...`** in `services/api` and **`npm run build`** in `apps/web` (TypeScript + Vite).
+
+### Seed certifications (career tracks)
+
+Seed the initial career-track options into Mongo (upsert by `_id`):
+
+```bash
+make seed-certifications
+```
+
+This writes six defaults in `Certifications` (or `CERTIFICATIONS_COLLECTION`): Backend Engineer, Software Engineer, Data Engineer, Frontend Engineer, Platform Engineer, and Network Engineer, each with an image path under `apps/web/public/certifications/`.
 
 **GitHub Actions:** `.github/workflows/ci.yml` runs the same Go tests and web build on **pull requests** and on **pushes to branches other than `main`**. Pushes to **`main`** run **`.github/workflows/deploy.yml`**, which runs those checks first, then deploys the API and web to Cloud Run.
 
@@ -192,4 +203,5 @@ If this lab should track **completed concepts**, ensure the lab id is listed in 
 | GET      | `/health`                        | Health check                                               |
 | GET      | `/api/catalog/labs`              | All lab catalog documents (drives library + sidebar cache) |
 | GET      | `/api/catalog/lesson?lab=&slug=` | Merged lesson for one concept                              |
+| GET      | `/api/certifications`            | Active certification/career-track options                  |
 | GET/POST | `/api/auth/*`                    | GitHub OAuth + session (when auth env is complete)         |

@@ -1,0 +1,110 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+}
+
+.badge {
+  display: block;
+  height: 40px;
+  width: auto;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, var(--border));
+  background-color: transparent !important;
+  object-fit: contain;
+  opacity: 1;
+  filter: none;
+  mix-blend-mode: normal;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25), 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+.badge:hover,
+.badge:focus,
+.badge:active {
+  background-color: transparent !important;
+}
+
+.placeholder {
+  height: 32px;
+  min-width: 68px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: default;
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  min-width: 220px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  padding: 14px 10px 10px;
+  display: none;
+  z-index: 20;
+}
+
+.wrap:hover .menu,
+.wrap:focus-within .menu {
+  display: block;
+}
+
+.action {
+  width: 100%;
+  height: 30px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.action:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.changeWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.changeLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.select {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  height: 30px;
+  border-radius: var(--radius-sm);
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.current {
+  margin-top: 8px;
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}

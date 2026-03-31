@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
+import { useCareerTrack } from '@/contexts/careerTrack'
 import { useLabCurriculumProgress } from '@/contexts/labCurriculumProgress'
 import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
 import { LAB_GROUPS, useLab, type LabId } from '@/contexts/lab'
 import {
-  filterLabGroupsForPublishedOnly,
-  firstPublishedLabId,
-  labHasPublishedConcepts,
+  filterLabGroups,
+  firstVisibleLabId,
+  labHasVisibleConcepts,
 } from '@/lib/lab-picker-filter'
 import TopicSidebarNav from '@/components/sidebar/TopicSidebarNav'
 import ProgrammingLanguagesSidebarNav from '@/components/sidebar/ProgrammingLanguagesSidebarNav'
@@ -41,23 +42,24 @@ function BrandGridIcon() {
 }
 
 export default function Sidebar() {
-  const { publishedOnly, setPublishedOnly } = useCurriculumVisibility()
+  const { filterMode, setFilterMode } = useCurriculumVisibility()
+  const { selectedTrackId, selectedTrack } = useCareerTrack()
+  const hasTrack = !!selectedTrackId
   const { concepts, completedSlugs, labTotals } = useLabCurriculumProgress()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const { labId, setLabId, current } = useLab()
 
   const visibleLabGroups = useMemo(
-    () => (publishedOnly ? filterLabGroupsForPublishedOnly(LAB_GROUPS) : LAB_GROUPS),
-    [publishedOnly],
+    () => filterLabGroups(LAB_GROUPS, filterMode, selectedTrack?.trackTags ?? []),
+    [filterMode, selectedTrack?.trackTags],
   )
 
   useEffect(() => {
-    if (!publishedOnly) return
-    if (labHasPublishedConcepts(labId)) return
-    const next = firstPublishedLabId(LAB_GROUPS)
+    if (labHasVisibleConcepts(labId, filterMode, selectedTrack?.trackTags ?? [])) return
+    const next = firstVisibleLabId(LAB_GROUPS, filterMode, selectedTrack?.trackTags ?? [])
     if (next && next !== labId) setLabId(next)
-  }, [publishedOnly, labId, setLabId])
+  }, [filterMode, selectedTrack?.trackTags, labId, setLabId])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -190,24 +192,50 @@ export default function Sidebar() {
               </div>
             </div>
           )}
-          <div
-            className={styles.curriculumToggleWrap}
-            title="Hide upcoming topics and libraries with no published lessons yet (sidebar + lab menu + library grid)"
+        </div>
+      </div>
+      <div
+        className={styles.curriculumFilterWrap}
+        title="Filter concepts across sidebar and library"
+      >
+        <span className={styles.curriculumFilterLabel}>Filter</span>
+        <div className={styles.segmented} role="radiogroup" aria-label="Curriculum filter">
+          <button
+            type="button"
+            role="radio"
+            aria-checked={filterMode === 'all'}
+            className={[styles.segmentedOption, filterMode === 'all' ? styles.segmentedOptionActive : ''].join(
+              ' ',
+            )}
+            onClick={() => setFilterMode('all')}
           >
-            <span className={styles.curriculumToggleLabel} id="curriculum-published-only-label">
-              Published only
-            </span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={publishedOnly}
-              aria-labelledby="curriculum-published-only-label"
-              className={[styles.curriculumSwitch, publishedOnly ? styles.curriculumSwitchOn : ''].join(' ')}
-              onClick={() => setPublishedOnly(!publishedOnly)}
-            >
-              <span className={styles.curriculumSwitchThumb} aria-hidden />
-            </button>
-          </div>
+            All
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={filterMode === 'published'}
+            className={[
+              styles.segmentedOption,
+              filterMode === 'published' ? styles.segmentedOptionActive : '',
+            ].join(' ')}
+            onClick={() => setFilterMode('published')}
+          >
+            Published
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={filterMode === 'track'}
+            disabled={!hasTrack}
+            title={hasTrack ? selectedTrack?.title : 'Select a career track from the badge menu first'}
+            className={[styles.segmentedOption, filterMode === 'track' ? styles.segmentedOptionActive : ''].join(
+              ' ',
+            )}
+            onClick={() => setFilterMode('track')}
+          >
+            Track
+          </button>
         </div>
       </div>
 

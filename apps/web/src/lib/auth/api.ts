@@ -17,6 +17,20 @@ export async function logout(): Promise<void> {
   })
 }
 
+export async function updateCareerTrack(careerTrackId: string): Promise<AuthUser | null> {
+  const res = await fetch(`${API_BASE}/auth/me/career-track`, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ careerTrackId }),
+  })
+  if (!res.ok) return null
+  const data = (await res.json()) as { user: AuthUser | null }
+  return data.user ?? null
+}
+
 export function githubLoginHref(): string {
   const base = API_BASE.replace(/\/$/, '')
   return `${base}/auth/github`

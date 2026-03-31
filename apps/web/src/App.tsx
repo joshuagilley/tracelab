@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import AppShell from '@/components/layout/AppShell'
 import { AuthProvider } from '@/contexts/auth'
+import { CareerTrackProvider } from '@/contexts/careerTrack'
 import { GlobalConceptProgressProvider } from '@/contexts/globalConceptProgress'
 import { LabCurriculumProgressProvider } from '@/contexts/labCurriculumProgress'
 import { CurriculumVisibilityProvider } from '@/contexts/curriculumVisibility'
@@ -48,23 +49,25 @@ function CatalogGate({ children }: { children: ReactNode }) {
 export default function App() {
   return (
     <AuthProvider>
-      <CatalogGate>
-        <LabProvider>
-          <CurriculumVisibilityProvider>
-            <LabCurriculumProgressProvider>
-              <GlobalConceptProgressProvider>
-                <AppShell>
-                  <Routes>
-                    <Route path="/" element={<LibraryPage />} />
-                    <Route path="/cs-periodic-table" element={<CsPeriodicTablePage />} />
-                    <Route path="/concept/:slug" element={<LessonPage />} />
-                  </Routes>
-                </AppShell>
-              </GlobalConceptProgressProvider>
-            </LabCurriculumProgressProvider>
-          </CurriculumVisibilityProvider>
-        </LabProvider>
-      </CatalogGate>
+      <CareerTrackProvider>
+        <CatalogGate>
+          <LabProvider>
+            <CurriculumVisibilityProvider>
+              <LabCurriculumProgressProvider>
+                <GlobalConceptProgressProvider>
+                  <AppShell>
+                    <Routes>
+                      <Route path="/" element={<LibraryPage />} />
+                      <Route path="/cs-periodic-table" element={<CsPeriodicTablePage />} />
+                      <Route path="/concept/:slug" element={<LessonPage />} />
+                    </Routes>
+                  </AppShell>
+                </GlobalConceptProgressProvider>
+              </LabCurriculumProgressProvider>
+            </CurriculumVisibilityProvider>
+          </LabProvider>
+        </CatalogGate>
+      </CareerTrackProvider>
     </AuthProvider>
   )
 }

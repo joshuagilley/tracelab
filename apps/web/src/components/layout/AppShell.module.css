@@ -20,6 +20,13 @@
   padding: 8px 14px;
   border-bottom: 1px solid var(--border-dim);
   background: var(--bg-surface);
+  gap: 12px;
+}
+
+.topBarRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .main {

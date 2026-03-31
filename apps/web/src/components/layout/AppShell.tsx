@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import AuthErrorBanner from '@/components/auth/AuthErrorBanner'
+import CareerTrackBadge from '@/components/layout/CareerTrackBadge'
 import FooterLabProgress from '@/components/layout/FooterLabProgress'
 import GitHubAuthControl from '@/components/auth/GitHubAuthControl'
 import PeriodicTableNavButton from '@/components/layout/PeriodicTableNavButton'
@@ -20,7 +21,10 @@ export default function AppShell({ children }: AppShellProps) {
       <Sidebar />
       <div className={styles.body}>
         <div className={styles.topBar}>
-          <PeriodicTableNavButton />
+          <div className={styles.topBarRight}>
+            <PeriodicTableNavButton />
+            <CareerTrackBadge />
+          </div>
         </div>
         <AuthErrorBanner />
         <main className={[styles.main, mainScrollable ? styles.mainScrollable : ''].join(' ')}>

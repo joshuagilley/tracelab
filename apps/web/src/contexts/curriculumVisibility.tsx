@@ -7,47 +7,66 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { useCareerTrack } from '@/contexts/careerTrack'
+import type { CurriculumFilterMode } from '@/lib/track-filter'
 
-const STORAGE_KEY = 'tracelab-curriculum-published-only'
+const STORAGE_KEY = 'tracelab-curriculum-filter-mode'
 
 export interface CurriculumVisibilityValue {
-  /** When true, sidebars and the concept library list only show lessons with `status: available`. */
-  publishedOnly: boolean
-  setPublishedOnly: (value: boolean) => void
+  filterMode: CurriculumFilterMode
+  setFilterMode: (value: CurriculumFilterMode) => void
 }
 
 const CurriculumVisibilityContext = createContext<CurriculumVisibilityValue | null>(null)
 
-/** Default on first visit: published only. Persisted `0` / `1` overrides after the user toggles. */
-function readStored(): boolean {
+function readStored(hasTrack: boolean): CurriculumFilterMode {
   try {
     const v = localStorage.getItem(STORAGE_KEY)
-    if (v === '0') return false
-    if (v === '1') return true
-    return true
+    if (v === 'all' || v === 'published' || v === 'track') {
+      if (v === 'track' && !hasTrack) return 'published'
+      return v
+    }
+    return hasTrack ? 'track' : 'published'
   } catch {
-    return true
+    return hasTrack ? 'track' : 'published'
   }
 }
 
 export function CurriculumVisibilityProvider({ children }: { children: ReactNode }) {
-  const [publishedOnly, setPublishedOnlyState] = useState(() => readStored())
+  const { selectedTrackId } = useCareerTrack()
+  const hasTrack = !!selectedTrackId
+  const [filterMode, setFilterModeState] = useState<CurriculumFilterMode>(() => readStored(hasTrack))
+
+  useEffect(() => {
+    let hasStored = false
+    try {
+      hasStored = !!localStorage.getItem(STORAGE_KEY)
+    } catch {
+      hasStored = false
+    }
+    setFilterModeState(prev => {
+      if (prev === 'track' && !hasTrack) return 'published'
+      if (!hasTrack && (prev === 'all' || prev === 'published')) return prev
+      if (hasTrack && prev !== 'track' && !hasStored) return 'track'
+      return prev
+    })
+  }, [hasTrack])
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, publishedOnly ? '1' : '0')
+      localStorage.setItem(STORAGE_KEY, filterMode)
     } catch {
       /* ignore */
     }
-  }, [publishedOnly])
+  }, [filterMode])
 
-  const setPublishedOnly = useCallback((value: boolean) => {
-    setPublishedOnlyState(value)
+  const setFilterMode = useCallback((value: CurriculumFilterMode) => {
+    setFilterModeState(value)
   }, [])
 
   const value = useMemo(
-    () => ({ publishedOnly, setPublishedOnly }),
-    [publishedOnly, setPublishedOnly],
+    () => ({ filterMode, setFilterMode }),
+    [filterMode, setFilterMode],
   )
 
   return (

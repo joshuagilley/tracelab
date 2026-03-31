@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useCareerTrack } from '@/contexts/careerTrack'
 import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
 import { fetchSectionConcepts } from '@/features/curriculum/curriculum-api'
 import { useLab, type LabId } from '@/contexts/lab'
+import { conceptVisibleForMode } from '@/lib/track-filter'
 import LessonCard from '../components/lesson-card'
 import type { Concept } from '@/types/concept'
 import styles from './library-page.module.css'
@@ -116,7 +118,8 @@ const COPY: Record<
 
 export default function LibraryPage() {
   const { labId } = useLab()
-  const { publishedOnly } = useCurriculumVisibility()
+  const { filterMode } = useCurriculumVisibility()
+  const { selectedTrackTags } = useCareerTrack()
   const [concepts, setConcepts] = useState<Concept[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -124,8 +127,8 @@ export default function LibraryPage() {
   const { title, subtitle, countLabel } = COPY[labId] ?? COPY['system-design']
 
   const displayedConcepts = useMemo(
-    () => (publishedOnly ? concepts.filter(c => c.status === 'available') : concepts),
-    [concepts, publishedOnly],
+    () => concepts.filter(c => conceptVisibleForMode(c, filterMode, selectedTrackTags)),
+    [concepts, filterMode, selectedTrackTags],
   )
 
   useEffect(() => {
@@ -177,9 +180,11 @@ export default function LibraryPage() {
 
       {!loading && !error && displayedConcepts.length === 0 && (
         <p className={styles.filterEmpty}>
-          {publishedOnly
-            ? 'No published topics in this library yet. Turn off “Published only” in the sidebar to see upcoming topics.'
-            : 'No topics in this library yet.'}
+          {filterMode === 'published'
+            ? 'No published topics in this library yet. Switch to All to see upcoming topics.'
+            : filterMode === 'track'
+              ? 'No published topics in this library match your selected career track tags.'
+              : 'No topics in this library yet.'}
         </p>
       )}
 
