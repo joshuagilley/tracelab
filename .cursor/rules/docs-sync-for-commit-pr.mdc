@@ -1,0 +1,31 @@
+---
+description: Require documentation sync checks before commits and PRs
+alwaysApply: true
+---
+
+# Docs Sync Gate for Commit/PR
+
+Before creating a git commit or pull request, perform a documentation impact check.
+
+## Required workflow
+
+1. Review changed files and determine whether user-facing behavior, architecture, data models, setup, or workflows changed.
+2. If any of those changed, update docs in the same branch before finalizing commit/PR.
+3. In your final summary, explicitly state one of:
+   - "Docs updated: <paths>"
+   - "No docs update required: <brief reason>"
+
+## Docs locations to consider
+
+- `README.md` (local dev setup only)
+- `docs/ARCHITECTURE.md`
+- `docs/NEW_CONCEPT.md`
+- `docs/NEW_LAB.md`
+- `docs/MONGO.md`
+- `docs/README.md` (docs index links)
+- `.cursor/rules/new-concept.mdc` (when concept workflow expectations change)
+
+## Guardrails
+
+- Do not open a PR or conclude commit-ready work without the explicit docs status line.
+- Prefer small doc updates over leaving stale docs.
