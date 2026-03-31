@@ -6,6 +6,8 @@ export function matchesTrackTags(concept: Concept, trackTags: readonly string[])
   if (trackTags.length === 0) return true
   const conceptTags = concept.tags ?? []
   if (conceptTags.length === 0) return false
+  // Explicit opt-in for concepts that should appear in every track.
+  if (conceptTags.some(tag => String(tag).toLowerCase() === 'all_tracks')) return true
   const wanted = new Set(trackTags.map(t => t.trim().toLowerCase()).filter(Boolean))
   if (wanted.size === 0) return true
   for (const tag of conceptTags) {
@@ -20,7 +22,7 @@ export function conceptVisibleForMode(
   trackTags: readonly string[],
 ): boolean {
   if (mode === 'all') return true
-  if (concept.status !== 'available') return false
-  if (mode === 'published') return true
-  return matchesTrackTags(concept, trackTags)
+  if (mode === 'published') return concept.status === 'available'
+  if (mode === 'track') return matchesTrackTags(concept, trackTags)
+  return false
 }

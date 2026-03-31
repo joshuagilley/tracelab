@@ -37,10 +37,12 @@ test:
 	cd services/api && go test ./...
 	cd apps/web && npm run build
 
-# $set Concepts.practice from sandbox/<SANDBOX>/ (loads .env if present).
-# Example (caching template):
-#   make sync-sandbox-mongo SANDBOX=system-design/caching-practice CONCEPT=system-design/caching \
-#     ZIP=tracelab-caching-practice.zip FOLDER=caching-practice FILES=go.mod,LAB.md,main.go,main_test.go,solution.go
+# Syncs practice files from sandbox/<SANDBOX>/ into the Concepts.practice.languages array in Mongo.
+# Loads .env if present. Required for each language bundle you add to a concept.
+# Example (caching, Go bundle):
+#   make sync-sandbox-mongo SANDBOX=system-design/caching-practice/go CONCEPT=system-design/caching \
+#     ZIP=tracelab-caching-practice.zip FOLDER=caching-practice/go \
+#     FILES=go.mod,LAB.md,main.go,main_test.go,solution.go
 sync-sandbox-mongo:
 	@test -n "$(SANDBOX)" && test -n "$(CONCEPT)" && test -n "$(ZIP)" && test -n "$(FOLDER)" && test -n "$(FILES)" || \
 		(echo 'Usage: make sync-sandbox-mongo SANDBOX=<path under sandbox/> CONCEPT=<Concepts _id> ZIP=<zip basename> FOLDER=<dir inside zip> FILES=<comma-separated filenames>'; exit 1)

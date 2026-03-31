@@ -51,11 +51,17 @@ export interface PracticeFile {
   content: string
 }
 
+export interface PracticeLanguageBundle {
+  type: string
+  files: PracticeFile[]
+}
+
 /** Config for the downloadable local practice ZIP attached to a concept */
 export interface PracticeConfig {
   zipName: string
   folder: string
-  files: PracticeFile[]
+  files?: PracticeFile[]
+  languages?: PracticeLanguageBundle[]
 }
 
 export interface LabConceptDetail extends Concept {

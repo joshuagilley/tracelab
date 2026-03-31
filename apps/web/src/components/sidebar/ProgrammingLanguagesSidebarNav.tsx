@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
 import { useCareerTrack } from '@/contexts/careerTrack'
+import { useLab } from '@/contexts/lab'
+import { isCatalogLabAllTracks } from '@/features/curriculum/lesson-catalog'
 import { LanguageLogo } from '@/components/programming-languages/LanguageLogo'
 import { countSectionNavProgress } from '@/features/learning/progress/nav-section-progress'
 import { filterProgrammingLanguages } from '@/lib/nav-curriculum-filter'
@@ -36,10 +38,14 @@ export default function ProgrammingLanguagesSidebarNav({
   const navigate = useNavigate()
   const { filterMode } = useCurriculumVisibility()
   const { selectedTrackTags } = useCareerTrack()
+  const { labId } = useLab()
+  const isAllTracksLab = isCatalogLabAllTracks(labId)
+  const effectiveFilterMode = filterMode === 'track' && isAllTracksLab ? 'all' : filterMode
+  const effectiveTrackTags = isAllTracksLab ? [] : selectedTrackTags
   const bySlug = useMemo(() => Object.fromEntries(concepts.map(c => [c.slug, c])), [concepts])
   const visibleLangs = useMemo(
-    () => filterProgrammingLanguages(languages, bySlug, filterMode, selectedTrackTags),
-    [languages, bySlug, filterMode, selectedTrackTags],
+    () => filterProgrammingLanguages(languages, bySlug, effectiveFilterMode, effectiveTrackTags),
+    [languages, bySlug, effectiveFilterMode, effectiveTrackTags],
   )
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
     buildInitialOpen(languages, defaultOpenSectionIds),

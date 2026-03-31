@@ -3,7 +3,7 @@ import { useCareerTrack } from '@/contexts/careerTrack'
 import { useAuth } from '@/contexts/auth'
 import { LAB_OPTIONS, type LabId } from '@/contexts/lab'
 import { fetchSectionConcepts } from '@/features/curriculum/curriculum-api'
-import { fetchLabCompleted } from '@/features/learning/api/completed-api'
+import { fetchLabCompletedDetails } from '@/features/learning/api/completed-api'
 import { matchesTrackTags } from '@/lib/track-filter'
 import type { CertificationOption } from '@/lib/certifications/api'
 import { EXPERT_CERTIFICATION } from '@/lib/certifications/defaults'
@@ -19,20 +19,19 @@ type ConceptWithLab = {
 type LanguageMetric = {
   id: string
   label: string
-  total: number
-  completed: number
+  weightedPercent: number
+  submissionPercent: number
+  labSpacePercent: number
+  submissionCompleted: number
+  submissionTotal: number
+  labSpaceCompleted: number
+  labSpaceTotal: number
 }
 
-const LANGUAGE_TAGS: Array<{ id: string; label: string; tags: string[] }> = [
+const LANGUAGE_KEYS: Array<{ id: string; label: string; tags: string[] }> = [
   { id: 'go', label: 'Go', tags: ['go', 'golang'] },
-  { id: 'python', label: 'Python', tags: ['python'] },
+  { id: 'python', label: 'Python', tags: ['python', 'py'] },
   { id: 'typescript', label: 'TypeScript', tags: ['typescript', 'ts'] },
-  { id: 'javascript', label: 'JavaScript', tags: ['javascript', 'js'] },
-  { id: 'java', label: 'Java', tags: ['java'] },
-  { id: 'c', label: 'C', tags: ['c'] },
-  { id: 'cpp', label: 'C++', tags: ['cpp', 'c++'] },
-  { id: 'rust', label: 'Rust', tags: ['rust'] },
-  { id: 'sql', label: 'SQL', tags: ['sql'] },
 ]
 
 function conceptKey(labId: LabId, slug: string): string {
@@ -79,6 +78,7 @@ export default function MetricsPage() {
   const [error, setError] = useState<string | null>(null)
   const [publishedConcepts, setPublishedConcepts] = useState<ConceptWithLab[]>([])
   const [completedConceptKeys, setCompletedConceptKeys] = useState<Set<string>>(new Set())
+  const [completedLanguageByConcept, setCompletedLanguageByConcept] = useState<Record<string, string[]>>({})
 
   useEffect(() => {
     let cancelled = false
@@ -98,16 +98,26 @@ export default function MetricsPage() {
 
         if (!user) {
           setCompletedConceptKeys(new Set())
+          setCompletedLanguageByConcept({})
           return
         }
-        const completedLists = await Promise.all(
+        const completedDetails = await Promise.all(
           LAB_OPTIONS.map(async ({ id }) => {
-            const slugs = await fetchLabCompleted(id)
-            return slugs.map(slug => conceptKey(id, slug))
+            const rows = await fetchLabCompletedDetails(id)
+            return rows.map(row => ({
+              key: conceptKey(id, row.slug),
+              languages: (row.languages ?? []).map(lang => normalizeLanguage(lang)).filter(Boolean),
+            }))
           }),
         )
         if (cancelled) return
-        setCompletedConceptKeys(new Set(completedLists.flat()))
+        const flat = completedDetails.flat()
+        setCompletedConceptKeys(new Set(flat.map(row => row.key)))
+        const byConcept: Record<string, string[]> = {}
+        for (const row of flat) {
+          byConcept[row.key] = row.languages
+        }
+        setCompletedLanguageByConcept(byConcept)
       } catch {
         if (!cancelled) setError('Could not load metrics right now. Confirm the API is running.')
       } finally {
@@ -135,17 +145,36 @@ export default function MetricsPage() {
   )
 
   const languageMetrics = useMemo<LanguageMetric[]>(() => {
-    return LANGUAGE_TAGS.map(lang => {
-      const inLang = publishedConcepts.filter(concept =>
+    const submissionTotal = publishedConcepts.length
+    const programmingLanguageConcepts = publishedConcepts.filter(c => c.labId === 'programming-languages')
+    return LANGUAGE_KEYS.map(lang => {
+      let submissionDone = 0
+      for (const langs of Object.values(completedLanguageByConcept)) {
+        if (langs.includes(lang.id)) submissionDone += 1
+      }
+      const inLanguageLab = programmingLanguageConcepts.filter(concept =>
         concept.tags.some(tag => lang.tags.includes(String(tag).toLowerCase())),
       )
-      const done = inLang.reduce(
-        (acc, concept) => acc + (completedConceptKeys.has(conceptKey(concept.labId, concept.slug)) ? 1 : 0),
-        0,
-      )
-      return { id: lang.id, label: lang.label, total: inLang.length, completed: done }
-    }).filter(item => item.total > 0)
-  }, [publishedConcepts, completedConceptKeys])
+      let inLanguageLabDone = 0
+      for (const concept of inLanguageLab) {
+        if (completedConceptKeys.has(conceptKey(concept.labId, concept.slug))) inLanguageLabDone += 1
+      }
+      const submissionPercent = pct(submissionDone, submissionTotal)
+      const labSpacePercent = pct(inLanguageLabDone, inLanguageLab.length)
+      const weightedPercent = Math.round(submissionPercent * 0.5 + labSpacePercent * 0.5)
+      return {
+        id: lang.id,
+        label: lang.label,
+        weightedPercent,
+        submissionPercent,
+        labSpacePercent,
+        submissionCompleted: submissionDone,
+        submissionTotal,
+        labSpaceCompleted: inLanguageLabDone,
+        labSpaceTotal: inLanguageLab.length,
+      }
+    })
+  }, [publishedConcepts, completedLanguageByConcept, completedConceptKeys])
 
   const badgeList = useMemo<CertificationOption[]>(() => {
     const byId = new Map(certifications.map(cert => [cert.id, cert]))
@@ -238,13 +267,15 @@ export default function MetricsPage() {
 
             <article className={styles.panel}>
               <h2>Language Mastery</h2>
+              <p className={styles.languageHelp}>
+                Each language bar is weighted: 50% from labs you submitted in that language, and 50% from your
+                completion progress in the Programming Languages library for that language.
+              </p>
               <div className={styles.languageBars}>
                 {languageMetrics.map(item => (
-                  <ProgressRow
+                  <LanguageProgressRow
                     key={item.id}
-                    label={item.label}
-                    completed={item.completed}
-                    total={item.total}
+                    metric={item}
                   />
                 ))}
               </div>
@@ -280,6 +311,35 @@ export default function MetricsPage() {
       )}
     </div>
   )
+}
+
+function LanguageProgressRow({ metric }: { metric: LanguageMetric }) {
+  return (
+    <div className={styles.progressRow}>
+      <div className={styles.progressHead}>
+        <span>{metric.label}</span>
+        <span>{metric.weightedPercent}%</span>
+      </div>
+      <div className={styles.progressTrack}>
+        <div className={styles.progressFill} style={{ width: `${metric.weightedPercent}%` }} />
+      </div>
+      <div className={styles.languageSplit}>
+        <span>
+          Submissions: {metric.submissionCompleted}/{metric.submissionTotal} ({metric.submissionPercent}%)
+        </span>
+        <span>
+          Programming Languages: {metric.labSpaceCompleted}/{metric.labSpaceTotal} ({metric.labSpacePercent}%)
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function normalizeLanguage(raw: string): string {
+  const lower = String(raw).trim().toLowerCase()
+  if (lower === 'py') return 'python'
+  if (lower === 'ts') return 'typescript'
+  return lower
 }
 
 function ProgressRow({ label, completed, total }: { label: string; completed: number; total: number }) {

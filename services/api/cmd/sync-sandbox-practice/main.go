@@ -12,6 +12,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -28,13 +29,14 @@ import (
 )
 
 type options struct {
-	repoRoot   string
-	sandboxRel string
-	conceptID  string
-	zipName    string
-	folder     string
-	fileNames  []string
-	dryRun     bool
+	repoRoot      string
+	sandboxRel    string
+	conceptID     string
+	zipName       string
+	folder        string
+	fileNames     []string
+	languagesSpec string
+	dryRun        bool
 }
 
 type practiceFile struct {
@@ -43,9 +45,20 @@ type practiceFile struct {
 }
 
 type practicePayload struct {
-	ZipName string         `bson:"zipName"`
-	Folder  string         `bson:"folder"`
-	Files   []practiceFile `bson:"files"`
+	ZipName   string                    `bson:"zipName"`
+	Folder    string                    `bson:"folder"`
+	Files     []practiceFile            `bson:"files,omitempty"`
+	Languages []practiceLanguagePayload `bson:"languages,omitempty"`
+}
+
+type practiceLanguagePayload struct {
+	Type  string         `bson:"type"`
+	Files []practiceFile `bson:"files"`
+}
+
+type languageSpec struct {
+	Type  string   `json:"type"`
+	Files []string `json:"files"`
 }
 
 func main() {
@@ -98,16 +111,21 @@ func parseOptions() (options, error) {
 	zipName := flag.String("zip", "", "practice.zipName in Mongo")
 	folder := flag.String("folder", "", "practice.folder (directory name inside the ZIP)")
 	filesCSV := flag.String("files", "", "Comma-separated filenames relative to sandbox dir, e.g. go.mod,LAB.md,main.go")
+	languagesSpec := flag.String(
+		"languages-spec",
+		"",
+		"Path to JSON defining practice.languages (array of {type,files[]}), relative to sandbox dir or absolute",
+	)
 	dryRun := flag.Bool("dry-run", false, "print payload summary and exit without connecting to Mongo")
 	flag.Parse()
 
 	if *dryRun {
-		if *repo == "" || *sandboxRel == "" || *zipName == "" || *folder == "" || *filesCSV == "" {
-			return options{}, errors.New("dry-run requires: -repo -sandbox -zip -folder -files (-concept optional for display)")
+		if *repo == "" || *sandboxRel == "" || *zipName == "" || *folder == "" || (*filesCSV == "" && *languagesSpec == "") {
+			return options{}, errors.New("dry-run requires: -repo -sandbox -zip -folder and one of (-files | -languages-spec)")
 		}
 	} else {
-		if *repo == "" || *sandboxRel == "" || *conceptID == "" || *zipName == "" || *folder == "" || *filesCSV == "" {
-			return options{}, errors.New("all flags required: -repo -sandbox -concept -zip -folder -files")
+		if *repo == "" || *sandboxRel == "" || *conceptID == "" || *zipName == "" || *folder == "" || (*filesCSV == "" && *languagesSpec == "") {
+			return options{}, errors.New("all flags required: -repo -sandbox -concept -zip -folder and one of (-files | -languages-spec)")
 		}
 	}
 
@@ -116,12 +134,15 @@ func parseOptions() (options, error) {
 		return options{}, fmt.Errorf("resolve repo root: %w", err)
 	}
 
-	fileNames, err := parseFileList(*filesCSV)
-	if err != nil {
-		return options{}, err
-	}
-	if len(fileNames) == 0 {
-		return options{}, errors.New("no files after parsing -files")
+	var fileNames []string
+	if strings.TrimSpace(*filesCSV) != "" {
+		fileNames, err = parseFileList(*filesCSV)
+		if err != nil {
+			return options{}, err
+		}
+		if len(fileNames) == 0 {
+			return options{}, errors.New("no files after parsing -files")
+		}
 	}
 
 	sandboxDir := filepath.Join(repoRoot, "sandbox", filepath.FromSlash(*sandboxRel))
@@ -130,13 +151,14 @@ func parseOptions() (options, error) {
 	}
 
 	return options{
-		repoRoot:   repoRoot,
-		sandboxRel: *sandboxRel,
-		conceptID:  *conceptID,
-		zipName:    *zipName,
-		folder:     *folder,
-		fileNames:  fileNames,
-		dryRun:     *dryRun,
+		repoRoot:      repoRoot,
+		sandboxRel:    *sandboxRel,
+		conceptID:     *conceptID,
+		zipName:       *zipName,
+		folder:        *folder,
+		fileNames:     fileNames,
+		languagesSpec: strings.TrimSpace(*languagesSpec),
+		dryRun:        *dryRun,
 	}, nil
 }
 
@@ -195,32 +217,78 @@ func requireDir(path string) error {
 func buildPracticePayload(opts options) (practicePayload, error) {
 	sandboxDir := filepath.Join(opts.repoRoot, "sandbox", filepath.FromSlash(opts.sandboxRel))
 
-	files := make([]practiceFile, 0, len(opts.fileNames))
-	for _, name := range opts.fileNames {
+	files, err := readFilesFromSandbox(sandboxDir, opts.fileNames)
+	if err != nil {
+		return practicePayload{}, err
+	}
+
+	languages := make([]practiceLanguagePayload, 0)
+	if opts.languagesSpec != "" {
+		loaded, err := readLanguageSpecFiles(sandboxDir, opts.languagesSpec)
+		if err != nil {
+			return practicePayload{}, err
+		}
+		languages = loaded
+	}
+
+	return practicePayload{
+		ZipName:   opts.zipName,
+		Folder:    opts.folder,
+		Files:     files,
+		Languages: languages,
+	}, nil
+}
+
+func readLanguageSpecFiles(sandboxDir, specPath string) ([]practiceLanguagePayload, error) {
+	resolved := specPath
+	if !filepath.IsAbs(specPath) {
+		resolved = filepath.Join(sandboxDir, filepath.FromSlash(specPath))
+	}
+	raw, err := os.ReadFile(resolved)
+	if err != nil {
+		return nil, fmt.Errorf("read -languages-spec %s: %w", resolved, err)
+	}
+	var specs []languageSpec
+	if err := json.Unmarshal(raw, &specs); err != nil {
+		return nil, fmt.Errorf("parse -languages-spec json: %w", err)
+	}
+	out := make([]practiceLanguagePayload, 0, len(specs))
+	for _, spec := range specs {
+		if strings.TrimSpace(spec.Type) == "" {
+			return nil, errors.New("languages spec entry has empty type")
+		}
+		files, err := readFilesFromSandbox(sandboxDir, spec.Files)
+		if err != nil {
+			return nil, fmt.Errorf("languages spec %q: %w", spec.Type, err)
+		}
+		out = append(out, practiceLanguagePayload{
+			Type:  spec.Type,
+			Files: files,
+		})
+	}
+	return out, nil
+}
+
+func readFilesFromSandbox(sandboxDir string, names []string) ([]practiceFile, error) {
+	files := make([]practiceFile, 0, len(names))
+	for _, name := range names {
 		fullPath := filepath.Join(sandboxDir, filepath.FromSlash(name))
 		fullClean := filepath.Clean(fullPath)
 		sandboxClean := filepath.Clean(sandboxDir)
 		rel, err := filepath.Rel(sandboxClean, fullClean)
 		if err != nil || strings.HasPrefix(rel, "..") {
-			return practicePayload{}, fmt.Errorf("resolved path escapes sandbox: %s", name)
+			return nil, fmt.Errorf("resolved path escapes sandbox: %s", name)
 		}
-
 		content, err := os.ReadFile(fullClean)
 		if err != nil {
-			return practicePayload{}, fmt.Errorf("read %s: %w", fullClean, err)
+			return nil, fmt.Errorf("read %s: %w", fullClean, err)
 		}
-
 		files = append(files, practiceFile{
 			Name:    name,
 			Content: string(content),
 		})
 	}
-
-	return practicePayload{
-		ZipName: opts.zipName,
-		Folder:  opts.folder,
-		Files:   files,
-	}, nil
+	return files, nil
 }
 
 func printDryRunSummary(opts options, p practicePayload) {
@@ -230,9 +298,20 @@ func printDryRunSummary(opts options, p practicePayload) {
 	}
 	fmt.Printf("  zipName: %q\n", p.ZipName)
 	fmt.Printf("  folder:  %q\n", p.Folder)
-	fmt.Printf("  files:   %d entries\n", len(p.Files))
-	for _, f := range p.Files {
-		fmt.Printf("    - %s (%d bytes)\n", f.Name, len(f.Content))
+	if len(p.Files) > 0 {
+		fmt.Printf("  files:   %d entries\n", len(p.Files))
+		for _, f := range p.Files {
+			fmt.Printf("    - %s (%d bytes)\n", f.Name, len(f.Content))
+		}
+	}
+	if len(p.Languages) > 0 {
+		fmt.Printf("  languages: %d bundles\n", len(p.Languages))
+		for _, lang := range p.Languages {
+			fmt.Printf("    [%s] %d files\n", lang.Type, len(lang.Files))
+			for _, f := range lang.Files {
+				fmt.Printf("      - %s (%d bytes)\n", f.Name, len(f.Content))
+			}
+		}
 	}
 }
 

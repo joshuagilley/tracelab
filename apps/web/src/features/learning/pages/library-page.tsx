@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useCareerTrack } from '@/contexts/careerTrack'
 import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
 import { fetchSectionConcepts } from '@/features/curriculum/curriculum-api'
+import { isCatalogLabAllTracks } from '@/features/curriculum/lesson-catalog'
 import { useLab, type LabId } from '@/contexts/lab'
 import { conceptVisibleForMode } from '@/lib/track-filter'
 import LessonCard from '../components/lesson-card'
@@ -125,10 +126,13 @@ export default function LibraryPage() {
   const [loading, setLoading] = useState(true)
 
   const { title, subtitle, countLabel } = COPY[labId] ?? COPY['system-design']
+  const isAllTracksLab = isCatalogLabAllTracks(labId)
+  const effectiveFilterMode = filterMode === 'track' && isAllTracksLab ? 'all' : filterMode
+  const effectiveTrackTags = useMemo(() => (isAllTracksLab ? [] : selectedTrackTags), [isAllTracksLab, selectedTrackTags])
 
   const displayedConcepts = useMemo(
-    () => concepts.filter(c => conceptVisibleForMode(c, filterMode, selectedTrackTags)),
-    [concepts, filterMode, selectedTrackTags],
+    () => concepts.filter(c => conceptVisibleForMode(c, effectiveFilterMode, effectiveTrackTags)),
+    [concepts, effectiveFilterMode, effectiveTrackTags],
   )
 
   useEffect(() => {

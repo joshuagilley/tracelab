@@ -16,6 +16,7 @@ type CompletionRecord struct {
 	UserID      primitive.ObjectID `bson:"user_id"`
 	Lab         string             `bson:"lab"`
 	Slug        string             `bson:"slug"`
+	Languages   []string           `bson:"languages,omitempty"`
 	CompletedAt time.Time          `bson:"completed_at"`
 	CreatedAt   time.Time          `bson:"created_at"`
 }
@@ -36,17 +37,21 @@ func (s *Store) EnsureIndexes(ctx context.Context) error {
 	return err
 }
 
-// IsCompleted returns whether the given concept is completed and when (zero time if not).
-func (s *Store) IsCompleted(ctx context.Context, userID primitive.ObjectID, lab, slug string) (bool, time.Time, error) {
+// IsCompleted returns whether the given concept is completed, when, and in which languages.
+func (s *Store) IsCompleted(
+	ctx context.Context,
+	userID primitive.ObjectID,
+	lab, slug string,
+) (bool, time.Time, []string, error) {
 	var d CompletionRecord
 	err := s.coll.FindOne(ctx, bson.M{"user_id": userID, "lab": lab, "slug": slug}).Decode(&d)
 	if err == mongo.ErrNoDocuments {
-		return false, time.Time{}, nil
+		return false, time.Time{}, nil, nil
 	}
 	if err != nil {
-		return false, time.Time{}, err
+		return false, time.Time{}, nil, err
 	}
-	return true, d.CompletedAt, nil
+	return true, d.CompletedAt, d.Languages, nil
 }
 
 // CompletedSlugs returns slugs the user has completed in the lab, sorted by slug.
@@ -80,27 +85,59 @@ func (s *Store) CompletedSlugs(ctx context.Context, userID primitive.ObjectID, l
 }
 
 // Complete marks a concept as done (upsert so duplicate calls are safe).
-func (s *Store) Complete(ctx context.Context, userID primitive.ObjectID, lab, slug string) (time.Time, error) {
+func (s *Store) Complete(
+	ctx context.Context,
+	userID primitive.ObjectID,
+	lab, slug, language string,
+) (time.Time, []string, error) {
 	now := time.Now().UTC()
 	filter := bson.M{"user_id": userID, "lab": lab, "slug": slug}
+	update := bson.M{
+		"$set":         bson.M{"completed_at": now},
+		"$setOnInsert": bson.M{"user_id": userID, "lab": lab, "slug": slug, "created_at": now},
+	}
+	if lang := normalizedLanguage(language); lang != "" {
+		update["$addToSet"] = bson.M{"languages": lang}
+	}
 	res := s.coll.FindOneAndUpdate(
 		ctx,
 		filter,
-		bson.M{
-			"$set":         bson.M{"completed_at": now},
-			"$setOnInsert": bson.M{"user_id": userID, "lab": lab, "slug": slug, "created_at": now},
-		},
+		update,
 		options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After),
 	)
 	var d CompletionRecord
 	if err := res.Decode(&d); err != nil {
-		return time.Time{}, err
+		return time.Time{}, nil, err
 	}
-	return d.CompletedAt, nil
+	return d.CompletedAt, d.Languages, nil
 }
 
 // Uncomplete removes the completion record for a concept.
 func (s *Store) Uncomplete(ctx context.Context, userID primitive.ObjectID, lab, slug string) error {
 	_, err := s.coll.DeleteOne(ctx, bson.M{"user_id": userID, "lab": lab, "slug": slug})
 	return err
+}
+
+// CompletedEntries returns slug + language metadata for all completed concepts in a lab.
+func (s *Store) CompletedEntries(ctx context.Context, userID primitive.ObjectID, lab string) ([]CompletionRecord, error) {
+	opts := options.Find().
+		SetProjection(bson.M{"slug": 1, "languages": 1, "_id": 0}).
+		SetSort(bson.D{{Key: "slug", Value: 1}})
+	cur, err := s.coll.Find(ctx, bson.M{"user_id": userID, "lab": lab}, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+	out := make([]CompletionRecord, 0)
+	for cur.Next(ctx) {
+		var row CompletionRecord
+		if err := cur.Decode(&row); err != nil {
+			return nil, err
+		}
+		out = append(out, row)
+	}
+	if err := cur.Err(); err != nil {
+		return nil, err
+	}
+	return out, nil
 }

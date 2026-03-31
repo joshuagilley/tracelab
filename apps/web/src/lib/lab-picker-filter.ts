@@ -1,5 +1,5 @@
 import type { LabGroup, LabId } from '@/contexts/lab'
-import { getCatalogConcepts } from '@/features/curriculum/lesson-catalog'
+import { getCatalogConcepts, isCatalogLabAllTracks } from '@/features/curriculum/lesson-catalog'
 import type { CurriculumFilterMode } from '@/lib/track-filter'
 import { conceptVisibleForMode } from '@/lib/track-filter'
 
@@ -8,6 +8,12 @@ export function labHasVisibleConcepts(
   mode: CurriculumFilterMode,
   trackTags: readonly string[],
 ): boolean {
+  if (mode === 'all') {
+    return true
+  }
+  if (mode === 'track' && isCatalogLabAllTracks(labId)) {
+    return true
+  }
   return getCatalogConcepts(labId).some(c => conceptVisibleForMode(c, mode, trackTags))
 }
 

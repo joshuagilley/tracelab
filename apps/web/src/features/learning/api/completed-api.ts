@@ -6,6 +6,7 @@ export const TRACELAB_COMPLETED_EVENT = 'tracelab-completed'
 export interface CompletedStatus {
   completed: boolean
   completedAt: string | null // ISO-8601 or null
+  languages?: string[]
 }
 
 export interface SubmittedFile {
@@ -17,7 +18,13 @@ export interface SubmitLabResult {
   passed: boolean
   completed: boolean
   completedAt: string | null
+  languages?: string[]
   output: string
+}
+
+export interface CompletedEntry {
+  slug: string
+  languages?: string[]
 }
 
 export function dispatchCompletedUpdated(labId: LabId): void {
@@ -36,6 +43,14 @@ export async function fetchLabCompleted(lab: LabId): Promise<string[]> {
   if (!res.ok) return []
   const data = (await res.json()) as { completedSlugs?: string[] }
   return data.completedSlugs ?? []
+}
+
+export async function fetchLabCompletedDetails(lab: LabId): Promise<CompletedEntry[]> {
+  const q = new URLSearchParams({ lab })
+  const res = await fetch(`${API_BASE}/completed?${q}`, { credentials: 'include' })
+  if (!res.ok) return []
+  const data = (await res.json()) as { completed?: CompletedEntry[] }
+  return Array.isArray(data.completed) ? data.completed : []
 }
 
 /**
@@ -73,12 +88,13 @@ export async function submitConceptLab(
   lab: LabId,
   slug: string,
   files: SubmittedFile[],
+  language?: string,
 ): Promise<SubmitLabResult | null> {
   const res = await fetch(`${API_BASE}/completed/submit`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ lab, slug, files }),
+    body: JSON.stringify({ lab, slug, files, language }),
   })
   if (res.status === 401) return null
   if (!res.ok) throw new Error(`submit: ${res.status}`)

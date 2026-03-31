@@ -12,6 +12,7 @@ export interface LessonCatalogRow extends Concept {
 /** Shape of every lab catalog document from Mongo (minus _id). */
 export interface LabCatalogFile {
   panelPrefix: string
+  all_tracks?: boolean
   navSections?: CurriculumNavSection[]
   languages?: ProgrammingLanguage[]
   defaultOpenSectionIds?: string[]

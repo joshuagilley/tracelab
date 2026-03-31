@@ -31,3 +31,9 @@ export function getCatalogRow(section: LabId, slug: string): LessonCatalogRow | 
   if (!file) return null
   return file.concepts.find(c => c.slug === slug) ?? null
 }
+
+export function isCatalogLabAllTracks(section: LabId): boolean {
+  const file = getCachedLabCatalog(section)
+  if (!file) return false
+  return Boolean(file.all_tracks)
+}

@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCurriculumVisibility } from '@/contexts/curriculumVisibility'
 import { useCareerTrack } from '@/contexts/careerTrack'
+import { useLab } from '@/contexts/lab'
+import { isCatalogLabAllTracks } from '@/features/curriculum/lesson-catalog'
 import { filterCurriculumSections } from '@/lib/nav-curriculum-filter'
 import type { CurriculumNavSection } from '@/types/curriculum-nav'
 import type { Concept } from '@/types/concept'
@@ -44,10 +46,14 @@ export default function TopicSidebarNav({
   const navigate = useNavigate()
   const { filterMode } = useCurriculumVisibility()
   const { selectedTrackTags } = useCareerTrack()
+  const { labId } = useLab()
+  const isAllTracksLab = isCatalogLabAllTracks(labId)
+  const effectiveFilterMode = filterMode === 'track' && isAllTracksLab ? 'all' : filterMode
+  const effectiveTrackTags = isAllTracksLab ? [] : selectedTrackTags
   const bySlug = useMemo(() => Object.fromEntries(concepts.map(c => [c.slug, c])), [concepts])
   const visibleSections = useMemo(
-    () => filterCurriculumSections(sections, bySlug, filterMode, selectedTrackTags),
-    [sections, bySlug, filterMode, selectedTrackTags],
+    () => filterCurriculumSections(sections, bySlug, effectiveFilterMode, effectiveTrackTags),
+    [sections, bySlug, effectiveFilterMode, effectiveTrackTags],
   )
 
   const [open, setOpen] = useState<Record<string, boolean>>(() =>

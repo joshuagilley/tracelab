@@ -1,7 +1,8 @@
-import { Children, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
+import { Children, useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { useAuth } from '@/contexts/auth'
 import type { LabId } from '@/contexts/lab'
 import { useConceptProgress } from '@/contexts/conceptProgress'
+import { LanguageLogo } from '@/components/programming-languages/LanguageLogo'
 import { downloadPracticeZip } from '@/lib/practice-zip'
 import {
   dispatchCompletedUpdated,
@@ -23,17 +24,34 @@ export default function LessonLayout({
   conceptSlug: string
   practice?: PracticeConfig
 }) {
-  const { conceptFullyDone, canPersist, loaded, applyCompletionStatus } = useConceptProgress()
+  const { conceptFullyDone, completedLanguages, canPersist, loaded, applyCompletionStatus } = useConceptProgress()
   const { githubLoginHref } = useAuth()
   const folderInputRef = useRef<HTMLInputElement | null>(null)
   const [submitBusy, setSubmitBusy] = useState(false)
+  const practiceLanguages = practice?.languages ?? []
+  const [selectedLanguage, setSelectedLanguage] = useState(() => practiceLanguages[0]?.type ?? 'Go')
   const [submitMessage, setSubmitMessage] = useState<string>('')
   const [submitTestOutput, setSubmitTestOutput] = useState<string | null>(null)
   const [submitOutputTone, setSubmitOutputTone] = useState<'fail' | 'pass' | null>(null)
 
+  useEffect(() => {
+    if (practiceLanguages.length === 0) {
+      setSelectedLanguage('Go')
+      return
+    }
+    if (!practiceLanguages.some(bundle => bundle.type === selectedLanguage)) {
+      setSelectedLanguage(practiceLanguages[0].type)
+    }
+  }, [practiceLanguages, selectedLanguage])
+
   const parts = Children.toArray(children)
   const pageHeader = parts[0]
   const rest = parts.slice(1)
+
+  const normalizedLanguage = selectedLanguage.trim().toLowerCase()
+  const languageIconIds = completedLanguages
+    .map(lang => lang.toLowerCase())
+    .filter(lang => ['go', 'python', 'typescript'].includes(lang))
 
   const onSubmitFolderPick = async (e: ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files
@@ -51,7 +69,7 @@ export default function LessonLayout({
     setSubmitTestOutput(null)
     setSubmitOutputTone(null)
     try {
-      const result = await submitConceptLab(labId, conceptSlug, payload)
+      const result = await submitConceptLab(labId, conceptSlug, payload, normalizedLanguage)
       if (!result) {
         setSubmitMessage('Sign in to submit your lab.')
         return
@@ -89,6 +107,13 @@ export default function LessonLayout({
           {conceptFullyDone ? (
             <>
               <span className={styles.markDoneBarTitle}>Concept complete</span>
+              {languageIconIds.length > 0 && (
+                <span className={styles.completedLangs} title="Completed languages">
+                  {languageIconIds.map(lang => (
+                    <LanguageLogo key={lang} languageId={lang} />
+                  ))}
+                </span>
+              )}
               <span className={styles.markDoneBarSub}>Lab submission passed tests and was saved.</span>
             </>
           ) : (
@@ -110,11 +135,25 @@ export default function LessonLayout({
           )}
           {practice && (
             <>
+              {practiceLanguages.length > 0 && (
+                <select
+                  className={styles.markDoneSelect}
+                  value={selectedLanguage}
+                  onChange={e => setSelectedLanguage(e.target.value)}
+                  aria-label="Select lab language"
+                >
+                  {practiceLanguages.map(bundle => (
+                    <option key={bundle.type} value={bundle.type}>
+                      {bundle.type}
+                    </option>
+                  ))}
+                </select>
+              )}
               <button
                 type="button"
                 className={styles.markDoneBtn}
                 disabled={!loaded}
-                onClick={() => downloadPracticeZip(practice)}
+                onClick={() => downloadPracticeZip(practice, normalizedLanguage)}
               >
                 Download Lab
               </button>

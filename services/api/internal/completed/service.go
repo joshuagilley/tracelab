@@ -11,11 +11,11 @@ import (
 
 // PracticeSource loads canonical practice files for a lab/slug.
 type PracticeSource interface {
-	FetchCanonicalFiles(ctx context.Context, lab, slug string) (CanonicalPracticeFiles, error)
+	FetchCanonicalFiles(ctx context.Context, lab, slug, language string) (CanonicalPracticeFiles, error)
 }
 
 type completionWriter interface {
-	Complete(ctx context.Context, userID primitive.ObjectID, lab, slug string) (time.Time, error)
+	Complete(ctx context.Context, userID primitive.ObjectID, lab, slug, language string) (time.Time, []string, error)
 }
 
 // Service orchestrates practice submission: load canonical tests, run checks, persist completion.
@@ -38,6 +38,7 @@ type SubmitResult struct {
 	Passed      bool
 	Completed   bool
 	CompletedAt *time.Time
+	Languages   []string
 	Output      string
 }
 
@@ -47,15 +48,18 @@ func (s *Service) Submit(ctx context.Context, userID primitive.ObjectID, req Sub
 		return SubmitResult{}, err
 	}
 
-	mainCode, _ := pickSubmittedFile(req.Files, "main.go")
-	mainCode = stripBuildConstraintsFromSubmittedMain(mainCode)
+	language := normalizedLanguage(req.Language)
+	mainCode, _ := pickSubmittedFile(req.Files, mainFileForLanguage(language))
+	if language == "go" {
+		mainCode = stripBuildConstraintsFromSubmittedMain(mainCode)
+	}
 
-	canon, err := s.practice.FetchCanonicalFiles(ctx, req.Lab, req.Slug)
+	canon, err := s.practice.FetchCanonicalFiles(ctx, req.Lab, req.Slug, language)
 	if err != nil {
 		return SubmitResult{}, err
 	}
 
-	run, err := s.runner.Run(ctx, mainCode, canon)
+	run, err := s.runner.Run(ctx, language, mainCode, canon)
 	if err != nil {
 		return SubmitResult{}, err
 	}
@@ -67,7 +71,7 @@ func (s *Service) Submit(ctx context.Context, userID primitive.ObjectID, req Sub
 		}, nil
 	}
 
-	completedAt, err := s.completions.Complete(ctx, userID, req.Lab, req.Slug)
+	completedAt, langs, err := s.completions.Complete(ctx, userID, req.Lab, req.Slug, language)
 	if err != nil {
 		return SubmitResult{}, err
 	}
@@ -76,6 +80,7 @@ func (s *Service) Submit(ctx context.Context, userID primitive.ObjectID, req Sub
 		Passed:      true,
 		Completed:   true,
 		CompletedAt: &t,
+		Languages:   langs,
 		Output:      run.Output,
 	}, nil
 }
@@ -91,6 +96,12 @@ func MapSubmitError(err error) (status int, code string, logErr bool) {
 		return http.StatusBadRequest, "files_required", false
 	case errors.Is(err, ErrMainGoRequired):
 		return http.StatusBadRequest, "main_go_required", false
+	case errors.Is(err, ErrMainPyRequired):
+		return http.StatusBadRequest, "main_py_required", false
+	case errors.Is(err, ErrMainTSRequired):
+		return http.StatusBadRequest, "main_ts_required", false
+	case errors.Is(err, ErrUnsupportedLanguage):
+		return http.StatusBadRequest, "unsupported_language", false
 	case errors.Is(err, ErrPracticeNotFound):
 		return http.StatusNotFound, "practice_not_found", false
 	case errors.Is(err, ErrNoTestFileInPractice):

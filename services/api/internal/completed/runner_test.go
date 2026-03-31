@@ -10,8 +10,8 @@ import (
 func TestGoRunner_Run_passes(t *testing.T) {
 	g := NewGoRunner(45 * time.Second)
 	ctx := context.Background()
-	res, err := g.Run(ctx, "package main\n\nfunc main() {}\n", CanonicalPracticeFiles{
-		GoMod: "module tracelab_submit_test\n\ngo 1.25.0\n",
+	res, err := g.Run(ctx, "go", "package main\n\nfunc main() {}\n", CanonicalPracticeFiles{
+		Module: "module tracelab_submit_test\n\ngo 1.25.0\n",
 		Test: `package main
 
 import "testing"
@@ -29,8 +29,8 @@ func TestOK(t *testing.T) {}`,
 func TestGoRunner_Run_failsOnTestFailure(t *testing.T) {
 	g := NewGoRunner(45 * time.Second)
 	ctx := context.Background()
-	res, err := g.Run(ctx, "package main\n\nfunc main() {}\n", CanonicalPracticeFiles{
-		GoMod: "module tracelab_submit_test_fail\n\ngo 1.25.0\n",
+	res, err := g.Run(ctx, "go", "package main\n\nfunc main() {}\n", CanonicalPracticeFiles{
+		Module: "module tracelab_submit_test_fail\n\ngo 1.25.0\n",
 		Test: `package main
 
 import "testing"

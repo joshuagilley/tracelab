@@ -20,6 +20,7 @@ import {
 interface ConceptProgressContextValue {
   conceptFullyDone: boolean
   completedAt: Date | null
+  completedLanguages: string[]
   canPersist: boolean
   loaded: boolean
   setConceptDone: (completed: boolean) => Promise<void>
@@ -88,6 +89,7 @@ export function ConceptProgressProvider({
     () => ({
       conceptFullyDone: status.completed,
       completedAt,
+      completedLanguages: status.languages ?? [],
       canPersist: !!user,
       loaded,
       setConceptDone: setCompleted,

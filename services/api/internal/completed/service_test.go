@@ -15,7 +15,7 @@ type stubPractice struct {
 	err   error
 }
 
-func (s *stubPractice) FetchCanonicalFiles(ctx context.Context, lab, slug string) (CanonicalPracticeFiles, error) {
+func (s *stubPractice) FetchCanonicalFiles(ctx context.Context, lab, slug, language string) (CanonicalPracticeFiles, error) {
 	return s.files, s.err
 }
 
@@ -24,20 +24,25 @@ type stubRunner struct {
 	err error
 }
 
-func (s *stubRunner) Run(ctx context.Context, mainCode string, canon CanonicalPracticeFiles) (RunResult, error) {
+func (s *stubRunner) Run(ctx context.Context, language, mainCode string, canon CanonicalPracticeFiles) (RunResult, error) {
 	return s.res, s.err
 }
 
 type stubCompletions struct {
-	at  time.Time
-	err error
+	at    time.Time
+	langs []string
+	err   error
 }
 
-func (s *stubCompletions) Complete(ctx context.Context, userID primitive.ObjectID, lab, slug string) (time.Time, error) {
+func (s *stubCompletions) Complete(
+	ctx context.Context,
+	userID primitive.ObjectID,
+	lab, slug, language string,
+) (time.Time, []string, error) {
 	if s.err != nil {
-		return time.Time{}, s.err
+		return time.Time{}, nil, s.err
 	}
-	return s.at, nil
+	return s.at, s.langs, nil
 }
 
 func TestService_Submit_validation(t *testing.T) {
@@ -66,7 +71,7 @@ func TestService_Submit_runnerFailNoComplete(t *testing.T) {
 	completedAt := time.Date(2020, 1, 2, 3, 4, 5, 0, time.UTC)
 	store := &stubCompletions{at: completedAt}
 	svc := NewService(store, &stubPractice{
-		files: CanonicalPracticeFiles{GoMod: "m", Test: "t"},
+		files: CanonicalPracticeFiles{Module: "m", Test: "t"},
 	}, &stubRunner{res: RunResult{Output: "fail", Passed: false}})
 	uid := primitive.NewObjectID()
 	res, err := svc.Submit(context.Background(), uid, SubmitPracticeRequest{
@@ -88,7 +93,7 @@ func TestService_Submit_passMarksComplete(t *testing.T) {
 	completedAt := time.Date(2020, 1, 2, 3, 4, 5, 0, time.UTC)
 	store := &stubCompletions{at: completedAt}
 	svc := NewService(store, &stubPractice{
-		files: CanonicalPracticeFiles{GoMod: "m", Test: "t"},
+		files: CanonicalPracticeFiles{Module: "m", Test: "t"},
 	}, &stubRunner{res: RunResult{Output: "ok", Passed: true}})
 	uid := primitive.NewObjectID()
 	res, err := svc.Submit(context.Background(), uid, SubmitPracticeRequest{

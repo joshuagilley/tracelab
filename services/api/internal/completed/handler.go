@@ -1,6 +1,7 @@
 package completed
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
@@ -35,25 +36,34 @@ func (h *Handler) Register(mux *http.ServeMux) {
 }
 
 type completionStatusResponse struct {
-	Completed   bool    `json:"completed"`
-	CompletedAt *string `json:"completedAt"`
+	Completed   bool     `json:"completed"`
+	CompletedAt *string  `json:"completedAt"`
+	Languages   []string `json:"languages,omitempty"`
 }
 
 type labCompletionResponse struct {
-	CompletedSlugs []string `json:"completedSlugs"`
+	CompletedSlugs []string         `json:"completedSlugs"`
+	Completed      []completedEntry `json:"completed,omitempty"`
+}
+
+type completedEntry struct {
+	Slug      string   `json:"slug"`
+	Languages []string `json:"languages,omitempty"`
 }
 
 type updateCompletionRequest struct {
 	Lab       string `json:"lab"`
 	Slug      string `json:"slug"`
 	Completed bool   `json:"completed"`
+	Language  string `json:"language,omitempty"`
 }
 
 type submitPracticeResponse struct {
-	Passed      bool    `json:"passed"`
-	Completed   bool    `json:"completed"`
-	CompletedAt *string `json:"completedAt"`
-	Output      string  `json:"output"`
+	Passed      bool     `json:"passed"`
+	Completed   bool     `json:"completed"`
+	CompletedAt *string  `json:"completedAt"`
+	Languages   []string `json:"languages,omitempty"`
+	Output      string   `json:"output"`
 }
 
 func (h *Handler) handleCompleted(w http.ResponseWriter, r *http.Request) {
@@ -72,7 +82,7 @@ func writeAnonymousCompletionResponse(w http.ResponseWriter, slug string) {
 		auth.WriteJSON(w, http.StatusOK, completionStatusResponse{Completed: false})
 		return
 	}
-	auth.WriteJSON(w, http.StatusOK, labCompletionResponse{CompletedSlugs: []string{}})
+	auth.WriteJSON(w, http.StatusOK, labCompletionResponse{CompletedSlugs: []string{}, Completed: []completedEntry{}})
 }
 
 // GET /api/completed?lab=<lab>              → { completedSlugs: [...] }
@@ -93,13 +103,13 @@ func (h *Handler) getCompleted(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if slug != "" {
-		done, completedAt, err := h.store.IsCompleted(r.Context(), uid, lab, slug)
+		done, completedAt, langs, err := h.store.IsCompleted(r.Context(), uid, lab, slug)
 		if err != nil {
 			log.Printf("completed.get: lab=%q slug=%q: %v", lab, slug, err)
 			writeError(w, http.StatusInternalServerError, "internal_error")
 			return
 		}
-		auth.WriteJSON(w, http.StatusOK, buildStatusResponse(done, completedAt))
+		auth.WriteJSON(w, http.StatusOK, buildStatusResponse(done, completedAt, langs))
 		return
 	}
 
@@ -109,7 +119,17 @@ func (h *Handler) getCompleted(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "internal_error")
 		return
 	}
-	auth.WriteJSON(w, http.StatusOK, labCompletionResponse{CompletedSlugs: slugs})
+	rows, err := h.store.CompletedEntries(r.Context(), uid, lab)
+	if err != nil {
+		log.Printf("completed.list.entries: lab=%q: %v", lab, err)
+		writeError(w, http.StatusInternalServerError, "internal_error")
+		return
+	}
+	entries := make([]completedEntry, 0, len(rows))
+	for _, row := range rows {
+		entries = append(entries, completedEntry{Slug: row.Slug, Languages: row.Languages})
+	}
+	auth.WriteJSON(w, http.StatusOK, labCompletionResponse{CompletedSlugs: slugs, Completed: entries})
 }
 
 // PUT /api/completed  body: { lab, slug, completed: bool }  → completionStatusResponse
@@ -131,14 +151,15 @@ func (h *Handler) putCompleted(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if body.Completed {
-		completedAt, err := h.store.Complete(r.Context(), uid, body.Lab, body.Slug)
+		completedAt, langs, err := h.store.Complete(r.Context(), uid, body.Lab, body.Slug, body.Language)
 		if err != nil {
 			log.Printf("completed.put mark: lab=%q slug=%q: %v", body.Lab, body.Slug, err)
 			writeError(w, http.StatusInternalServerError, "internal_error")
 			return
 		}
-		h.notifier.NotifyNewlyEarnedBadges(r.Context(), uid)
-		auth.WriteJSON(w, http.StatusOK, buildStatusResponse(true, completedAt))
+		notifyCtx := context.WithoutCancel(r.Context())
+		go h.notifier.NotifyNewlyEarnedBadges(notifyCtx, uid)
+		auth.WriteJSON(w, http.StatusOK, buildStatusResponse(true, completedAt, langs))
 		return
 	}
 
@@ -150,12 +171,12 @@ func (h *Handler) putCompleted(w http.ResponseWriter, r *http.Request) {
 	auth.WriteJSON(w, http.StatusOK, completionStatusResponse{Completed: false})
 }
 
-func buildStatusResponse(done bool, completedAt time.Time) completionStatusResponse {
+func buildStatusResponse(done bool, completedAt time.Time, languages []string) completionStatusResponse {
 	if !done {
 		return completionStatusResponse{Completed: false}
 	}
 	ts := completedAt.Format(time.RFC3339)
-	return completionStatusResponse{Completed: true, CompletedAt: &ts}
+	return completionStatusResponse{Completed: true, CompletedAt: &ts, Languages: languages}
 }
 
 func (h *Handler) submitLab(w http.ResponseWriter, r *http.Request) {
@@ -190,13 +211,15 @@ func (h *Handler) submitLab(w http.ResponseWriter, r *http.Request) {
 		completedAt = &ts
 	}
 	if result.Completed {
-		h.notifier.NotifyNewlyEarnedBadges(r.Context(), uid)
+		notifyCtx := context.WithoutCancel(r.Context())
+		go h.notifier.NotifyNewlyEarnedBadges(notifyCtx, uid)
 	}
 
 	auth.WriteJSON(w, http.StatusOK, submitPracticeResponse{
 		Passed:      result.Passed,
 		Completed:   result.Completed,
 		CompletedAt: completedAt,
+		Languages:   result.Languages,
 		Output:      result.Output,
 	})
 }

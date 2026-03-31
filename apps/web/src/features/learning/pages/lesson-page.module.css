@@ -83,6 +83,13 @@
   color: var(--accent);
 }
 
+.completedLangs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
 .markDoneBarSub {
   font-size: 11px;
   color: var(--text-secondary);
@@ -94,6 +101,18 @@
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+}
+
+.markDoneSelect {
+  height: 30px;
+  min-width: 120px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  padding: 0 8px;
 }
 
 .markDoneStatus {

@@ -6,7 +6,7 @@ alwaysApply: false
 
 # New concept: sandbox → practice lesson → Mongo → registries → visualization
 
-Use this when a developer has iterated on **`main.go`** (or a small runnable) under **`sandbox/<lab>/<topic>/`** and wants a full **TraceLab concept**: downloadable practice, editor **`codeFiles`**, optional **simulation**, and curriculum wiring. (**`topic`** here is the sandbox folder name; the catalog **slug** / URL may differ, e.g. **`load-balancing`**.)
+Use this when a developer has iterated on a runnable under **`sandbox/<lab>/<topic>/`** and wants a full **TraceLab concept**: downloadable practice, editor **`codeFiles`**, optional **simulation**, and curriculum wiring. (**`topic`** here is the sandbox folder name; the catalog **slug** / URL may differ, e.g. **`load-balancing`**.)
 
 Path examples: **`sandbox/system-design/load-balancer/`** (folder name is usually short; URL slug may differ, e.g. **`load-balancing`**).
 
@@ -18,8 +18,8 @@ This is the **complete list** of files that change for a typical new concept. Us
 
 | Area | File(s) | What you do |
 |------|---------|-------------|
-| **Sandbox** | `sandbox/<lab>/<topic>/go.mod`, `main.go`, `main_test.go`, `solution.go`, `present.go`, `bad.go`, `LAB.md` | Create the practice bundle (§1). |
-| **Practice → Mongo** | *(command only)* | **`make sync-sandbox-mongo`** with **`SANDBOX`**, **`CONCEPT`**, **`ZIP`**, **`FOLDER`**, **`FILES`** (see **`README.md`**), or **`go run ./cmd/sync-sandbox-practice`** with the same values as flags. No per-concept binaries or Makefile targets. |
+| **Sandbox** | `sandbox/<lab>/<topic>/go/`, `sandbox/<lab>/<topic>/python/`, `sandbox/<lab>/<topic>/typescript/` | Create one language folder per supported lab language; each folder includes `LAB.md`, starter, tests, and optional solution (§1). |
+| **Practice → Mongo** | *(command only)* | Seed `practice.languages[]` (not only `practice.files`) using `sync-sandbox-practice` + a JSON spec (see §3A). |
 | **Lesson panel** | `apps/web/src/components/lessons/<lab>/<Topic>Lesson.tsx` | New text-lesson component (`LessonRoot` / `LessonProblem` / `LessonDiagram` / `LessonTradeoffs`). |
 | **Lesson registry** | `apps/web/src/features/curriculum/lesson-registry.ts` | Import + register `"<slug>": <Topic>Lesson`. |
 | **Simulation** | `apps/web/src/components/simulations/<lab>/<Topic>Simulation.tsx` + `.module.css` | SVG sim matching the user's PNG; reuse `CachingSimulation.module.css` panel chrome; rAF packet animation; `onMetrics` emitting metric ids. |
@@ -40,18 +40,20 @@ Items marked **"no change"** are already generic enough from previous concepts. 
 
 | File | Role |
 |------|------|
-| **`go.mod`** | Small module (e.g. `module <topic>-practice`, matching Go version). |
-| **`main.go`** | **Student starter**: `func main()`, types/API to implement, **`TODO`s**. Must pass **`go test ./...`** when solved (no long-running servers in default test build). |
-| **`main_test.go`** | Tests for the **testable core** only (pure logic; no binding ports in tests). |
-| **`solution.go`** | **`//go:build ignore`** at top; full solution, **same API as `main.go`**. Must be **test-valid by definition** (see below). |
-| **`present.go`** | **`//go:build ignore`**: idiomatic “good” code — typically evolved from the prototype **`main.go`** you were happy with. Runnable with **`go run present.go`**. |
-| **`bad.go`** | **`//go:build ignore`**: one clear anti-pattern or wrong approach; same rough shape as **`present.go`** so comparison teaches. **`go run bad.go`**. |
-| **`LAB.md`** | Goals, file table, **`go test` / `go run`** commands, pointers to **`present`** vs **`bad`**. |
+| **`go/main.go`** | Go starter (`TODO`s), solved by `go/main_test.go`. |
+| **`go/main_test.go`** | Go canonical tests. |
+| **`go/go.mod`** | Go module metadata. |
+| **`python/main.py`** | Python starter (`TODO`s), solved by `python/test_main.py`. |
+| **`python/test_main.py`** | Python canonical tests (`unittest`). |
+| **`typescript/main.ts`** | TypeScript starter (`TODO`s), solved by `typescript/main.test.ts`. |
+| **`typescript/main.test.ts`** | TypeScript canonical tests. |
+| **`*/solution.*`** | Optional per-language reference solution matching starter API. |
+| **`*/LAB.md`** | Per-language setup + run instructions. |
 
 ### Editor `codeFiles` vs ZIP
 
 - **`Concepts` / `Labs`** **`codeFiles`** (Implementation panel) should expose **read-only teaching slices**: usually **`present.go`** and **`bad.go`** with optional **`role`**: `present` / `bad`.
-- The working **`main.go`** (starter) lives in the **practice ZIP** (`practice.files`), not merged into **`codeFiles`** for editing in the same way — see **`DynamicCodePanel`** + API **`normalizeCodeFilesForLesson`**.
+- The working starter file lives in the selected language bundle under **`practice.languages[].files`** (legacy concepts may still use `practice.files` fallback), not merged into **`codeFiles`** for editing in the same way — see **`DynamicCodePanel`** + API **`normalizeCodeFilesForLesson`**.
 - Practically: once **`main.go`** is stable as the student exercise, **copy/refine that logic into `present.go`** for the “good” reference; **`bad.go`** is a deliberate broken variant.
 
 ### `solution.go` and `main_test.go` (required invariant)
@@ -124,11 +126,17 @@ For a **new** simulation, define **`metricGroups` last**, after you know the exa
 
 ## 3. Syncing to Mongo
 
-### A. Practice ZIP + `practice` field
+### A. Practice ZIP + `practice.languages[]` field
 
-Use **`make sync-sandbox-mongo`** (repo root, **`.env`** as needed) or **`go run ./cmd/sync-sandbox-practice`** to **`$set`** **`practice`** (`zipName`, `folder`, `files[]`) on **`Concepts._id`**. Variables / flags: **`SANDBOX`** / **`-sandbox`**, **`CONCEPT`** / **`-concept`**, **`ZIP`** / **`-zip`**, **`FOLDER`** / **`-folder`**, **`FILES`** / **`-files`**, plus **`-repo`** when using **`go run`** (repo root path).
+Use **`make sync-sandbox-mongo`** (repo root, **`.env`** as needed) or **`go run ./cmd/sync-sandbox-practice`** to **`$set`** **`practice`** on **`Concepts._id`**. Multi-language concepts should set:
 
-- **`-files`** order is the ZIP contents; include **`go.mod`**, **`LAB.md`**, **`main.go`**, **`main_test.go`**, **`solution.go`**, **`present.go`**, **`bad.go`** as needed.
+- `practice.zipName`
+- `practice.folder`
+- `practice.languages[]` with one object per language:
+  - `type` (e.g. `Go`, `Python`, `TypeScript`)
+  - `files[]` (same shape as before: `{ name, content }`)
+
+For caching test data, keep 3 language bundles: **Go**, **Python**, **TypeScript**.
 
 There is **only** **`cmd/sync-sandbox-practice`** for this — no **`sync-*-practice`** per concept.
 
