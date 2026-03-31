@@ -28,7 +28,7 @@ This is the **complete list** of files that change for a typical new concept. Us
 | **API** | `services/api/internal/catalog/handler.go` | Only if new `normalizeCodeFilesForLesson` edge cases appear; otherwise **no change**. |
 | **SPA types** | `apps/web/src/types/lab-concept.ts` | Only if new fields are added to the lesson payload; otherwise **no change**. |
 | **Code panel** | `apps/web/src/components/code/DynamicCodePanel.tsx` | Only if new lang/content fallback rules; otherwise **no change**. |
-| **Mongo** | `Labs` doc (concepts[] row + navSections item), `Concepts` doc (_id, vizType, codeFiles, parameters, metricGroups) | Manual or via one-off script (delete after). |
+| **Mongo** | `Labs` doc (`topics[]` with `conceptSlugs`; no embedded `concepts[]`), `Concepts` doc (`_id`, `labId`, `topicId`, `slug`, vizType, codeFiles, parameters, metricGroups, practice) | Manual edits in Atlas (or **`mongodump`** / **`mongorestore`** to copy collections between DBs). |
 | **README** | `sandbox/README.md` | Document the new sandbox path if useful; practice sync stays generic (**`make sync-sandbox-mongo`**). |
 
 Items marked **"no change"** are already generic enough from previous concepts. The first six rows are always new files or edits (practice sync is a command, not a new file).
@@ -65,7 +65,7 @@ Extract a **small testable API** into **`main.go`** / tests; keep servers or dem
 
 ## 2. `parameters` and `metricGroups` (Mongo / `LabConceptDetail`)
 
-Define these on the merged lesson payload (typically **`Concepts`** document **`_id`**: `"<labId>/<slug>"` — detail fields override **`Labs`** row where both set the same key).
+Define these on the merged lesson payload. **`Concepts`** (`_id`: `"<labId>/<slug>"`) is the source of truth for detail; if a legacy lab still has an embedded **`Labs.concepts[]`** row, **`Concepts`** wins on overlapping keys.
 
 **`parameters`** drive **`ParametersPanel`** (`LabParameter` in **`apps/web/src/types/lab-concept.ts`**). Example pattern (caching-style):
 
@@ -133,7 +133,7 @@ There is **only** **`cmd/sync-sandbox-practice`** for this — no **`sync-*-prac
 
 ### B. One-off metadata (`parameters`, `vizType`, `metricGroups`, …)
 
-For first-time wiring, a **temporary** helper is fine: small **`go run`** (Mongo update), **`mongosh`**, or a throwaway script that **`$set`s** the fields on **`Concepts`** (and **`Labs.concepts[]`** row if you keep catalog there).
+For first-time wiring, a **temporary** helper is fine: small **`go run`** (Mongo update), **`mongosh`**, or a throwaway script that **`$set`s** the fields on **`Concepts`**. Sidebar membership comes from **`Labs.topics[].conceptSlugs`** (not from embedding **`concepts[]`** in **`Labs`**).
 
 **After values are correct in the database, remove** any **throwaway** Mongo-update script. **`sync-sandbox-practice`** stays in the repo as the single practice sync entry.
 
@@ -143,7 +143,7 @@ For first-time wiring, a **temporary** helper is fine: small **`go run`** (Mongo
 
 In **`apps/web/src/features/curriculum/lesson-registry.ts`**, map **`slug` → component** for concepts whose **`vizType`** is **`lesson`**, empty, or not a registered sim (see **`resolveLessonPanelComponent`** in **`lesson-page.tsx`**).
 
-- Slug **must match** **`Labs.concepts[].slug`** and **`/concept/<slug>`**.
+- Slug **must match** the **`Concepts`** document, appear under **`Labs.topics[].conceptSlugs`**, and match **`/concept/<slug>`** (the API merges **`Labs`** + **`Concepts`** so the SPA still sees a **`concepts[]`** list).
 
 ---
 
@@ -159,14 +159,14 @@ The user provides a **PNG (or sketch) of the architecture flow**. This is the pr
 3. **Register** in **`apps/web/src/lib/simulation-registry/`** (adapter file + **`index.ts`**):
    - Add a thin **`VizComponent`** adapter that maps **`paramValues`** → sim props and stringifies **`onMetrics`**.
    - **`VIZ_REGISTRY[vizType]`** key must match **`vizType`** in Mongo (or use **`practice.folder`** special cases in **`resolveVizComponent`**).
-4. **Set `vizType`** on the concept to that registry key (e.g. **`load-balancer`**). If **`Concepts`** overrides **`Labs`**, ensure **`Concepts`** does not leave **`vizType`** as **`""`** if it would wipe a good value from **`Labs`**.
+4. **Set `vizType`** on the **`Concepts`** document to that registry key (e.g. **`load-balancer`**). For legacy labs that still embed list rows in **`Labs.concepts[]`**, ensure **`Concepts.vizType`** is set if you need it — detail comes from **`Concepts`**.
 
 ---
 
 ## 6. Curriculum checklist
 
-- **`Labs`** document: **`concepts[]`** row (**`slug`**, **`title`**, **`status`**, **`labKind`**, **`vizType`**, **`codeFiles`** names/roles as needed).
-- **`navSections`**: item **`slug`** equals concept **`slug`** for a working sidebar link.
+- **`Labs`** document: **`topics[]`** entry with **`conceptSlugs`** listing each **`slug`** (sidebar order).
+- **`Concepts`** document: full metadata + **`labId`** / **`topicId`** matching the lab shell.
 - **`Concepts._id`**: `"<labId>/<slug>"` for merged detail + **`practice`**.
 - Practice sync is always **`make sync-sandbox-mongo`** / **`sync-sandbox-practice`** — no new Makefile targets for each lab.
 

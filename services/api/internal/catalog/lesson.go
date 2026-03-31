@@ -41,15 +41,18 @@ func findConceptRow(labDoc bson.M, slug string) (bson.M, error) {
 }
 
 // mergeLesson merges Labs concept row with optional Concepts detail.
-// Detail document overrides catalog row fields except identity keys (_id, lab, slug).
+// Detail document overrides catalog row fields except identity keys (_id, lab).
+// When row is nil (concepts stored only in Concepts collection), detail supplies all fields including slug.
 func mergeLesson(row, detail bson.M) bson.M {
 	out := bson.M{}
-	for k, v := range row {
-		out[k] = v
+	if row != nil {
+		for k, v := range row {
+			out[k] = v
+		}
 	}
 	if detail != nil {
 		for k, v := range detail {
-			if k == "_id" || k == "lab" || k == "slug" {
+			if k == "_id" || k == "lab" {
 				continue
 			}
 			out[k] = v
@@ -57,7 +60,10 @@ func mergeLesson(row, detail bson.M) bson.M {
 	}
 
 	detailCF := codeFilesFromDoc(detail)
-	rowCF := codeFilesFromDoc(row)
+	var rowCF []any
+	if row != nil {
+		rowCF = codeFilesFromDoc(row)
+	}
 	var merged []any
 	if len(detailCF) > 0 {
 		merged = detailCF

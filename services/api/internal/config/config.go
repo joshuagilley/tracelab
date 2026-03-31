@@ -38,6 +38,7 @@ func Load() *Config {
 	return &Config{
 		Addr:                ":" + envDefault("PORT", "8080"),
 		MongoURI:            env("MONGO_DB_URI"),
+		// "tracelab" only if MONGO_DB_NAME is unset (see repo-root .env via `make api` / `make dev`).
 		MongoDBName:         envDefault("MONGO_DB_NAME", "tracelab"),
 		UsersColl:           envDefault("USERS_COLLECTION", "Users"),
 		CompletedColl:       envDefault("COMPLETED_COLLECTION", "Completed"),

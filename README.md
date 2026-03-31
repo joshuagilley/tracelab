@@ -76,36 +76,36 @@ Runs **`go test ./...`** in `services/api` and **`npm run build`** in `apps/web`
 
 A concept shows “properly” when: (1) it exists in the **Labs** catalog in Mongo, (2) the **sidebar** can link to its `slug`, (3) the **lesson API** returns a merged payload, and (4) the **frontend** knows how to render that lab/slug (layout + optional code tabs + optional practice ZIP).
 
-### 1. MongoDB — `Labs` collection
+### 1. MongoDB — `Labs` (structure) and `Concepts` (content)
 
-There is **one document per lab**. Its **`_id`** must match a frontend lab id (e.g. `system-design`, `api-design`, … — the same strings as in `apps/web/src/contexts/lab.tsx`).
+**Model:** **`Labs`** describes the library shell (title, panel chrome, topic groupings). **`Concepts`** holds every concept’s metadata and full payload (list fields, **`codeFiles`**, **`practice`**, **`parameters`**, etc.). The API still responds with **`concepts`** and **`navSections`** for the SPA: it **assembles** those from **`Concepts`** plus the lab’s **`topics`** (see below).
 
-That document should include:
+#### `Labs` — one document per lab (`_id` = frontend lab id, same as in `apps/web/src/contexts/lab.tsx`)
 
-- **`concepts`** — array of concept rows (library cards + base lesson metadata).
-- **`navSections`** — sidebar structure. Any item with a **`slug`** becomes a link to `/concept/<slug>` for the current lab.
-- **`panelPrefix`**, and optionally **`languages`**, **`defaultOpenSectionIds`**, etc., as you already use for other labs.
+- **`title`**, **`panelPrefix`**, optional **`languages`**, **`defaultOpenSectionIds`**
+- **`topics`** — array of `{ "id", "title", "blurb", "conceptSlugs": ["slug1", …] }`. Sidebar order follows **`conceptSlugs`** within each topic.
+- **Do not** embed a **`concepts`** array or **`navSections`** in Mongo for new work (legacy deployments may still have them until migrated).
 
-Each entry in **`concepts`** should include at least what the UI expects on the list and detail request (see `apps/web/src/features/curriculum/lab-catalog-types.ts` and `apps/web/src/types/concept.ts`):
+#### `Concepts` — one document per concept
+
+- **`_id`**: **`"<labId>/<slug>"`**
+- **`labId`**, **`topicId`** (matches the **`topics[].id`** that lists this slug), **`slug`**
+- List + lesson fields (see `apps/web/src/features/curriculum/lab-catalog-types.ts` and `apps/web/src/types/concept.ts`):
 
 | Field                                              | Notes                                                                                                                                                                                                 |
 | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`                                               | Stable string (often the same as `slug` if you do not need a separate key).                                                                                                                           |
-| `slug`                                             | URL segment; **must be unique within the lab** and must match `navSections[].items[].slug` when you want a sidebar link.                                                                              |
+| `id`                                               | Stable string (often the same as `slug`).                                                                                                                                                             |
+| `slug`                                             | URL segment; **unique within the lab**; must appear under **`topics[].conceptSlugs`** for a sidebar link.                                                                                              |
 | `title`, `summary`, `difficulty`, `tags`, `status` | `status`: `available` or `coming-soon`.                                                                                                                                                               |
 | `labKind`                                          | Usually the lab id string (e.g. `system-design`).                                                                                                                                                     |
-| `vizType`                                          | How the detail page renders: `"lesson"` for a **text lesson** (must register **`slug`** in `lesson-registry.ts` — see §3 below), or a simulation key (e.g. `caching`) registered in `lib/simulation-registry/`. |
-| `codeFiles`                                        | Array of `{ "name", "lang" }` for tab labels. Actual source text usually comes from the **Concepts** document (next step).                                                                            |
+| `vizType`                                          | `"lesson"` or a simulation key registered in `lib/simulation-registry/` (see §3).                                                                                                                    |
+| `codeFiles`                                        | Tab list + bodies: **`code`** (or **`content`**) per file; optional **`role`**: `present` \| `bad` \| `exercise`.                                                                                      |
 
-After inserting or editing the lab document, restart or refresh the app so **`fetchLabsCatalogIntoCache`** runs again (full page load).
+After changing catalog data, reload the app so **`fetchLabsCatalogIntoCache`** runs again.
 
-### 2. MongoDB — `Concepts` collection (detail merge)
+#### Legacy API behavior (pre-migration)
 
-Optional for a bare listing, but you need it for **filled code tabs**, **practice ZIP**, and other detail-only fields.
-
-- **`_id`**: **`"<labId>/<slug>"`** (e.g. `system-design/caching`). The API builds this when loading a lesson.
-- Fields on this document are **merged on top of** the matching row from `Labs.concepts`. The API does not copy `_id`, `lab`, or `slug` from the Concepts document into the response.
-- **`codeFiles`**: Same file **names** as in the lab row; each object should include the file body as **`code`** (or **`content`** — the API maps that to **`code`** for the SPA) and optional **`lang`** (inferred from the filename, e.g. `.go` → `go`, when omitted). Optional **`role`**: `present` | `bad` | `exercise`. If the Concepts doc has no `codeFiles`, the API still returns tabs but with **empty** `code` strings shaped from the lab row’s names.
+If a **`Labs`** document still has embedded **`concepts[]`**, the API continues to merge lessons the old way until you migrate.
 
 **Practice download** — on the same Concepts document, optional **`practice`**:
 
@@ -135,7 +135,7 @@ Use normal subpaths in `name` (no `.` or `..` segments). **One command** syncs a
 
 Equivalent: **`cd services/api && go run ./cmd/sync-sandbox-practice -repo ../..`** plus **`-sandbox`**, **`-concept`**, **`-zip`**, **`-folder`**, **`-files`**. Client ZIP build in the browser: `apps/web/src/lib/practice-zip.ts`.
 
-The **Implementation** panel shows only merged **`codeFiles`** from **`Labs`** / **`Concepts`** (e.g. **`present.go`** and **`bad.go`** for read-only comparison — keep **`main.go`** in the downloadable **`practice`** ZIP only). If **`practice.folder`** is **`load-balancer`**, the **round-robin** simulation is used even when **`vizType`** is **`lesson`** (see **`resolveVizComponent`** in **`lesson-page.tsx`**).
+The **Implementation** panel shows **`codeFiles`** from the **`Concepts`** document (e.g. **`present.go`** and **`bad.go`** for read-only comparison — keep **`main.go`** in the downloadable **`practice`** ZIP only). If **`practice.folder`** is **`load-balancer`**, the **round-robin** simulation is used even when **`vizType`** is **`lesson`** (see **`resolveVizComponent`** in **`lesson-page.tsx`**).
 
 ### 3. Frontend — routing and UI
 
@@ -159,13 +159,13 @@ Do this for “read the lesson on the left, optional code tabs on the right” (
 2. **Register it by slug** in **`apps/web/src/features/curriculum/lesson-registry.ts`**:
    - Import your component.
    - Add a line: **`'your-concept-slug': YourLessonComponent`**
-   - The **object key must match exactly** the **`slug`** in **`Labs.concepts[]`** and in the URL **`/concept/<slug>`** (kebab-case). One slug ⇒ one registry entry. If Mongo uses a different slug (e.g. `load-balancing` vs `load-balancer`), add **another line** or change the catalog slug.
+   - The **object key must match exactly** the **`slug`** on the **`Concepts`** document and in the URL **`/concept/<slug>`** (kebab-case). One slug ⇒ one registry entry. If Mongo uses a different slug (e.g. `load-balancing` vs `load-balancer`), add **another line** or change the catalog slug.
 
-3. **Set `vizType` in Mongo** (recommended): on the **`Labs`** concept row, set **`"vizType": "lesson"`**.  
-   You can also set **`vizType`** on the **`Concepts`** document; it merges over the lab row.  
+3. **Set `vizType` in Mongo** (recommended): on the **`Concepts`** document, set **`"vizType": "lesson"`**.  
+   (Legacy: **`vizType`** on an embedded **`Labs.concepts[]`** row still merges with **`Concepts`** until you migrate.)  
    If **`vizType`** is omitted, the app still resolves a **`LESSON_REGISTRY`** panel when the **`slug`** is registered (see **`resolveLessonPanelComponent`** in **`lesson-page.tsx`**). Simulation types (`caching`, …) must still set **`vizType`** correctly so the sim branch wins.
 
-4. **Code tabs (optional)** — put **`codeFiles`** on **`Labs`** and/or **`Concepts`** with **`name`**, **`lang`**, and **`code`** strings. The lesson page **Implementation** editor uses **only** this merged **`codeFiles`** list (not the **`practice`** ZIP file list).
+4. **Code tabs (optional)** — put **`codeFiles`** on the **`Concepts`** document with **`name`**, **`lang`**, and **`code`** strings. The lesson page **Implementation** editor uses **only** this **`codeFiles`** list (not the **`practice`** ZIP file list).
 
 #### Frontend: interactive simulation (not a text lesson)
 

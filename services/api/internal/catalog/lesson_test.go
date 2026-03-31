@@ -65,6 +65,24 @@ func TestMergeLesson_codeFilesPrecedence(t *testing.T) {
 	}
 }
 
+func TestMergeLesson_detailOnly(t *testing.T) {
+	detail := bson.M{
+		"slug":  "rate-limiting",
+		"title": "Rate limiting",
+		"codeFiles": bson.A{
+			bson.M{"name": "main.go", "lang": "go", "code": "package main"},
+		},
+	}
+	out := mergeLesson(nil, detail)
+	if out["slug"] != "rate-limiting" {
+		t.Fatalf("slug: %v", out["slug"])
+	}
+	cf, ok := out["codeFiles"].([]any)
+	if !ok || len(cf) != 1 {
+		t.Fatalf("codeFiles: %v", out["codeFiles"])
+	}
+}
+
 func TestFindConceptRow(t *testing.T) {
 	lab := bson.M{
 		"concepts": bson.A{

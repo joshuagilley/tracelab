@@ -19,6 +19,7 @@ func NewStore(labs, concepts *mongo.Collection) *Store {
 }
 
 // ListLabs returns all lab documents sorted by title.
+// Labs that use topics[] (no embedded concepts[]) are enriched with concepts[] and navSections from the Concepts collection.
 func (s *Store) ListLabs(ctx context.Context) ([]bson.M, error) {
 	opts := options.Find().SetSort(bson.D{{Key: "title", Value: 1}})
 	cur, err := s.labs.Find(ctx, bson.M{}, opts)
@@ -29,11 +30,23 @@ func (s *Store) ListLabs(ctx context.Context) ([]bson.M, error) {
 
 	var labs []bson.M
 	for cur.Next(ctx) {
-		var doc bson.M
-		if err := cur.Decode(&doc); err != nil {
+		var lab bson.M
+		if err := cur.Decode(&lab); err != nil {
 			return nil, err
 		}
-		labs = append(labs, doc)
+		if labID, ok := lab["_id"].(string); ok && labHasTopics(lab) {
+			concepts, err := s.listConceptsForLab(ctx, labID)
+			if err != nil {
+				return nil, err
+			}
+			bySlug := indexConceptsBySlug(concepts)
+			lab["concepts"] = catalogRowsFromConceptDocs(concepts)
+			if rawTopics, ok := lab["topics"]; ok {
+				lab["navSections"] = topicsToNavSections(rawTopics, bySlug)
+			}
+			delete(lab, "topics")
+		}
+		labs = append(labs, lab)
 	}
 	if err := cur.Err(); err != nil {
 		return nil, err
@@ -44,6 +57,30 @@ func (s *Store) ListLabs(ctx context.Context) ([]bson.M, error) {
 	return labs, nil
 }
 
+func (s *Store) listConceptsForLab(ctx context.Context, labID string) ([]bson.M, error) {
+	filter := bson.M{
+		"$or": []bson.M{
+			{"labId": labID},
+			{"lab": labID},
+		},
+	}
+	cur, err := s.concepts.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	var out []bson.M
+	for cur.Next(ctx) {
+		var doc bson.M
+		if err := cur.Decode(&doc); err != nil {
+			return nil, err
+		}
+		out = append(out, doc)
+	}
+	return out, cur.Err()
+}
+
 // LoadLesson loads the merged lesson payload for a lab id and concept slug.
 func (s *Store) LoadLesson(ctx context.Context, labID, slug string) (bson.M, error) {
 	var labDoc bson.M
@@ -51,11 +88,6 @@ func (s *Store) LoadLesson(ctx context.Context, labID, slug string) (bson.M, err
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, ErrLabNotFound
 		}
-		return nil, err
-	}
-
-	row, err := findConceptRow(labDoc, slug)
-	if err != nil {
 		return nil, err
 	}
 
@@ -69,5 +101,22 @@ func (s *Store) LoadLesson(ctx context.Context, labID, slug string) (bson.M, err
 		detail = nil
 	}
 
+	if labHasTopics(labDoc) {
+		if detail == nil {
+			return nil, ErrConceptNotInCatalog
+		}
+		if lid := conceptLabID(detail); lid != "" && lid != labID {
+			return nil, ErrConceptNotInCatalog
+		}
+		if !slugInTopics(labDoc, slug) {
+			return nil, ErrConceptNotInCatalog
+		}
+		return mergeLesson(nil, detail), nil
+	}
+
+	row, err := findConceptRow(labDoc, slug)
+	if err != nil {
+		return nil, err
+	}
 	return mergeLesson(row, detail), nil
 }
