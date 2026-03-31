@@ -9,14 +9,14 @@ import (
 type Config struct {
 	Addr string
 
-	MongoURI    string
-	MongoDBName string
-	UsersColl string
+	MongoURI      string
+	MongoDBName   string
+	UsersColl     string
 	// CompletedColl stores one document per completed concept (see completed).
 	CompletedColl string
 	// LabsColl / ConceptsColl hold curriculum catalog documents (see catalog).
-	LabsColl     string
-	ConceptsColl string
+	LabsColl      string
+	ConceptsColl  string
 
 	GitHubClientID     string
 	GitHubClientSecret string
@@ -33,83 +33,97 @@ type Config struct {
 }
 
 func Load() *Config {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-
-	frontend := os.Getenv("FRONTEND_ORIGIN")
-	if frontend == "" {
-		frontend = "http://localhost:5173"
-	}
-	extra := []string{}
-	if raw := strings.TrimSpace(os.Getenv("CORS_EXTRA_ORIGINS")); raw != "" {
-		for _, p := range strings.Split(raw, ",") {
-			if s := strings.TrimSpace(p); s != "" {
-				extra = append(extra, s)
-			}
-		}
-	}
+	frontend := envDefault("FRONTEND_ORIGIN", "http://localhost:5173")
 
 	return &Config{
-		Addr:                ":" + port,
-		MongoURI:            strings.TrimSpace(os.Getenv("MONGO_DB_URI")),
-		MongoDBName:         firstNonEmpty(os.Getenv("MONGO_DB_NAME"), "tracelab"),
-		UsersColl:           firstNonEmpty(os.Getenv("USERS_COLLECTION"), "Users"),
-		CompletedColl:       firstNonEmpty(os.Getenv("COMPLETED_COLLECTION"), "Completed"),
-		LabsColl:            firstNonEmpty(os.Getenv("LABS_COLLECTION"), "Labs"),
-		ConceptsColl:        firstNonEmpty(os.Getenv("CONCEPTS_COLLECTION"), "Concepts"),
-		GitHubClientID:      strings.TrimSpace(os.Getenv("GITHUB_CLIENT_ID")),
-		GitHubClientSecret:  strings.TrimSpace(os.Getenv("GITHUB_CLIENT_SECRET")),
-		OAuthCallbackURL:    trimTrailingSlash(strings.TrimSpace(os.Getenv("OAUTH_CALLBACK_URL"))),
-		FrontendOrigin:      trimTrailingSlash(strings.TrimSpace(frontend)),
-		CORSExtraOrigins:    extra,
-		JWTSecret:           strings.TrimSpace(os.Getenv("AUTH_JWT_SECRET")),
-		AuthCookieCrossSite: strings.EqualFold(strings.TrimSpace(os.Getenv("AUTH_COOKIE_CROSS_SITE")), "true"),
+		Addr:                ":" + envDefault("PORT", "8080"),
+		MongoURI:            env("MONGO_DB_URI"),
+		MongoDBName:         envDefault("MONGO_DB_NAME", "tracelab"),
+		UsersColl:           envDefault("USERS_COLLECTION", "Users"),
+		CompletedColl:       envDefault("COMPLETED_COLLECTION", "Completed"),
+		LabsColl:            envDefault("LABS_COLLECTION", "Labs"),
+		ConceptsColl:        envDefault("CONCEPTS_COLLECTION", "Concepts"),
+		GitHubClientID:      env("GITHUB_CLIENT_ID"),
+		GitHubClientSecret:  env("GITHUB_CLIENT_SECRET"),
+		OAuthCallbackURL:    normalizeURLish(env("OAUTH_CALLBACK_URL")),
+		FrontendOrigin:      normalizeURLish(frontend),
+		CORSExtraOrigins:    envCSV("CORS_EXTRA_ORIGINS"),
+		JWTSecret:           env("AUTH_JWT_SECRET"),
+		AuthCookieCrossSite: envBool("AUTH_COOKIE_CROSS_SITE"),
 	}
 }
 
-func firstNonEmpty(a, b string) string {
-	if strings.TrimSpace(a) != "" {
-		return strings.TrimSpace(a)
+func env(key string) string {
+	return strings.TrimSpace(os.Getenv(key))
+}
+
+func envDefault(key, fallback string) string {
+	if v := env(key); v != "" {
+		return v
 	}
-	return b
+	return fallback
 }
 
-func trimTrailingSlash(s string) string {
-	return strings.TrimSuffix(s, "/")
+func envBool(key string) bool {
+	return strings.EqualFold(env(key), "true")
 }
 
-func (c *Config) CORSAllowedOrigins() []string {
-	seen := map[string]struct{}{}
-	var out []string
-	add := func(o string) {
-		o = strings.TrimSuffix(strings.TrimSpace(o), "/")
-		if o == "" {
-			return
+func envCSV(key string) []string {
+	raw := env(key)
+	if raw == "" {
+		return nil
+	}
+	out := make([]string, 0)
+	for _, part := range strings.Split(raw, ",") {
+		if v := strings.TrimSpace(part); v != "" {
+			out = append(out, v)
 		}
-		if _, ok := seen[o]; ok {
-			return
-		}
-		seen[o] = struct{}{}
-		out = append(out, o)
-	}
-	add(c.FrontendOrigin)
-	for _, o := range c.CORSExtraOrigins {
-		add(o)
 	}
 	return out
 }
 
-func (c *Config) AuthConfigured() bool {
-	return c.MongoURI != "" &&
-		c.GitHubClientID != "" &&
+// normalizeURLish trims space and a trailing slash from URL-like config (origins, callback URLs).
+func normalizeURLish(s string) string {
+	return strings.TrimSuffix(strings.TrimSpace(s), "/")
+}
+
+func (c *Config) CORSAllowedOrigins() []string {
+	seen := make(map[string]struct{})
+	out := make([]string, 0, 1+len(c.CORSExtraOrigins))
+
+	add := func(origin string) {
+		origin = normalizeURLish(origin)
+		if origin == "" {
+			return
+		}
+		if _, ok := seen[origin]; ok {
+			return
+		}
+		seen[origin] = struct{}{}
+		out = append(out, origin)
+	}
+
+	add(c.FrontendOrigin)
+	for _, origin := range c.CORSExtraOrigins {
+		add(origin)
+	}
+	return out
+}
+
+// OAuthConfigured reports whether GitHub OAuth and JWT settings needed for the auth flow are present.
+func (c *Config) OAuthConfigured() bool {
+	return c.GitHubClientID != "" &&
 		c.GitHubClientSecret != "" &&
 		c.OAuthCallbackURL != "" &&
 		c.JWTSecret != ""
 }
 
-// LogAuthEnvDiagnostics logs which auth env vars are set (no secret values).
+// AuthConfigured reports whether auth can run end-to-end in this app (OAuth env + Mongo URI for persistence).
+func (c *Config) AuthConfigured() bool {
+	return c.MongoURI != "" && c.OAuthConfigured()
+}
+
+// LogAuthEnvDiagnostics logs which auth-related env vars are set (no secret values).
 func (c *Config) LogAuthEnvDiagnostics() {
 	log.Printf("auth: env mongo=%v github_id=%v github_secret=%v oauth_callback=%v jwt=%v | frontend=%q callback=%q",
 		c.MongoURI != "",
