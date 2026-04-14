@@ -36,7 +36,7 @@ jobs:
           cache-dependency-path: apps/web/package-lock.json
 
       - name: Web build
-        run: npm ci && npm run build
+        run: npm ci && npm run slopsniff && npm run build
         working-directory: apps/web
 
   # ── Go API (embedded static lessons only) ───────────────────────────────

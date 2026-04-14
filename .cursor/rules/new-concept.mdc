@@ -8,6 +8,14 @@ alwaysApply: false
 
 Use this when a developer has a runnable **practice bundle** (Go / Python / TypeScript) and wants a full **TraceLab concept**: downloadable practice, editor **`codeFiles`**, optional **simulation**, and curriculum wiring. Keep **`labId`**, **`topicId`**, and catalog **`slug`** consistent (`Concepts._id` is **`labId/slug`**; URL slug may differ from an internal folder name, e.g. **`load-balancing`**).
 
+## SlopSniff (`apps/web/slopsniff.json`) and rule vs command
+
+- Before treating **web / curriculum / lessons / simulations** work as finished, run **`cd apps/web && npm run slopsniff`** and fix reported issues (including MEDIUM severity). After substantive TS/React edits, also run **`npm run build`** in `apps/web` (or **`make test`** at the repo root: Go tests + SlopSniff + web build).
+- Treat **`apps/web/slopsniff.json`** as the source of truth for thresholds and enabled checks (`include`, `fail-threshold`, line limits, etc.). **Do not relax or gut that file** to silence findings unless the team explicitly decides to change policy; prefer splitting files/functions or removing duplication.
+- Local **`git commit`** runs the same checks as CI when **`core.hooksPath`** points at **`.githooks`** (set automatically by **`make install`**).
+
+**Rule vs command:** SlopSniff expectations belong in this **Cursor rule** so the agent applies them whenever this rule’s **globs** match. A **Cursor custom command** is only a reusable palette shortcut; it does not replace documenting thresholds and workflow here.
+
 ---
 
 ## Files you will touch (every new concept)
@@ -20,7 +28,7 @@ This is the **complete list** of files that change for a typical new concept. Us
 | **Practice → Mongo** | Atlas / `mongosh` / your tooling | Set `practice` on **`Concepts`** (embedded or GCS-backed); see §3. |
 | **Lesson panel** | `apps/web/src/components/lessons/<lab>/<Topic>Lesson.tsx` | New text-lesson component (`LessonRoot` / `LessonProblem` / `LessonDiagram` / `LessonTradeoffs`). |
 | **Lesson registry** | `apps/web/src/features/curriculum/lesson-registry.ts` | Import + register `"<slug>": <Topic>Lesson`. |
-| **Simulation** | `apps/web/src/components/simulations/<lab>/<Topic>Simulation.tsx` + `.module.css` | SVG sim matching the user's PNG; reuse `CachingSimulation.module.css` panel chrome; rAF packet animation; `onMetrics` emitting metric ids. |
+| **Simulation** | `apps/web/src/components/simulations/<lab>/<topic-folder>/<Topic>Simulation.tsx` + `.module.css` (e.g. `system-design/caching/`, `system-design/load-balancer/`) | SVG sim matching the user's PNG; reuse `caching/CachingSimulation.module.css` panel chrome where needed; rAF packet animation; `onMetrics` emitting metric ids. |
 | **Simulation registry** | `apps/web/src/lib/simulation-registry/` | Thin adapter (`VizComponent`) + `VIZ_REGISTRY['<vizType>']` in `index.ts`. |
 | **Lesson page** | `apps/web/src/features/learning/pages/lesson-page.tsx` | Only if a new `practice.folder` fallback is needed in `resolveVizComponent`; otherwise **no change**. |
 | **API** | `services/api/internal/catalog/handler.go` | Only if new `normalizeCodeFilesForLesson` edge cases appear; otherwise **no change**. |
@@ -168,8 +176,8 @@ In **`apps/web/src/features/curriculum/lesson-registry.ts`**, map **`slug` → c
 The user provides a **PNG (or sketch) of the architecture flow**. This is the primary design input for the simulation SVG.
 
 1. **Study the PNG**: identify nodes (boxes), edges (arrows / dashed lines), request flow direction, and any labels. The SVG must reproduce this layout — same node count, same topology, same labeling style.
-2. **Implement** under **`apps/web/src/components/simulations/<lab>/`**:
-   - Wrap in the **Architecture Visualizer** panel header (reuse **`CachingSimulation.module.css`** panel chrome — header with **READY / SIMULATION LIVE** dot + **EXECUTE SIMULATION / STOP** button). See **`CachingSimulation.tsx`** and **`LoadBalancerRoundRobinSimulation.tsx`** as references.
+2. **Implement** under **`apps/web/src/components/simulations/<lab>/<topic-folder>/`** (one folder per simulation topic, e.g. **`system-design/caching/`**, **`system-design/load-balancer/`**):
+   - Wrap in the **Architecture Visualizer** panel header (reuse **`caching/CachingSimulation.module.css`** panel chrome — header with **READY / SIMULATION LIVE** dot + **EXECUTE SIMULATION / STOP** button). See **`caching/CachingSimulation.tsx`** and **`load-balancer/LoadBalancerRoundRobinSimulation.tsx`** as references.
    - Animate **request packets** (small glowing circles via `requestAnimationFrame`) traveling the edges in the SVG, matching the flow shown in the PNG.
    - Emit **`onMetrics`** with string values keyed to the **`metricGroups`** ids defined in step 2.
 3. **Register** in **`apps/web/src/lib/simulation-registry/`** (adapter file + **`index.ts`**):

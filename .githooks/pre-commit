@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Mirrors .github/workflows/ci.yml (Go tests + web SlopSniff + web build).
+set -euo pipefail
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT/services/api"
+go test ./...
+cd "$ROOT/apps/web"
+npm run slopsniff
+npm run build

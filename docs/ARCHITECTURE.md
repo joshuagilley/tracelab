@@ -44,7 +44,13 @@ tracelab/
         db/                   # mongo connection helpers
         transport/            # route registration
   docs/                       # project documentation
+  .githooks/                  # pre-commit: Go tests + web SlopSniff + web build (see README)
 ```
+
+## Local quality gates
+
+- **`make test`** — `go test ./...` under `services/api`, then `npm run slopsniff` and `npm run build` under `apps/web` (SlopSniff config: `apps/web/slopsniff.json`).
+- **`make install`** — installs web dependencies and sets **`git config core.hooksPath`** to **`.githooks`**, so **`git commit`** (including from Cursor’s Source Control) runs the same sequence as **`.githooks/pre-commit`**, aligned with **`.github/workflows/ci.yml`**. Disable with `git config --unset core.hooksPath` (see `.githooks/README.md`).
 
 ## How components connect
 

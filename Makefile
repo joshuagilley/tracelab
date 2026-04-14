@@ -14,23 +14,14 @@ dev-full:
 	@echo "Starting Full TraceLab..."
 	@$(MAKE) compose-up & $(MAKE) web
 
-# Start API first, wait until /health responds, then Vite (avoids ECONNREFUSED while go run compiles).
+# API in background, then Vite once /health is up (avoids Vite proxy racing the first `go run` compile).
 dev:
-	@echo "Starting TraceLab..."
-	@bash -c 'set -e; \
+	@bash -c '\
 	  if [[ -f "$(CURDIR)/.env" ]]; then set -a && source "$(CURDIR)/.env" && set +a; fi; \
-	  cd "$(CURDIR)/services/api" && go run ./cmd/server & \
-	  API_PID=$$!; \
-	  trap "kill $$API_PID 2>/dev/null; wait $$API_PID 2>/dev/null" EXIT INT TERM; \
-	  for i in {1..300}; do \
-	    if curl -sf --connect-timeout 1 http://127.0.0.1:8080/health >/dev/null 2>&1; then break; fi; \
-	    if ! kill -0 $$API_PID 2>/dev/null; then echo "API exited before listening on :8080"; wait $$API_PID || true; exit 1; fi; \
-	    sleep 0.25; \
+	  (cd "$(CURDIR)/services/api" && exec go run ./cmd/server) & trap "kill $$! 2>/dev/null" EXIT; \
+	  n=0; until curl -sf --connect-timeout 1 http://127.0.0.1:8080/health >/dev/null 2>&1; do \
+	    sleep 0.25; n=$$((n+1)); [[ $$n -ge 320 ]] && { echo "Timed out waiting for http://127.0.0.1:8080/health"; exit 1; }; \
 	  done; \
-	  if ! curl -sf --connect-timeout 1 http://127.0.0.1:8080/health >/dev/null; then \
-	    echo "Timed out waiting for API on :8080 (first compile can take a while)."; exit 1; \
-	  fi; \
-	  echo "API on :8080 — starting Vite…"; \
 	  cd "$(CURDIR)/apps/web" && npm run dev'
 
 api:
@@ -43,6 +34,7 @@ web:
 
 install:
 	cd apps/web && npm install
+	@git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath "$(CURDIR)/.githooks" && echo "Git hooks enabled: core.hooksPath=$(CURDIR)/.githooks (pre-commit runs CI-equivalent checks)" || true
 
 build:
 	cd apps/web && npm run build
@@ -50,7 +42,7 @@ build:
 
 test:
 	cd services/api && go test ./...
-	cd apps/web && npm run build
+	cd apps/web && npm run slopsniff && npm run build
 
 seed-certifications:
 	@bash -c 'if [[ -f "$(CURDIR)/.env" ]]; then set -a && source "$(CURDIR)/.env" && set +a; fi; cd "$(CURDIR)/services/api" && go run ./cmd/seed-certifications'

@@ -70,7 +70,7 @@ For text lessons:
 
 For simulations:
 
-1. Add simulation component.
+1. Add simulation under `apps/web/src/components/simulations/<lab>/<topic>/` (e.g. `system-design/caching/`, `system-design/load-balancer/`) — one topic folder per sim so the tree stays scalable.
 2. Register adapter in `apps/web/src/lib/simulation-registry/`.
 3. Ensure `vizType` matches the registry key.
 
