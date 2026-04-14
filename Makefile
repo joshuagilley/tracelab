@@ -1,4 +1,4 @@
-.PHONY: dev api web install build clean compose-up compose-down test sync-sandbox-mongo seed-certifications backfill-concept-certification-ids
+.PHONY: dev api web install build clean compose-up compose-down test sync-sandbox-mongo seed-certifications
 
 # Bash so `api` can `source .env` (GitHub OAuth, Mongo, JWT, etc.)
 SHELL := /bin/bash
@@ -66,10 +66,6 @@ sync-sandbox-mongo:
 
 seed-certifications:
 	@bash -c 'if [[ -f "$(CURDIR)/.env" ]]; then set -a && source "$(CURDIR)/.env" && set +a; fi; cd "$(CURDIR)/services/api" && go run ./cmd/seed-certifications'
-
-# One-time: set Concepts.certification_ids from legacy tag overlap (see docs/NEW_CONCEPT.md).
-backfill-concept-certification-ids:
-	@bash -c 'if [[ -f "$(CURDIR)/.env" ]]; then set -a && source "$(CURDIR)/.env" && set +a; fi; cd "$(CURDIR)/services/api" && go run ./cmd/backfill-concept-certification-ids'
 
 clean:
 	rm -rf apps/web/dist

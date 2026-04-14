@@ -99,13 +99,7 @@ make sync-sandbox-mongo \
 
 Set **`certification_ids`** on the `Concepts` document to certification `_id` strings (e.g. `backend-engineer`, `software-engineer`). Track mode and badge eligibility use **only** this field (not `tags`). Use **`"*"`** in the array when the concept should appear for **every** career certification.
 
-One-time migration from the old tag overlap model:
-
-```bash
-make backfill-concept-certification-ids
-```
-
-Then keep certification **metadata** (titles, descriptions, sort order) in sync when defaults change:
+To refresh certification titles / sort order from repo defaults:
 
 ```bash
 make seed-certifications

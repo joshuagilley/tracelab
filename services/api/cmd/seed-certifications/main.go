@@ -71,5 +71,4 @@ func main() {
 		}
 	}
 
-	log.Printf("seeded certifications: count=%d db=%q coll=%q", len(certifications.DefaultCertifications), targetDB, targetColl)
 }

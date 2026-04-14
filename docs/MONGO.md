@@ -101,7 +101,7 @@ Notes:
 
 - `generalist` and `expert` treat **all** published concepts as in scope (no per-concept list on the cert).
 - Membership for other certifications is defined on each **`Concepts`** document via **`certification_ids`** (not on the certification document).
-- `make seed-certifications` removes legacy `track_tags` if present.
+- `make seed-certifications` updates cert metadata and removes legacy `track_tags` if present.
 
 ## Users (`USERS_COLLECTION`, default `Users`)
 

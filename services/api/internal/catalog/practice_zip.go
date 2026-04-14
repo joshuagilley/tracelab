@@ -55,7 +55,7 @@ func (h *practiceZipHandler) handle(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusNotFound, "concept_not_found")
 			return
 		}
-		log.Printf("labs.zip: load practice lab=%q slug=%q: %v", labID, slug, err)
+		log.Printf("catalog: practice.zip load lab=%q slug=%q: %v", labID, slug, err)
 		writeError(w, http.StatusInternalServerError, "internal_error")
 		return
 	}
@@ -71,7 +71,7 @@ func (h *practiceZipHandler) handle(w http.ResponseWriter, r *http.Request) {
 
 	files, err := h.labs.ReadPracticeFiles(r.Context(), practice, lang)
 	if err != nil {
-		log.Printf("labs.zip: gcs read lab=%q slug=%q: %v", labID, slug, err)
+		log.Printf("catalog: practice.zip gcs lab=%q slug=%q: %v", labID, slug, err)
 		writeError(w, http.StatusNotFound, "practice_bundle_unavailable")
 		return
 	}
@@ -99,16 +99,11 @@ func (h *practiceZipHandler) handle(w http.ResponseWriter, r *http.Request) {
 		entry := folder + "/" + name
 		wr, err := zw.Create(entry)
 		if err != nil {
-			log.Printf("labs.zip: zip create %q: %v", entry, err)
 			continue
 		}
-		if _, err := io.WriteString(wr, f.Content); err != nil {
-			log.Printf("labs.zip: write %q: %v", entry, err)
-		}
+		_, _ = io.WriteString(wr, f.Content)
 	}
-	if err := zw.Close(); err != nil {
-		log.Printf("labs.zip: close zip: %v", err)
-	}
+	_ = zw.Close()
 }
 
 // RawConceptPractice returns the practice subdocument for a concept (for GCS zip and submit).

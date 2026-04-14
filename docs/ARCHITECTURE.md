@@ -32,7 +32,6 @@ tracelab/
     api/
       cmd/server/             # API entrypoint
       cmd/seed-certifications # certification metadata seeding (Mongo)
-      cmd/backfill-concept-certification-ids # one-time legacy tag → certification_ids
       cmd/sync-sandbox-practice # embedded practice sandbox → Mongo
       internal/
         auth/                 # OAuth/session/user persistence
