@@ -75,6 +75,7 @@ func (r *PracticeRepository) FetchCanonicalFiles(
 		}
 	}
 
+	// Legacy: embedded file bodies on the concept (omit once practice.storage is gcs and blobs are stripped).
 	var pe practiceEmbedded
 	b, err := bson.Marshal(practice)
 	if err != nil {

@@ -32,7 +32,7 @@ tracelab/
     api/
       cmd/server/             # API entrypoint
       cmd/seed-certifications # certification seeding tool
-      cmd/sync-sandbox-practice # practice sync tool
+      cmd/sync-sandbox-practice # embedded practice sandbox → Mongo
       internal/
         auth/                 # OAuth/session/user persistence
         catalog/              # lab/concept catalog endpoints

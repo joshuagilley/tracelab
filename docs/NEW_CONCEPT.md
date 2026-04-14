@@ -80,7 +80,7 @@ For simulations:
 
 ## 6) Sync practice files to Mongo
 
-Use the existing sync command (do not add one-off make targets):
+**Embedded practice** (files stored on the concept): use the sync command:
 
 ```bash
 make sync-sandbox-mongo \
@@ -90,6 +90,8 @@ make sync-sandbox-mongo \
   FOLDER=<folder-inside-zip> \
   FILES=<comma-separated-files>
 ```
+
+**GCS-backed practice** (`practice.storage: "gcs"`, sources in the bucket): put objects under `practice.path` / language segments; set slim `languages` metadata in Mongo (no embedded `files` on the concept).
 
 ## 7) Optional track alignment
 

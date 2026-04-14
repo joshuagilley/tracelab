@@ -68,6 +68,7 @@ export interface PracticeConfig {
   path?: string
   zipName: string
   folder: string
+  /** Legacy embedded scaffold; omit for gcs-backed labs after DB cleanup. */
   files?: PracticeFile[]
   languages?: PracticeLanguageBundle[]
 }

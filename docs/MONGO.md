@@ -73,21 +73,7 @@ Object reads are **limited to basenames** listed under `language_file_structure`
 
 Grant the Cloud Run API service account **Storage Object Viewer** on the practice bucket (or a tighter custom role) so the server can list and read objects.
 
-**Cleaning legacy embedded blobs** after migrating a concept to GCS:
-
-```js
-db.Concepts.updateOne(
-  { _id: 'system-design/your-slug' },
-  {
-    $unset: {
-      'practice.files': '',
-      'practice.languages.$[].files': '',
-    },
-  },
-)
-```
-
-(Adjust `_id` and paths; confirm documents in GCS before unsetting.)
+GCS-backed concepts should **not** store `practice.files` or `practice.languages[].files` in Mongo (sources live in GCS only).
 
 ## Certifications (`CERTIFICATIONS_COLLECTION`, default `Certifications`)
 
@@ -152,5 +138,5 @@ Indexes:
 ## Practical workflow tips
 
 - Keep `Labs` as structure and `Concepts` as detail payload source.
-- Use `make sync-sandbox-mongo` for practice content updates.
+- Use `make sync-sandbox-mongo` for **embedded** practice content updates (sandbox → Mongo).
 - Use `make seed-certifications` when track tags/default certs change.

@@ -1,5 +1,5 @@
-// Command sync-sandbox-practice reads files from sandbox/<path> and $set practice on a Concepts document.
-// This is the only practice-sync binary. From repo root, prefer:
+// Command sync-sandbox-practice reads files from sandbox/<path> and $set embedded practice on a Concepts document.
+// GCS-backed labs keep sources in the bucket; do not use this tool for those. From repo root, prefer:
 //
 //	make sync-sandbox-mongo SANDBOX=... CONCEPT=... ZIP=... FOLDER=... FILES=...
 //
@@ -53,7 +53,7 @@ type practicePayload struct {
 
 type practiceLanguagePayload struct {
 	Type  string         `bson:"type"`
-	Files []practiceFile `bson:"files"`
+	Files []practiceFile `bson:"files,omitempty"`
 }
 
 type languageSpec struct {
