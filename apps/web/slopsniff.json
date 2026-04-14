@@ -1,0 +1,30 @@
+{
+  "fail-threshold": 20,
+  "max-file-lines-warning": 400,
+  "max-file-lines-high": 800,
+  "max-function-lines-warning": 50,
+  "max-function-lines-high": 100,
+  "exclude-severities": [],
+  "exclude-dirs": [
+    ".git",
+    "node_modules",
+    ".nuxt",
+    "dist",
+    "build",
+    ".venv",
+    "coverage",
+    "tests",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache"
+  ],
+  "include": [
+    "fallback-defaults",
+    "exposed-secrets",
+    "large-function",
+    "large-file",
+    "duplicate-functions",
+    "helper-sprawl"
+  ]
+}

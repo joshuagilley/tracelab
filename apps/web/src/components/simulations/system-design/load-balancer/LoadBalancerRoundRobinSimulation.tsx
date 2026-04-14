@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import cachingStyles from './CachingSimulation.module.css'
+import cachingStyles from '@/components/simulations/system-design/caching/CachingSimulation.module.css'
 import styles from './LoadBalancerRoundRobinSimulation.module.css'
 
 const LABELS = ['A', 'B', 'C'] as const

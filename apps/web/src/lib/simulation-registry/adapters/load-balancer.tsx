@@ -1,4 +1,4 @@
-import LoadBalancerRoundRobinSimulation from '@/components/simulations/system-design/LoadBalancerRoundRobinSimulation'
+import LoadBalancerRoundRobinSimulation from '@/components/simulations/system-design/load-balancer/LoadBalancerRoundRobinSimulation'
 import type { VizProps } from '../types'
 
 export function LoadBalancerRRViz({ onMetrics, isRunning, onToggleRun }: VizProps) {

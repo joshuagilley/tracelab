@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { CachingSimulationVisNode } from './CachingSimulationVisNode'
 import styles from './CachingSimulation.module.css'
 
 // ─── Packet animation types ────────────────────────────────────
@@ -185,7 +186,7 @@ export default function CachingSimulation({ isRunning, hitRate, onMetrics, onTog
         >
           <ConnLines />
           {Object.entries(NODES).map(([key, n]) => (
-            <VisNode
+            <CachingSimulationVisNode
               key={key}
               node={n}
               highlight={key === 'cache'}
@@ -259,61 +260,5 @@ function ConnLines() {
         />
       ))}
     </>
-  )
-}
-
-interface VisNodeProps {
-  node: { x: number; y: number; w: number; h: number; label: string; sub: string }
-  highlight?: boolean
-}
-
-function VisNode({ node, highlight = false }: VisNodeProps) {
-  const { x, y, w, h, label, sub } = node
-  const border = highlight ? 'var(--accent)' : '#2a3254'
-  const bg     = highlight ? 'rgba(61,232,200,0.06)' : 'var(--bg-elevated)'
-  const color  = highlight ? 'var(--accent)' : 'var(--text-secondary)'
-
-  return (
-    <g>
-      <rect
-        x={x} y={y} width={w} height={h}
-        rx={8}
-        fill={bg}
-        stroke={border}
-        strokeWidth={highlight ? 1.5 : 1}
-      />
-      {highlight && (
-        <rect
-          x={x} y={y} width={w} height={h}
-          rx={8}
-          fill="none"
-          stroke="var(--accent)"
-          strokeWidth={1}
-          opacity={0.3}
-          style={{ filter: 'blur(3px)' }}
-        />
-      )}
-      <text
-        x={x + w / 2} y={y + h / 2 - 8}
-        textAnchor="middle"
-        fill={color}
-        fontSize={12}
-        fontFamily="var(--font-mono)"
-        fontWeight="600"
-        letterSpacing="0.05em"
-      >
-        {label}
-      </text>
-      <text
-        x={x + w / 2} y={y + h / 2 + 10}
-        textAnchor="middle"
-        fill="var(--text-muted)"
-        fontSize={9}
-        fontFamily="var(--font-mono)"
-        letterSpacing="0.04em"
-      >
-        {sub.toUpperCase()}
-      </text>
-    </g>
   )
 }

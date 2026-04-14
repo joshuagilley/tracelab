@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import CachingSimulation, { type SimMetrics } from '@/components/simulations/system-design/CachingSimulation'
+import CachingSimulation, { type SimMetrics } from '@/components/simulations/system-design/caching/CachingSimulation'
 import type { VizProps } from '../types'
 
 const EMPTY_CACHING_METRICS: Record<string, string> = {

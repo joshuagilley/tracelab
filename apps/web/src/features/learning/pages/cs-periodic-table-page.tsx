@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/auth'
 import { LAB_OPTIONS, type LabId } from '@/contexts/lab'
 import { labTracksConceptProgress } from '@/features/learning/progress/section-expectations'
 import { TRACELAB_COMPLETED_EVENT, fetchLabCompleted } from '@/features/learning/api/completed-api'
-import { getAllCatalogTiles, tileSymbol, type CatalogTile } from '@/lib/catalog-tiles'
-import { LAB_ACCENT_HEX } from '@/lib/lab-accent-hex'
+import { CsPeriodicTableTile } from '@/features/learning/pages/CsPeriodicTableTile'
+import { getAllCatalogTiles, type CatalogTile } from '@/lib/catalog-tiles'
 import styles from './cs-periodic-table-page.module.css'
 
 type PublicationFilter = 'all' | 'published' | 'soon'
@@ -35,68 +35,6 @@ function tileMatchesFilters(
   if (progress === 'complete' && !done) return false
   if (progress === 'incomplete' && done) return false
   return true
-}
-
-function TileView({
-  tile,
-  index,
-  complete,
-}: {
-  tile: CatalogTile
-  index: number
-  complete: boolean
-}) {
-  const accent = LAB_ACCENT_HEX[tile.labId] ?? '#9aa3b5'
-  const sym = tileSymbol(tile.title, tile.slug)
-  const popover = (
-    <div className={styles.popover} role="tooltip">
-      <p className={styles.popoverTitle}>{tile.title}</p>
-      <p className={styles.popoverMeta}>
-        <span>
-          <strong>{tile.labLabel}</strong>
-        </span>
-        <span>{tile.difficulty}</span>
-        <span>{tile.status === 'available' ? 'Published' : 'Soon'}</span>
-        {complete && <span>Done</span>}
-      </p>
-      <p className={styles.popoverSummary}>{tile.summary}</p>
-      <p className={styles.popoverCta}>
-        {tile.status === 'available' ? 'Click to open lesson' : 'Coming soon'}
-      </p>
-    </div>
-  )
-
-  const classForState = [
-    styles.tile,
-    tile.status === 'coming-soon' ? styles.tileSoon
-    : complete ? styles.tileComplete
-    : styles.tileAvailable,
-    tile.status === 'available' ? styles.tileInteractive : '',
-  ].join(' ')
-
-  const style = { '--tile-accent': accent } as CSSProperties
-
-  if (tile.status === 'available') {
-    return (
-      <Link
-        to={`/concept/${encodeURIComponent(tile.slug)}?lab=${encodeURIComponent(tile.labId)}`}
-        className={classForState}
-        style={style}
-      >
-        {popover}
-        <span className={styles.atomic}>{index + 1}</span>
-        <span className={styles.symbol}>{sym}</span>
-      </Link>
-    )
-  }
-
-  return (
-    <div className={classForState} style={style}>
-      {popover}
-      <span className={styles.atomic}>{index + 1}</span>
-      <span className={styles.symbol}>{sym}</span>
-    </div>
-  )
 }
 
 export default function CsPeriodicTablePage() {
@@ -261,7 +199,7 @@ export default function CsPeriodicTablePage() {
       ) : (
         <div className={styles.grid}>
           {filteredTiles.map((tile, i) => (
-            <TileView
+            <CsPeriodicTableTile
               key={`${tile.labId}-${tile.slug}`}
               tile={tile}
               index={i}

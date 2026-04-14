@@ -1,21 +1,8 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react'
+import { createContext, useContext, useMemo, type ReactNode } from 'react'
 import type { LabId } from '@/contexts/lab'
 import { useAuth } from '@/contexts/auth'
-import {
-  dispatchCompletedUpdated,
-  fetchConceptCompleted,
-  putConceptCompleted,
-  type CompletedStatus,
-} from '@/features/learning/api/completed-api'
+import { useConceptCompletionState } from '@/contexts/conceptProgressHooks'
+import type { CompletedStatus } from '@/features/learning/api/completed-api'
 
 interface ConceptProgressContextValue {
   conceptFullyDone: boolean
@@ -39,46 +26,7 @@ export function ConceptProgressProvider({
   children: ReactNode
 }) {
   const { user } = useAuth()
-  const [status, setStatus] = useState<CompletedStatus>({ completed: false, completedAt: null })
-  const [loaded, setLoaded] = useState(false)
-  const statusRef = useRef(status)
-  statusRef.current = status
-
-  useEffect(() => {
-    let cancelled = false
-    setLoaded(false)
-    void (async () => {
-      const s = await fetchConceptCompleted(labId, conceptSlug)
-      if (!cancelled) {
-        setStatus(s)
-        setLoaded(true)
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [labId, conceptSlug, user?.id])
-
-  const setCompleted = useCallback(
-    async (completed: boolean) => {
-      if (!user) return
-      const prev = statusRef.current
-      // Optimistic update
-      setStatus({ completed, completedAt: completed ? new Date().toISOString() : null })
-      try {
-        const next = await putConceptCompleted(labId, conceptSlug, completed)
-        if (next == null) {
-          setStatus(prev)
-          return
-        }
-        setStatus(next)
-        dispatchCompletedUpdated(labId)
-      } catch {
-        setStatus(prev)
-      }
-    },
-    [user, labId, conceptSlug],
-  )
+  const { status, loaded, setCompleted, setStatus } = useConceptCompletionState(labId, conceptSlug, user)
 
   const completedAt = useMemo(
     () => (status.completedAt ? new Date(status.completedAt) : null),
@@ -95,7 +43,7 @@ export function ConceptProgressProvider({
       setConceptDone: setCompleted,
       applyCompletionStatus: setStatus,
     }),
-    [status.completed, completedAt, user, loaded, setCompleted],
+    [status.completed, completedAt, user, loaded, setCompleted, setStatus],
   )
 
   return (

@@ -1,16 +1,11 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react'
+import { createContext, useContext, useMemo, type ReactNode } from 'react'
 import { useAuth } from '@/contexts/auth'
-import { fetchCertifications, type CertificationOption } from '@/lib/certifications/api'
-
-const guestSelectionKey = 'tracelab_current_career_track'
+import type { CertificationOption } from '@/lib/certifications/api'
+import {
+  useCareerTrackSetter,
+  useCertificationsQuery,
+  useSyncedCareerTrackId,
+} from '@/contexts/careerTrackHooks'
 
 interface CareerTrackContextValue {
   certifications: CertificationOption[]
@@ -24,48 +19,9 @@ const CareerTrackContext = createContext<CareerTrackContextValue | null>(null)
 
 export function CareerTrackProvider({ children }: { children: ReactNode }) {
   const { user, setCareerTrack } = useAuth()
-  const [certifications, setCertifications] = useState<CertificationOption[]>([])
-  const [selectedTrackId, setSelectedTrackIdState] = useState('')
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    let cancelled = false
-    fetchCertifications()
-      .then(items => {
-        if (!cancelled) setCertifications(items)
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => {
-    if (user?.currentCareerTrackId) {
-      setSelectedTrackIdState(user.currentCareerTrackId)
-      return
-    }
-    const local = window.localStorage.getItem(guestSelectionKey) ?? ''
-    setSelectedTrackIdState(local)
-  }, [user?.currentCareerTrackId])
-
-  const setSelectedTrackId = useCallback(
-    async (trackId: string) => {
-      setSelectedTrackIdState(trackId)
-      if (user) {
-        await setCareerTrack(trackId)
-        return
-      }
-      if (trackId) {
-        window.localStorage.setItem(guestSelectionKey, trackId)
-      } else {
-        window.localStorage.removeItem(guestSelectionKey)
-      }
-    },
-    [setCareerTrack, user],
-  )
+  const { certifications, loading } = useCertificationsQuery()
+  const [selectedTrackId, setSelectedTrackIdState] = useSyncedCareerTrackId(user?.currentCareerTrackId)
+  const setSelectedTrackId = useCareerTrackSetter(user, setCareerTrack, setSelectedTrackIdState)
 
   const selectedTrack = useMemo(
     () => certifications.find(c => c.id === selectedTrackId) ?? null,

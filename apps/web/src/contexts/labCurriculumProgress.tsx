@@ -1,20 +1,7 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react'
-import { fetchSectionConcepts } from '@/features/curriculum/curriculum-api'
-import {
-  fetchLabCompleted,
-  TRACELAB_COMPLETED_EVENT,
-} from '@/features/learning/api/completed-api'
-import { labTracksConceptProgress } from '@/features/learning/progress/section-expectations'
+import { createContext, useContext, useMemo, type ReactNode } from 'react'
 import { useAuth } from '@/contexts/auth'
-import { useLab, type LabId } from '@/contexts/lab'
+import { useLab } from '@/contexts/lab'
+import { useLabCompletedSlugs, useLabSectionConcepts } from '@/contexts/labCurriculumProgressHooks'
 import type { Concept } from '@/types/concept'
 
 export interface LabTotals {
@@ -34,49 +21,8 @@ const LabCurriculumProgressContext = createContext<LabCurriculumProgressValue | 
 export function LabCurriculumProgressProvider({ children }: { children: ReactNode }) {
   const { labId } = useLab()
   const { user } = useAuth()
-  const [concepts, setConcepts] = useState<Concept[]>([])
-  const [completedSlugsList, setCompletedSlugsList] = useState<string[]>([])
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setConcepts(await fetchSectionConcepts(labId))
-      } catch {
-        setConcepts([])
-      }
-    }
-    void load()
-  }, [labId])
-
-  const reloadProgress = useCallback(async () => {
-    if (!user || !labTracksConceptProgress(labId)) {
-      setCompletedSlugsList([])
-      return
-    }
-    try {
-      setCompletedSlugsList(await fetchLabCompleted(labId))
-    } catch {
-      setCompletedSlugsList([])
-    }
-  }, [user, labId])
-
-  useEffect(() => {
-    void reloadProgress()
-  }, [reloadProgress])
-
-  useEffect(() => {
-    const onUpdate = (e: Event) => {
-      const ce = e as CustomEvent<{ labId?: LabId }>
-      if (ce.detail?.labId === labId) void reloadProgress()
-    }
-    window.addEventListener(TRACELAB_COMPLETED_EVENT, onUpdate)
-    return () => window.removeEventListener(TRACELAB_COMPLETED_EVENT, onUpdate)
-  }, [labId, reloadProgress])
-
-  const completedSlugs = useMemo(
-    () => new Set(completedSlugsList),
-    [completedSlugsList],
-  )
+  const concepts = useLabSectionConcepts(labId)
+  const { completedSlugs, reloadProgress } = useLabCompletedSlugs(labId, user)
 
   const labTotals = useMemo((): LabTotals => {
     const available = concepts.filter(c => c.status === 'available')

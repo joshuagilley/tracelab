@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import {
+  applySingletonCompletions,
+  reduceSingletonParticles,
+  spawnSingletonParticles,
+} from '@/components/simulations/design-patterns/singletonSimulationFrame'
+import type { SingletonParticle, SingletonStats } from '@/components/simulations/design-patterns/singletonSimulationTypes'
 import SingletonInfoModal from './SingletonInfoModal'
 import styles from './SingletonSimulation.module.css'
 
-export interface SingletonStats {
-  getInstanceCalls: number
-  initRuns: number
-  fastPathReturns: number
-}
+export type { SingletonStats } from '@/components/simulations/design-patterns/singletonSimulationTypes'
 
 interface Props {
   isRunning: boolean
@@ -16,12 +18,6 @@ interface Props {
   emphasizeOnce: boolean
   stressMode: boolean
   onStatsChange: (s: SingletonStats) => void
-}
-
-interface Particle {
-  id: number
-  t: number
-  handlerIndex: number
 }
 
 const PATH_SPEED = 0.85 // full path per second
@@ -38,7 +34,7 @@ export default function SingletonSimulation({
   const uid = useId().replace(/:/g, '')
   const m2 = `${uid}-arr2`
 
-  const [particles, setParticles] = useState<Particle[]>([])
+  const [particles, setParticles] = useState<SingletonParticle[]>([])
   const [oncePulse, setOncePulse] = useState(false)
   const [onceDone, setOnceDone] = useState(false)
   const [callCount, setCallCount] = useState(0)
@@ -87,48 +83,23 @@ export default function SingletonSimulation({
       const interval = spawnIntervalRef.current * (stressRef.current ? 0.5 : 1)
 
       setParticles(prev => {
-        const completed: Particle[] = []
-        const moved = prev
-          .map(p => {
-            const nt = p.t + PATH_SPEED * dt
-            if (nt >= 1) {
-              completed.push(p)
-              return null
-            }
-            return { ...p, t: nt }
-          })
-          .filter((x): x is Particle => x !== null)
-
-        for (const _ of completed) {
-          if (!initDoneRef.current) {
-            initDoneRef.current = true
-            statsRef.current.getInstanceCalls++
-            statsRef.current.initRuns = 1
-            setOnceDone(true)
-            setOncePulse(true)
-            window.setTimeout(() => setOncePulse(false), 380)
-          } else {
-            statsRef.current.getInstanceCalls++
-            statsRef.current.fastPathReturns++
-          }
-          setCallCount(statsRef.current.getInstanceCalls)
-          onStatsChange({ ...statsRef.current })
-        }
-
-        spawnAcc += dt * 1000
-        let extra: Particle[] = []
-        while (spawnAcc >= interval) {
-          spawnAcc -= interval
-          const hi = stressRef.current
-            ? Math.floor(Math.random() * n)
-            : Math.floor((now / 250) % n)
-          extra.push({
-            id: nextId.current++,
-            t: 0,
-            handlerIndex: hi,
-          })
-        }
-
+        const { next: moved, completed } = reduceSingletonParticles(prev, dt, PATH_SPEED)
+        applySingletonCompletions(completed, { initDoneRef, statsRef }, {
+          setOnceDone,
+          setOncePulse,
+          setCallCount,
+          onStatsChange,
+        })
+        const { spawnAcc: nextAcc, extra } = spawnSingletonParticles(
+          spawnAcc,
+          dt,
+          interval,
+          n,
+          now,
+          stressRef.current,
+          nextId,
+        )
+        spawnAcc = nextAcc
         return [...moved, ...extra]
       })
 
