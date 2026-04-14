@@ -93,6 +93,8 @@ make sync-sandbox-mongo \
 
 **GCS-backed practice** (`practice.storage: "gcs"`, sources in the bucket): put objects under `practice.path` / language segments; set slim `languages` metadata in Mongo (no embedded `files` on the concept).
 
+**GCS-backed lesson `codeFiles`:** set `codeFilesStorage: gcs`, `codeFilesPath` (`concepts/<_id>`), and objects in the bucket (`good.go`, `bad.go`, …). The **`codeFiles`** array on the concept is optional; the API can build the lesson from GCS object listing (see `docs/MONGO.md`).
+
 ## 7) Optional track alignment
 
 If the concept should count for specific certifications, align concept `tags` with relevant certification `track_tags` and run:

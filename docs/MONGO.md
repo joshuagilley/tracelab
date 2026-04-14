@@ -50,10 +50,18 @@ Required baseline:
 
 Common optional fields:
 
-- `codeFiles[]`
+- `codeFiles[]` (lesson panel sources — see below)
 - `metricGroups[]`
 - `parameters[]`
 - `practice` with `zipName`, `folder`, and optional `languages[]`
+
+### codeFiles (embedded vs GCS)
+
+**Embedded (legacy):** each `codeFiles[]` entry has `name`, `lang`, optional `role` (`present`, `bad`, or `exercise`), and `code` or `content` with the full source.
+
+**GCS-backed:** set `codeFilesStorage` to `gcs`, optional `codeFilesBucket`, and `codeFilesPath` (default pattern `concepts/<_id>`). Store sources under that prefix in the bucket (e.g. **`good.go`**, **`bad.go`**, **`exercise.go`** — `good.*` maps to UI role **`present`**). The **`codeFiles`** field on the concept is **optional**: if missing or empty, `GET /api/catalog/lesson` **lists objects under `codeFilesPath`** and builds the lesson payload (names, langs, roles from `good` / `bad` / `exercise` prefixes). Keep **`codeFilesStorage`**, **`codeFilesPath`**, and **`codeFilesBucket`** on the document.
+
+`GET /api/catalog/lesson` requires **`GCS_LABS_BUCKET`** (and read IAM) on the API.
 
 **Embedded practice** (default): file bodies live in Mongo.
 

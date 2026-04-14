@@ -44,6 +44,9 @@ func findConceptRow(labDoc bson.M, slug string) (bson.M, error) {
 // Detail document overrides catalog row fields except identity keys (_id, lab).
 // When row is nil (concepts stored only in Concepts collection), detail supplies all fields including slug.
 func mergeLesson(row, detail bson.M) bson.M {
+	if detail != nil {
+		SlimCodeFilesForAPI(detail)
+	}
 	out := bson.M{}
 	if row != nil {
 		for k, v := range row {
@@ -65,9 +68,13 @@ func mergeLesson(row, detail bson.M) bson.M {
 		rowCF = codeFilesFromDoc(row)
 	}
 	var merged []any
-	if len(detailCF) > 0 {
+	switch {
+	case len(detailCF) > 0:
 		merged = detailCF
-	} else {
+	case detail != nil && codeFilesStorageIsGCS(detail):
+		// Manifest-only in Mongo; GET /api/catalog/lesson hydrates from GCS object listing.
+		merged = []any{}
+	default:
 		merged = placeholderCodeFiles(rowCF)
 	}
 	out["codeFiles"] = normalizeCodeFilesForLesson(merged)
@@ -163,12 +170,13 @@ func normalizeCodeFile(cm bson.M) (bson.M, bool) {
 	lang, _ := m["lang"].(string)
 	if strings.TrimSpace(lang) == "" {
 		name, _ := m["name"].(string)
-		m["lang"] = inferCodeLangFromName(name)
+		m["lang"] = InferCodeLangFromName(name)
 	}
 	return m, true
 }
 
-func inferCodeLangFromName(name string) string {
+// InferCodeLangFromName maps a filename to a highlight.js language id.
+func InferCodeLangFromName(name string) string {
 	lower := strings.ToLower(name)
 	switch {
 	case strings.HasSuffix(lower, ".go"):

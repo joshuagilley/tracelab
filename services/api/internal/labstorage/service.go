@@ -48,3 +48,22 @@ func (s *Service) ReadPracticeFiles(ctx context.Context, practice bson.M, langua
 	allowed := s.labsAllow.Basenames(lang)
 	return s.reader.ReadAllFiles(ctx, bucket, prefix, allowed)
 }
+
+// ReadFilesUnderPrefix reads every object under prefix/ in bucket (or the service default bucket when bucket is empty).
+func (s *Service) ReadFilesUnderPrefix(ctx context.Context, bucket, prefix string) ([]practicefiles.File, error) {
+	if !s.Enabled() {
+		return nil, errors.New("lab GCS not configured")
+	}
+	b := strings.TrimSpace(bucket)
+	if b == "" {
+		b = s.defaultBucket
+	}
+	if b == "" {
+		return nil, errors.New("empty bucket")
+	}
+	p := strings.Trim(strings.TrimSpace(prefix), "/")
+	if p == "" {
+		return nil, errors.New("empty prefix")
+	}
+	return s.reader.ReadAllFiles(ctx, b, p, nil)
+}

@@ -64,5 +64,11 @@ func (h *Handler) handleLesson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := HydrateCodeFilesFromGCS(r.Context(), h.labs, lesson, labID+"/"+slug); err != nil {
+		log.Printf("catalog: hydrate codeFiles lab=%q slug=%q: %v", labID, slug, err)
+		writeError(w, http.StatusBadGateway, "code_files_unavailable")
+		return
+	}
+
 	auth.WriteJSON(w, http.StatusOK, lesson)
 }

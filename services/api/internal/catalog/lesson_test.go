@@ -23,7 +23,7 @@ func TestInferCodeLangFromName(t *testing.T) {
 		"unknown.xyz": "text",
 	}
 	for name, want := range cases {
-		if got := inferCodeLangFromName(name); got != want {
+		if got := InferCodeLangFromName(name); got != want {
 			t.Errorf("%q: got %q want %q", name, got, want)
 		}
 	}

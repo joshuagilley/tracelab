@@ -76,6 +76,7 @@ export interface PracticeConfig {
 export interface LabConceptDetail extends Concept {
   labKind: string
   vizType: string
+  /** Lesson panel sources; bodies may be merged from GCS when the API uses gcs-backed concepts. */
   codeFiles: LabCodeFile[]
   parameters?: LabParameter[]
   metricGroups?: MetricGroupDef[]
