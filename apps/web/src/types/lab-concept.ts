@@ -53,11 +53,19 @@ export interface PracticeFile {
 
 export interface PracticeLanguageBundle {
   type: string
-  files: PracticeFile[]
+  /** Embedded scaffold sources (omitted when practice.storage is gcs). */
+  files?: PracticeFile[]
+  /** GCS object subpath for this language (e.g. go, typescript). */
+  pathSegment?: string
 }
 
 /** Config for the downloadable local practice ZIP attached to a concept */
 export interface PracticeConfig {
+  /** When `gcs`, files are fetched from the API / bucket instead of embedded JSON. */
+  storage?: string
+  bucket?: string
+  /** GCS prefix segment after bucket (e.g. labs/system-design/caching). */
+  path?: string
   zipName: string
   folder: string
   files?: PracticeFile[]

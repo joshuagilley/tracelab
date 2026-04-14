@@ -8,6 +8,7 @@ import (
 
 	"github.com/tracelab/api/internal/auth"
 	"github.com/tracelab/api/internal/config"
+	"github.com/tracelab/api/internal/labstorage"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -22,9 +23,10 @@ func NewHandler(
 	cfg *config.Config,
 	store *Store,
 	conceptsColl *mongo.Collection,
+	labSvc *labstorage.Service,
 	notifier *BadgeNotifier,
 ) *Handler {
-	repo := NewPracticeRepository(conceptsColl)
+	repo := NewPracticeRepository(conceptsColl, labSvc)
 	runner := NewGoRunner(defaultPracticeRunTimeout)
 	svc := NewService(store, repo, runner)
 	return &Handler{cfg: cfg, store: store, service: svc, notifier: notifier}

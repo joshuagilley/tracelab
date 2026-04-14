@@ -20,6 +20,8 @@ type Config struct {
 	ConceptsColl string
 	// BadgeEmailsColl stores sent badge email receipts for idempotency.
 	BadgeEmailsColl string
+	// ConfigColl holds app config documents (e.g. config_type: labs → language_file_structure for GCS allowlists).
+	ConfigColl string
 
 	GitHubClientID     string
 	GitHubClientSecret string
@@ -39,6 +41,9 @@ type Config struct {
 	SMTPUser string
 	SMTPPass string
 	SMTPFrom string
+
+	// GCSLabsBucket is the bucket id (e.g. tracelab-labs) for practice lab files. Empty disables GCS reads.
+	GCSLabsBucket string
 }
 
 func Load() *Config {
@@ -55,6 +60,7 @@ func Load() *Config {
 		LabsColl:            envDefault("LABS_COLLECTION", "Labs"),
 		ConceptsColl:        envDefault("CONCEPTS_COLLECTION", "Concepts"),
 		BadgeEmailsColl:     envDefault("BADGE_EMAILS_COLLECTION", "BadgeEmails"),
+		ConfigColl:          envDefault("CONFIG_COLLECTION", "Config"),
 		GitHubClientID:      env("GITHUB_CLIENT_ID"),
 		GitHubClientSecret:  env("GITHUB_CLIENT_SECRET"),
 		OAuthCallbackURL:    normalizeURLish(env("OAUTH_CALLBACK_URL")),
@@ -67,6 +73,7 @@ func Load() *Config {
 		SMTPUser:            env("SMTP_USER"),
 		SMTPPass:            env("SMTP_PASS"),
 		SMTPFrom:            env("SMTP_FROM"),
+		GCSLabsBucket:       strings.TrimSpace(envDefault("GCS_LABS_BUCKET", "")),
 	}
 }
 

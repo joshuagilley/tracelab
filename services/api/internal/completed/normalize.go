@@ -19,6 +19,20 @@ func pickSubmittedFile(files []SubmittedFile, target string) (string, bool) {
 	return "", false
 }
 
+// mainFileForLanguage is the conventional entry filename for submit (after normalizedLanguage).
+func mainFileForLanguage(language string) string {
+	switch language {
+	case "go":
+		return "main.go"
+	case "python":
+		return "main.py"
+	case "typescript":
+		return "main.ts"
+	default:
+		return ""
+	}
+}
+
 // stripBuildConstraintsFromSubmittedMain removes leading //go:build / // +build lines so
 // pasted solution stubs still compile under go test.
 func stripBuildConstraintsFromSubmittedMain(src string) string {

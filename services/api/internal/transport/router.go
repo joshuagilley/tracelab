@@ -4,13 +4,18 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strings"
 	"time"
+
+	"cloud.google.com/go/storage"
 
 	"github.com/tracelab/api/internal/auth"
 	"github.com/tracelab/api/internal/catalog"
 	"github.com/tracelab/api/internal/certifications"
 	"github.com/tracelab/api/internal/completed"
 	"github.com/tracelab/api/internal/config"
+	"github.com/tracelab/api/internal/labconfig"
+	"github.com/tracelab/api/internal/labstorage"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -34,8 +39,10 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 	certificationsColl := db.Collection(cfg.CertificationsColl)
 	completedColl := db.Collection(cfg.CompletedColl)
 	badgeEmailsColl := db.Collection(cfg.BadgeEmailsColl)
+	configColl := db.Collection(cfg.ConfigColl)
 
-	registerCatalogRoutes(mux, labsColl, conceptsColl)
+	labSvc := newLabStorageService(cfg, configColl)
+	registerCatalogRoutes(mux, labsColl, conceptsColl, labSvc)
 	registerCertificationsRoutes(mux, cfg, certificationsColl)
 
 	if cfg.AuthConfigured() {
@@ -46,6 +53,7 @@ func NewRouter(cfg *config.Config, mongoClient *mongo.Client) http.Handler {
 			completedColl,
 			labsColl,
 			conceptsColl,
+			labSvc,
 			usersColl,
 			certificationsColl,
 			badgeEmailsColl,
@@ -66,8 +74,31 @@ func registerHealth(mux *http.ServeMux) {
 	})
 }
 
-func registerCatalogRoutes(mux *http.ServeMux, labsColl, conceptsColl *mongo.Collection) {
-	catalog.NewHandler(catalog.NewStore(labsColl, conceptsColl)).Register(mux)
+func registerCatalogRoutes(mux *http.ServeMux, labsColl, conceptsColl *mongo.Collection, labSvc *labstorage.Service) {
+	store := catalog.NewStore(labsColl, conceptsColl)
+	catalog.NewHandler(store, labSvc).Register(mux)
+}
+
+func newLabStorageService(cfg *config.Config, configColl *mongo.Collection) *labstorage.Service {
+	bucket := strings.TrimSpace(cfg.GCSLabsBucket)
+	if bucket == "" {
+		return nil
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		log.Printf("gcs labs: disabled (client error): %v", err)
+		return nil
+	}
+	var labsAllow *labconfig.LabsAllowlist
+	if al, err := labconfig.LoadLabsAllowlist(ctx, configColl); err != nil {
+		log.Printf("gcs labs: Config labs allowlist skipped: %v", err)
+	} else if al != nil {
+		labsAllow = al
+		log.Printf("gcs labs: using Config language_file_structure allowlist")
+	}
+	return labstorage.NewService(labstorage.NewGCSReader(client), bucket, labsAllow)
 }
 
 func registerCatalogUnavailableRoutes(mux *http.ServeMux) {
@@ -102,7 +133,9 @@ func registerAuthRoutes(mux *http.ServeMux, cfg *config.Config, usersColl *mongo
 func registerCompletedRoutes(
 	mux *http.ServeMux,
 	cfg *config.Config,
-	completedColl, labsColl, conceptsColl, usersColl, certificationsColl, badgeEmailsColl *mongo.Collection,
+	completedColl, labsColl, conceptsColl *mongo.Collection,
+	labSvc *labstorage.Service,
+	usersColl, certificationsColl, badgeEmailsColl *mongo.Collection,
 ) {
 	store := completed.NewStore(completedColl)
 	ensureIndexes("completed", cfg.MongoDBName, cfg.CompletedColl, store.EnsureIndexes)
@@ -117,7 +150,7 @@ func registerCompletedRoutes(
 		labsColl,
 		conceptsColl,
 	)
-	completed.NewHandler(cfg, store, conceptsColl, notifier).Register(mux)
+	completed.NewHandler(cfg, store, conceptsColl, labSvc, notifier).Register(mux)
 }
 
 // registerAuthFallbackRoutes mounts auth stubs when full auth is not active.

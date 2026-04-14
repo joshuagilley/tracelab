@@ -79,6 +79,7 @@ jobs:
             --network ${{ env.VPC_NETWORK }} \
             --subnet ${{ env.VPC_SUBNET }} \
             --vpc-egress all-traffic \
+            --update-env-vars GCS_LABS_BUCKET=tracelab-labs \
             --quiet
 
       - name: Get API service URL

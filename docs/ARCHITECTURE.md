@@ -38,6 +38,9 @@ tracelab/
         catalog/              # lab/concept catalog endpoints
         certifications/       # career track/certification logic
         completed/            # submissions, completion, badge notifier
+        labconfig/            # Config collection → per-language GCS filename allowlist
+        labstorage/           # GCS reads for gcs-backed practice trees
+        practicefiles/        # canonical practice file naming + test picking
         config/               # env/config wiring
         db/                   # mongo connection helpers
         transport/            # route registration
@@ -50,7 +53,7 @@ tracelab/
 1. Web app loads labs via `GET /api/catalog/labs`.
 2. User opens a concept; web requests `GET /api/catalog/lesson?lab=<id>&slug=<slug>`.
 3. API composes lesson payload from `Labs` + `Concepts` data.
-4. Completion/submission flows call `/api/completed` and `/api/completed/submit`.
+4. Completion/submission flows call `/api/completed` and `/api/completed/submit`. When `GCS_LABS_BUCKET` is set and a concept has `practice.storage: gcs`, canonical files for submit and `GET /api/labs/practice.zip` are read from that bucket instead of embedded Mongo fields.
 5. Completion writes to `Completed`; badge notifier checks earned certifications and sends email (SMTP), guarded by `BadgeEmails` idempotency receipts.
 6. Metrics page aggregates published concept data plus completion language metadata from API responses.
 

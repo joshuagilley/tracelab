@@ -17,6 +17,7 @@ MONGO_DB_URI=
 MONGO_DB_NAME=tracelab
 LABS_COLLECTION=Labs
 CONCEPTS_COLLECTION=Concepts
+CONFIG_COLLECTION=Config
 CERTIFICATIONS_COLLECTION=Certifications
 USERS_COLLECTION=Users
 COMPLETED_COLLECTION=Completed
@@ -28,6 +29,9 @@ OAUTH_CALLBACK_URL=http://localhost:5173/api/auth/github/callback
 AUTH_JWT_SECRET=
 FRONTEND_ORIGIN=http://localhost:5173
 AUTH_COOKIE_CROSS_SITE=false
+
+# Optional: default bucket for GCS-backed lab practice trees (see docs/MONGO.md).
+GCS_LABS_BUCKET=
 
 SMTP_HOST=
 SMTP_PORT=587
@@ -42,6 +46,8 @@ SMTP_FROM=
 make install
 make dev
 ```
+
+`make dev` starts the Go API, **waits until `http://127.0.0.1:8080/health` responds**, then starts Vite so the `/api` proxy does not race a slow `go run` compile.
 
 - API runs on `:8080`
 - Web runs on `:5173`

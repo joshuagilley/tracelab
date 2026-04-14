@@ -6,19 +6,22 @@ import (
 	"net/http"
 
 	"github.com/tracelab/api/internal/auth"
+	"github.com/tracelab/api/internal/labstorage"
 )
 
 type Handler struct {
 	store *Store
+	labs  *labstorage.Service
 }
 
-func NewHandler(store *Store) *Handler {
-	return &Handler{store: store}
+func NewHandler(store *Store, labs *labstorage.Service) *Handler {
+	return &Handler{store: store, labs: labs}
 }
 
 func (h *Handler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("/api/catalog/labs", h.handleLabs)
 	mux.HandleFunc("/api/catalog/lesson", h.handleLesson)
+	RegisterPracticeZip(mux, h.store, h.labs)
 }
 
 // GET /api/catalog/labs → { "labs": [ { ...lab doc... }, ... ] }

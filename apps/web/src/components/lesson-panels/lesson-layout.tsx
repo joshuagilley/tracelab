@@ -153,7 +153,17 @@ export default function LessonLayout({
                 type="button"
                 className={styles.markDoneBtn}
                 disabled={!loaded}
-                onClick={() => downloadPracticeZip(practice, normalizedLanguage)}
+                onClick={() => {
+                  setSubmitMessage('')
+                  setSubmitTestOutput(null)
+                  void downloadPracticeZip(practice, {
+                    labId,
+                    slug: conceptSlug,
+                    language: normalizedLanguage,
+                  }).catch(() => {
+                    setSubmitMessage('Could not download the lab. Try again or check your connection.')
+                  })
+                }}
               >
                 Download Lab
               </button>

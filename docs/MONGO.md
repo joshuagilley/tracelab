@@ -4,6 +4,20 @@ Default database name is `tracelab` (`MONGO_DB_NAME`).
 
 Collection names are configurable via env vars; defaults below match code in `services/api/internal/config/config.go`.
 
+## Config (`CONFIG_COLLECTION`, default `Config`)
+
+Optional operational documents keyed by `config_type`.
+
+**`config_type: "labs"`** — expected scaffold filenames per language. When present, the API uses `language_file_structure` to **filter GCS object reads** to those basenames only (skips unrelated objects under the same prefix).
+
+Fields used today:
+
+- `config_type`: `"labs"`
+- optional `languages[]` (informational; not read by the allowlist loader)
+- `language_file_structure`: map of language id → string array of filenames (e.g. `go` → `["LAB.md","go.mod","main.go",…]`)
+
+If the document is missing or the map is empty, GCS reads behave as before (every object under the prefix).
+
 ## Labs (`LABS_COLLECTION`, default `Labs`)
 
 One document per lab section.
@@ -39,12 +53,41 @@ Common optional fields:
 - `codeFiles[]`
 - `metricGroups[]`
 - `parameters[]`
-- `practice` with `zipName`, `folder`, and `languages[]`
+- `practice` with `zipName`, `folder`, and optional `languages[]`
 
-`practice.languages[]` shape:
+**Embedded practice** (default): file bodies live in Mongo.
 
-- `type` (`Go`, `Python`, `TypeScript`, etc.)
-- `files[]` with `{ name, content }`
+- `practice.languages[]`: `type` (`Go`, `Python`, …) and `files[]` with `{ name, content }`
+- optional top-level `practice.files[]` when there is a single bundle
+
+**GCS-backed practice** (large bundles): set `practice.storage` to `gcs` and **omit** `files` / `languages[].files`.
+
+- `practice.path`: object prefix inside the bucket (e.g. `labs/system-design/caching`)
+- optional `practice.bucket` (otherwise the API default from `GCS_LABS_BUCKET` is used)
+- `practice.zipName`, `practice.folder` (ZIP layout and download filename)
+- `practice.languages[]`: `type` plus optional `pathSegment` (e.g. `go`, `typescript`) so each language maps to `path/pathSegment/` in GCS
+
+The API strips embedded bodies for GCS concepts in lesson JSON; the web app downloads via `GET /api/labs/practice.zip?lab=&slug=&language=`. Submit and server-side checks read the same tree from GCS when `GCS_LABS_BUCKET` is configured.
+
+Object reads are **limited to basenames** listed under `language_file_structure` for that language in the **`Config`** document with `config_type: "labs"` when that document exists; otherwise every object under the prefix is read (legacy behavior).
+
+Grant the Cloud Run API service account **Storage Object Viewer** on the practice bucket (or a tighter custom role) so the server can list and read objects.
+
+**Cleaning legacy embedded blobs** after migrating a concept to GCS:
+
+```js
+db.Concepts.updateOne(
+  { _id: 'system-design/your-slug' },
+  {
+    $unset: {
+      'practice.files': '',
+      'practice.languages.$[].files': '',
+    },
+  },
+)
+```
+
+(Adjust `_id` and paths; confirm documents in GCS before unsetting.)
 
 ## Certifications (`CERTIFICATIONS_COLLECTION`, default `Certifications`)
 

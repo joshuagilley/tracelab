@@ -1,5 +1,10 @@
 import { strToU8, zipSync } from 'fflate'
+import { API_BASE } from '@/lib/api-base'
 import type { PracticeConfig } from '@/types/lab-concept'
+
+export function practiceUsesGcsStorage(config: PracticeConfig): boolean {
+  return String(config.storage ?? '').trim().toLowerCase() === 'gcs'
+}
 
 /** Zip entry path inside the archive: "<folder>/<relative path>". Rejects ".." and other unsafe segments. */
 export function practiceZipEntryPath(folder: string, fileName: string): string {
@@ -26,11 +31,12 @@ export function resolvePracticeFiles(config: PracticeConfig, languageType?: stri
   const selected = languageType?.trim().toLowerCase()
   if (selected && Array.isArray(config.languages) && config.languages.length > 0) {
     const match = config.languages.find(bundle => bundle.type.trim().toLowerCase() === selected)
-    if (match) return match.files
+    if (match?.files) return match.files
   }
   if (Array.isArray(config.files)) return config.files
   if (Array.isArray(config.languages) && config.languages.length > 0) {
-    return config.languages[0].files
+    const first = config.languages[0].files
+    if (Array.isArray(first)) return first
   }
   return []
 }
@@ -45,17 +51,46 @@ export function buildPracticeZip(config: PracticeConfig, languageType?: string):
   return zipSync(entries)
 }
 
-/** Trigger a browser download of the practice ZIP. */
-export function downloadPracticeZip(config: PracticeConfig, languageType?: string): void {
-  const bytes = buildPracticeZip(config, languageType)
-  const blob = new Blob([bytes.buffer as ArrayBuffer], { type: 'application/zip' })
+function triggerBlobDownload(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = config.zipName
+  a.download = filename
   a.rel = 'noopener'
   document.body.appendChild(a)
   a.click()
   a.remove()
   URL.revokeObjectURL(url)
+}
+
+async function downloadPracticeZipFromGcs(
+  practice: PracticeConfig,
+  ctx: { labId: string; slug: string; language?: string },
+): Promise<void> {
+  const lang = (ctx.language ?? 'go').trim().toLowerCase() || 'go'
+  const q = new URLSearchParams({ lab: ctx.labId, slug: ctx.slug, language: lang })
+  const res = await fetch(`${API_BASE}/labs/practice.zip?${q}`, { credentials: 'include' })
+  if (!res.ok) {
+    throw new Error(`practice.zip failed (${res.status})`)
+  }
+  const blob = await res.blob()
+  const name = (practice.zipName && practice.zipName.trim()) || 'tracelab-lab.zip'
+  triggerBlobDownload(blob, name)
+}
+
+/**
+ * Download the practice ZIP: embedded labs are zipped client-side; `storage: gcs` labs
+ * are fetched from `GET /api/labs/practice.zip`.
+ */
+export async function downloadPracticeZip(
+  practice: PracticeConfig,
+  ctx: { labId: string; slug: string; language?: string },
+): Promise<void> {
+  if (practiceUsesGcsStorage(practice)) {
+    await downloadPracticeZipFromGcs(practice, ctx)
+    return
+  }
+  const bytes = buildPracticeZip(practice, ctx.language)
+  const blob = new Blob([bytes.buffer as ArrayBuffer], { type: 'application/zip' })
+  triggerBlobDownload(blob, practice.zipName)
 }

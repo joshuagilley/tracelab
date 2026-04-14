@@ -71,6 +71,46 @@ func mergeLesson(row, detail bson.M) bson.M {
 		merged = placeholderCodeFiles(rowCF)
 	}
 	out["codeFiles"] = normalizeCodeFilesForLesson(merged)
+	if p, ok := out["practice"]; ok && p != nil {
+		out["practice"] = slimPracticeForAPI(p)
+	}
+	return out
+}
+
+// slimPracticeForAPI drops embedded file bodies for GCS-backed labs (large payloads stay in the bucket).
+func slimPracticeForAPI(practice any) any {
+	pm, ok := practice.(bson.M)
+	if !ok {
+		return practice
+	}
+	st, _ := pm["storage"].(string)
+	if !strings.EqualFold(strings.TrimSpace(st), "gcs") {
+		return practice
+	}
+	out := bson.M{}
+	for _, k := range []string{"storage", "bucket", "path", "zipName", "folder"} {
+		if v, ok := pm[k]; ok {
+			out[k] = v
+		}
+	}
+	if langs, ok := pm["languages"].(bson.A); ok {
+		slim := bson.A{}
+		for _, it := range langs {
+			lm, ok := it.(bson.M)
+			if !ok {
+				continue
+			}
+			row := bson.M{}
+			if v, ok := lm["type"]; ok {
+				row["type"] = v
+			}
+			if v, ok := lm["pathSegment"]; ok {
+				row["pathSegment"] = v
+			}
+			slim = append(slim, row)
+		}
+		out["languages"] = slim
+	}
 	return out
 }
 
