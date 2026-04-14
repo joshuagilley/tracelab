@@ -16,7 +16,6 @@ interface CareerTrackContextValue {
   certifications: CertificationOption[]
   selectedTrackId: string
   selectedTrack: CertificationOption | null
-  selectedTrackTags: string[]
   loading: boolean
   setSelectedTrackId: (trackId: string) => Promise<void>
 }
@@ -72,18 +71,15 @@ export function CareerTrackProvider({ children }: { children: ReactNode }) {
     () => certifications.find(c => c.id === selectedTrackId) ?? null,
     [certifications, selectedTrackId],
   )
-  const selectedTrackTags = useMemo(() => selectedTrack?.trackTags ?? [], [selectedTrack])
-
   const value = useMemo<CareerTrackContextValue>(
     () => ({
       certifications,
       selectedTrackId,
       selectedTrack,
-      selectedTrackTags,
       loading,
       setSelectedTrackId,
     }),
-    [certifications, selectedTrackId, selectedTrack, selectedTrackTags, loading, setSelectedTrackId],
+    [certifications, selectedTrackId, selectedTrack, loading, setSelectedTrackId],
   )
 
   return <CareerTrackContext.Provider value={value}>{children}</CareerTrackContext.Provider>

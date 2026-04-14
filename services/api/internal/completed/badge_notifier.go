@@ -84,7 +84,7 @@ func (n *BadgeNotifier) NotifyNewlyEarnedBadges(ctx context.Context, userID prim
 		total := 0
 		done := 0
 		for _, concept := range published {
-			if !conceptMatchesCert(concept.Tags, cert) {
+			if !conceptMatchesCert(concept.CertificationIDs, cert) {
 				continue
 			}
 			total++
@@ -106,9 +106,9 @@ func (n *BadgeNotifier) NotifyNewlyEarnedBadges(ctx context.Context, userID prim
 }
 
 type publishedConcept struct {
-	Lab  string
-	Slug string
-	Tags []string
+	Lab              string
+	Slug             string
+	CertificationIDs []string
 }
 
 func (n *BadgeNotifier) loadPublishedConcepts(ctx context.Context) ([]publishedConcept, error) {
@@ -171,9 +171,9 @@ func (n *BadgeNotifier) loadPublishedFromConcepts(ctx context.Context, labID str
 			continue
 		}
 		out = append(out, publishedConcept{
-			Lab:  labID,
-			Slug: slug,
-			Tags: stringSlice(doc["tags"]),
+			Lab:                labID,
+			Slug:               slug,
+			CertificationIDs:   stringSlice(doc["certification_ids"]),
 		})
 	}
 	return out, cur.Err()
@@ -203,9 +203,9 @@ func conceptsFromLabDoc(labDoc bson.M, labID string) ([]publishedConcept, bool) 
 			continue
 		}
 		out = append(out, publishedConcept{
-			Lab:  labID,
-			Slug: slug,
-			Tags: stringSlice(cm["tags"]),
+			Lab:                labID,
+			Slug:               slug,
+			CertificationIDs:   stringSlice(cm["certification_ids"]),
 		})
 	}
 	return out, true
@@ -236,22 +236,19 @@ func asAnySliceAny(raw any) ([]any, bool) {
 	}
 }
 
-func conceptMatchesCert(tags []string, cert certifications.Certification) bool {
-	if cert.ID == "generalist" || cert.ID == "expert" || len(cert.TrackTags) == 0 {
+func conceptMatchesCert(certificationIDs []string, cert certifications.Certification) bool {
+	if cert.ID == "generalist" || cert.ID == "expert" {
 		return true
 	}
-	wanted := map[string]struct{}{}
-	for _, t := range cert.TrackTags {
-		t = strings.ToLower(strings.TrimSpace(t))
-		if t != "" {
-			wanted[t] = struct{}{}
+	for _, raw := range certificationIDs {
+		id := strings.ToLower(strings.TrimSpace(raw))
+		if id == "" {
+			continue
 		}
-	}
-	if len(wanted) == 0 {
-		return true
-	}
-	for _, t := range tags {
-		if _, ok := wanted[strings.ToLower(strings.TrimSpace(t))]; ok {
+		if id == "*" {
+			return true
+		}
+		if id == strings.ToLower(cert.ID) {
 			return true
 		}
 	}

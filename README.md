@@ -80,6 +80,12 @@ make test
 make seed-certifications
 ```
 
+After switching from legacy `track_tags` / tag overlap, run once (see `docs/NEW_CONCEPT.md`):
+
+```bash
+make backfill-concept-certification-ids
+```
+
 ## Documentation
 
 Additional project docs live in `docs/`:

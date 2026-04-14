@@ -8,6 +8,9 @@ export interface Concept {
   slug: string;
   summary: string;
   difficulty: Difficulty;
-  tags: string[];
+  /** Optional keywords / UX chips — not used for career-track membership. */
+  tags?: string[];
+  /** Career certifications this concept counts toward (`Concepts.certification_ids` in Mongo). */
+  certificationIds?: string[];
   status: ConceptStatus;
 }

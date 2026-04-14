@@ -5,12 +5,23 @@ import { getCachedLabCatalog } from '@/features/curriculum/catalog-cache'
 
 export type { LabNavConfig, LessonCatalogRow, LabCatalogFile } from '@/features/curriculum/lab-catalog-types'
 
+function rowToConcept(row: LessonCatalogRow): Concept {
+  const certificationIds = row.certification_ids ?? row.certificationIds ?? []
+  return {
+    id: row.id,
+    title: row.title,
+    slug: row.slug,
+    summary: row.summary,
+    difficulty: row.difficulty,
+    tags: row.tags ?? [],
+    certificationIds: Array.isArray(certificationIds) ? certificationIds : [],
+    status: row.status,
+  }
+}
+
 export function getCatalogConcepts(section: LabId): Concept[] {
   const file = getCachedLabCatalog(section)
-  return (file?.concepts ?? []).map(row => {
-    const { id, title, slug, summary, difficulty, tags, status } = row
-    return { id, title, slug, summary, difficulty, tags, status }
-  })
+  return (file?.concepts ?? []).map(row => rowToConcept(row))
 }
 
 /** Returns sidebar nav configuration (sections, panelPrefix, defaultOpen) for a lab. */

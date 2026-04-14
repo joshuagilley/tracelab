@@ -24,11 +24,13 @@ export default function LessonCard({ concept }: Props) {
       <p className={styles.summary}>{concept.summary}</p>
 
       <div className={styles.bottom}>
-        <div className={styles.tags}>
-          {concept.tags.slice(0, 3).map(tag => (
-            <span key={tag} className={styles.tag}>{tag}</span>
-          ))}
-        </div>
+        {(concept.tags?.length ?? 0) > 0 ? (
+          <div className={styles.tags}>
+            {(concept.tags ?? []).slice(0, 3).map(tag => (
+              <span key={tag} className={styles.tag}>{tag}</span>
+            ))}
+          </div>
+        ) : null}
         {!available && <span className={styles.comingSoon}>Coming Soon</span>}
       </div>
     </button>

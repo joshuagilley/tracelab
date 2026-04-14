@@ -45,7 +45,9 @@ Required baseline:
 
 - `_id` = `<labId>/<slug>`
 - `labId`, `topicId`, `slug`
-- `title`, `summary`, `difficulty`, `status`, `tags`
+- `title`, `summary`, `difficulty`, `status`
+- optional `tags[]` (keywords / UI chips only — **not** used for career-track membership)
+- `certification_ids[]`: certification `_id` values this concept counts toward in Track mode and badge logic (e.g. `backend-engineer`). Use `"*"` for every career track (replaces legacy `all_tracks` on `tags`).
 - `vizType`, `labKind`
 
 Common optional fields:
@@ -92,13 +94,14 @@ Common fields:
 - `_id`
 - `title`, `role_key`, `description`
 - `image_path`
-- `track_tags[]`
 - `sort_order`
 - `active`
 
 Notes:
 
-- `generalist` and `expert` are all-published certifications (no tag restriction).
+- `generalist` and `expert` treat **all** published concepts as in scope (no per-concept list on the cert).
+- Membership for other certifications is defined on each **`Concepts`** document via **`certification_ids`** (not on the certification document).
+- `make seed-certifications` removes legacy `track_tags` if present.
 
 ## Users (`USERS_COLLECTION`, default `Users`)
 

@@ -111,7 +111,7 @@ func catalogRowsFromConceptDocs(docs []bson.M) []any {
 
 func catalogRowLight(d bson.M) bson.M {
 	row := bson.M{}
-	for _, k := range []string{"id", "slug", "title", "summary", "difficulty", "tags", "status", "labKind", "vizType"} {
+	for _, k := range []string{"id", "slug", "title", "summary", "difficulty", "tags", "certification_ids", "status", "labKind", "vizType"} {
 		if v, ok := d[k]; ok {
 			row[k] = v
 		}

@@ -54,10 +54,12 @@ func main() {
 				"role_key":    doc.RoleKey,
 				"description": doc.Description,
 				"image_path":  doc.ImagePath,
-				"track_tags":  doc.TrackTags,
 				"sort_order":  doc.SortOrder,
 				"active":      doc.Active,
 				"updated_at":  now,
+			},
+			"$unset": bson.M{
+				"track_tags": "",
 			},
 			"$setOnInsert": bson.M{
 				"created_at": now,

@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/auth'
 import { LAB_OPTIONS, type LabId } from '@/contexts/lab'
 import { fetchSectionConcepts } from '@/features/curriculum/curriculum-api'
 import { fetchLabCompletedDetails } from '@/features/learning/api/completed-api'
-import { matchesTrackTags } from '@/lib/track-filter'
+import { matchesCareerCertification } from '@/lib/track-filter'
 import type { CertificationOption } from '@/lib/certifications/api'
 import { EXPERT_CERTIFICATION } from '@/lib/certifications/defaults'
 import styles from './MetricsPage.module.css'
@@ -14,6 +14,7 @@ type ConceptWithLab = {
   slug: string
   status: 'available' | 'coming-soon'
   tags: string[]
+  certificationIds: string[]
 }
 
 type LanguageMetric = {
@@ -48,12 +49,11 @@ function certificationProgress(
   publishedConcepts: ConceptWithLab[],
   completed: ReadonlySet<string>,
 ): { completed: number; total: number; earned: boolean } {
-  const isAllPublished =
-    certification.id === 'generalist' || certification.id === 'expert' || !certification.trackTags?.length
+  const isAllPublished = certification.id === 'generalist' || certification.id === 'expert'
   const inTrack = isAllPublished
     ? publishedConcepts
     : publishedConcepts.filter(c =>
-        matchesTrackTags(
+        matchesCareerCertification(
           {
             id: c.slug,
             title: c.slug,
@@ -62,8 +62,9 @@ function certificationProgress(
             difficulty: 'easy',
             status: c.status,
             tags: c.tags,
+            certificationIds: c.certificationIds,
           },
-          certification.trackTags ?? [],
+          certification.id,
         ),
       )
   const total = inTrack.length
@@ -89,7 +90,13 @@ export default function MetricsPage() {
         const conceptLists = await Promise.all(
           LAB_OPTIONS.map(async ({ id }) => {
             const concepts = await fetchSectionConcepts(id)
-            return concepts.map(c => ({ labId: id, slug: c.slug, status: c.status, tags: c.tags ?? [] }))
+            return concepts.map(c => ({
+              labId: id,
+              slug: c.slug,
+              status: c.status,
+              tags: c.tags ?? [],
+              certificationIds: c.certificationIds ?? [],
+            }))
           }),
         )
         if (cancelled) return
@@ -153,7 +160,7 @@ export default function MetricsPage() {
         if (langs.includes(lang.id)) submissionDone += 1
       }
       const inLanguageLab = programmingLanguageConcepts.filter(concept =>
-        concept.tags.some(tag => lang.tags.includes(String(tag).toLowerCase())),
+        (concept.tags ?? []).some(tag => lang.tags.includes(String(tag).toLowerCase())),
       )
       let inLanguageLabDone = 0
       for (const concept of inLanguageLab) {

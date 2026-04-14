@@ -7,7 +7,6 @@ export interface CertificationOption {
   roleKey: string
   description: string
   imagePath: string
-  trackTags?: string[]
   sortOrder: number
   active: boolean
 }

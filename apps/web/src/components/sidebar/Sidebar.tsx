@@ -51,15 +51,15 @@ export default function Sidebar() {
   const { labId, setLabId, current } = useLab()
 
   const visibleLabGroups = useMemo(
-    () => filterLabGroups(LAB_GROUPS, filterMode, selectedTrack?.trackTags ?? []),
-    [filterMode, selectedTrack?.trackTags],
+    () => filterLabGroups(LAB_GROUPS, filterMode, selectedTrackId),
+    [filterMode, selectedTrackId],
   )
 
   useEffect(() => {
-    if (labHasVisibleConcepts(labId, filterMode, selectedTrack?.trackTags ?? [])) return
-    const next = firstVisibleLabId(LAB_GROUPS, filterMode, selectedTrack?.trackTags ?? [])
+    if (labHasVisibleConcepts(labId, filterMode, selectedTrackId)) return
+    const next = firstVisibleLabId(LAB_GROUPS, filterMode, selectedTrackId)
     if (next && next !== labId) setLabId(next)
-  }, [filterMode, selectedTrack?.trackTags, labId, setLabId])
+  }, [filterMode, selectedTrackId, labId, setLabId])
 
   useEffect(() => {
     if (!menuOpen) return

@@ -95,9 +95,17 @@ make sync-sandbox-mongo \
 
 **GCS-backed lesson `codeFiles`:** set `codeFilesStorage: gcs`, `codeFilesPath` (`concepts/<_id>`), and objects in the bucket (`good.go`, `bad.go`, …). The **`codeFiles`** array on the concept is optional; the API can build the lesson from GCS object listing (see `docs/MONGO.md`).
 
-## 7) Optional track alignment
+## 7) Career certifications (`certification_ids`)
 
-If the concept should count for specific certifications, align concept `tags` with relevant certification `track_tags` and run:
+Set **`certification_ids`** on the `Concepts` document to certification `_id` strings (e.g. `backend-engineer`, `software-engineer`). Track mode and badge eligibility use **only** this field (not `tags`). Use **`"*"`** in the array when the concept should appear for **every** career certification.
+
+One-time migration from the old tag overlap model:
+
+```bash
+make backfill-concept-certification-ids
+```
+
+Then keep certification **metadata** (titles, descriptions, sort order) in sync when defaults change:
 
 ```bash
 make seed-certifications

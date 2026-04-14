@@ -29,7 +29,7 @@ This is the **complete list** of files that change for a typical new concept. Us
 | **SPA types** | `apps/web/src/types/lab-concept.ts` | Only if new fields are added to the lesson payload; otherwise **no change**. |
 | **Code panel** | `apps/web/src/components/code/DynamicCodePanel.tsx` | Only if new lang/content fallback rules; otherwise **no change**. |
 | **Mongo** | `Labs` doc (`topics[]` with `conceptSlugs`; no embedded `concepts[]`), `Concepts` doc (`_id`, `labId`, `topicId`, `slug`, vizType, codeFiles, parameters, metricGroups, practice) | Manual edits in Atlas (or **`mongodump`** / **`mongorestore`** to copy collections between DBs). |
-| **Career tracks** | `services/api/internal/certifications/defaults.go` + Mongo `Certifications.track_tags` | Add concept-aligned tags to relevant tracks, then run **`make seed-certifications`** so Track filter includes the new concept when tags match. |
+| **Career tracks** | Mongo **`Concepts.certification_ids`** (certification `_id` strings, or **`"*"`** for all careers) | Set which certifications this concept counts toward; optional **`make seed-certifications`** only updates cert metadata (titles, sort order), not membership. |
 | **README** | `sandbox/README.md` | Document the new sandbox path if useful; practice sync stays generic (**`make sync-sandbox-mongo`**). |
 
 Items marked **"no change"** are already generic enough from previous concepts. The first six rows are always new files or edits (practice sync is a command, not a new file).
@@ -146,16 +146,14 @@ For first-time wiring, a **temporary** helper is fine: small **`go run`** (Mongo
 
 **After values are correct in the database, remove** any **throwaway** Mongo-update script. **`sync-sandbox-practice`** stays in the repo as the single practice sync entry.
 
-### C. Career-track tags (`Certifications.track_tags`)
+### C. Career certifications (`Concepts.certification_ids`)
 
-If the new concept should appear in **Track** filtering:
+If the new concept should appear in **Track** filtering for specific careers:
 
-1. Ensure the concept has accurate **`Concepts.tags`** values.
-2. Update relevant defaults in **`services/api/internal/certifications/defaults.go`** (`TrackTags` for each role).
-3. Reseed Mongo from repo root:
-   - **`make seed-certifications`**
+1. Set **`Concepts.certification_ids`** to the certification `_id` values (e.g. **`backend-engineer`**). Use **`["*"]`** so the concept appears for every career track.
+2. Optional: run **`make seed-certifications`** when changing certification titles or sort order in **`services/api/internal/certifications/defaults.go`** (does not define per-concept membership).
 
-The Track filter matches concepts when **any** concept tag overlaps the selected certification's **`track_tags`**.
+Track mode matches when the selected certification id is listed on the concept (or **`*`** is present).
 
 ---
 
@@ -188,8 +186,8 @@ The user provides a **PNG (or sketch) of the architecture flow**. This is the pr
 - **`Labs`** document: **`topics[]`** entry with **`conceptSlugs`** listing each **`slug`** (sidebar order).
 - **`Concepts`** document: full metadata + **`labId`** / **`topicId`** matching the lab shell.
 - **`Concepts._id`**: `"<labId>/<slug>"` for merged detail + **`practice`**.
-- **`Concepts.tags`** includes tags intended for Track filtering.
-- **`Certifications.track_tags`** updated to include those tags for the right careers (via defaults + **`make seed-certifications`**).
+- **`Concepts.certification_ids`** lists which career certifications include this concept (or **`"*"`** for all).
+- Optional **`Concepts.tags`** for keywords / UI only (not used for Track membership).
 - Practice sync is always **`make sync-sandbox-mongo`** / **`sync-sandbox-practice`** — no new Makefile targets for each lab.
 
 ---

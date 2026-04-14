@@ -37,15 +37,15 @@ export default function ProgrammingLanguagesSidebarNav({
 }: Props) {
   const navigate = useNavigate()
   const { filterMode } = useCurriculumVisibility()
-  const { selectedTrackTags } = useCareerTrack()
+  const { selectedTrackId } = useCareerTrack()
   const { labId } = useLab()
   const isAllTracksLab = isCatalogLabAllTracks(labId)
   const effectiveFilterMode = filterMode === 'track' && isAllTracksLab ? 'all' : filterMode
-  const effectiveTrackTags = isAllTracksLab ? [] : selectedTrackTags
+  const effectiveCertificationId = isAllTracksLab ? '' : selectedTrackId
   const bySlug = useMemo(() => Object.fromEntries(concepts.map(c => [c.slug, c])), [concepts])
   const visibleLangs = useMemo(
-    () => filterProgrammingLanguages(languages, bySlug, effectiveFilterMode, effectiveTrackTags),
-    [languages, bySlug, effectiveFilterMode, effectiveTrackTags],
+    () => filterProgrammingLanguages(languages, bySlug, effectiveFilterMode, effectiveCertificationId),
+    [languages, bySlug, effectiveFilterMode, effectiveCertificationId],
   )
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
     buildInitialOpen(languages, defaultOpenSectionIds),

@@ -120,7 +120,7 @@ const COPY: Record<
 export default function LibraryPage() {
   const { labId } = useLab()
   const { filterMode } = useCurriculumVisibility()
-  const { selectedTrackTags } = useCareerTrack()
+  const { selectedTrackId } = useCareerTrack()
   const [concepts, setConcepts] = useState<Concept[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -128,11 +128,14 @@ export default function LibraryPage() {
   const { title, subtitle, countLabel } = COPY[labId] ?? COPY['system-design']
   const isAllTracksLab = isCatalogLabAllTracks(labId)
   const effectiveFilterMode = filterMode === 'track' && isAllTracksLab ? 'all' : filterMode
-  const effectiveTrackTags = useMemo(() => (isAllTracksLab ? [] : selectedTrackTags), [isAllTracksLab, selectedTrackTags])
+  const effectiveCertificationId = useMemo(
+    () => (isAllTracksLab ? '' : selectedTrackId),
+    [isAllTracksLab, selectedTrackId],
+  )
 
   const displayedConcepts = useMemo(
-    () => concepts.filter(c => conceptVisibleForMode(c, effectiveFilterMode, effectiveTrackTags)),
-    [concepts, effectiveFilterMode, effectiveTrackTags],
+    () => concepts.filter(c => conceptVisibleForMode(c, effectiveFilterMode, effectiveCertificationId)),
+    [concepts, effectiveFilterMode, effectiveCertificationId],
   )
 
   useEffect(() => {

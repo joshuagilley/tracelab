@@ -15,7 +15,6 @@ type Certification struct {
 	RoleKey     string    `json:"roleKey" bson:"role_key"`
 	Description string    `json:"description" bson:"description"`
 	ImagePath   string    `json:"imagePath" bson:"image_path"`
-	TrackTags   []string  `json:"trackTags,omitempty" bson:"track_tags,omitempty"`
 	SortOrder   int       `json:"sortOrder" bson:"sort_order"`
 	Active      bool      `json:"active" bson:"active"`
 	CreatedAt   time.Time `json:"createdAt,omitempty" bson:"created_at,omitempty"`

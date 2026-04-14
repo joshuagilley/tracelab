@@ -6,7 +6,6 @@ export const GENERALIST_CERTIFICATION: CertificationOption = {
   roleKey: 'generalist',
   description: 'Complete all published concepts across TraceLab libraries.',
   imagePath: '/certifications/tl_software_engineer.png',
-  trackTags: [],
   sortOrder: 5,
   active: true,
 }
@@ -17,7 +16,6 @@ export const EXPERT_CERTIFICATION: CertificationOption = {
   roleKey: 'expert',
   description: 'Reserved for learners who complete all published TraceLab material.',
   imagePath: '/certifications/tl_expert.png',
-  trackTags: [],
   sortOrder: 999,
   active: true,
 }

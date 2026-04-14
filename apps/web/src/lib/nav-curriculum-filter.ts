@@ -18,7 +18,7 @@ export function filterCurriculumSections<T extends NavSectionShape>(
   sections: readonly T[],
   bySlug: Record<string, Concept | undefined>,
   mode: CurriculumFilterMode,
-  trackTags: readonly string[],
+  selectedCertificationId: string,
 ): T[] {
   if (mode === 'all') return [...sections]
   return sections
@@ -28,7 +28,7 @@ export function filterCurriculumSections<T extends NavSectionShape>(
         if (!it.slug) return false
         const c = bySlug[it.slug]
         if (!c) return false
-        return conceptVisibleForMode(c, mode, trackTags)
+        return conceptVisibleForMode(c, mode, selectedCertificationId)
       }),
     }))
     .filter(s => s.items.length > 0)
@@ -38,7 +38,7 @@ export function filterProgrammingLanguages(
   langs: ProgrammingLanguage[],
   bySlug: Record<string, Concept | undefined>,
   mode: CurriculumFilterMode,
-  trackTags: readonly string[],
+  selectedCertificationId: string,
 ): ProgrammingLanguage[] {
   if (mode === 'all') return langs
   return langs
@@ -52,7 +52,7 @@ export function filterProgrammingLanguages(
               if (!it.slug) return false
               const c = bySlug[it.slug]
               if (!c) return false
-              return conceptVisibleForMode(c, mode, trackTags)
+              return conceptVisibleForMode(c, mode, selectedCertificationId)
             }),
           }),
         )

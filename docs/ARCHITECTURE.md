@@ -31,7 +31,8 @@ tracelab/
   services/
     api/
       cmd/server/             # API entrypoint
-      cmd/seed-certifications # certification seeding tool
+      cmd/seed-certifications # certification metadata seeding (Mongo)
+      cmd/backfill-concept-certification-ids # one-time legacy tag → certification_ids
       cmd/sync-sandbox-practice # embedded practice sandbox → Mongo
       internal/
         auth/                 # OAuth/session/user persistence
@@ -63,4 +64,4 @@ Curriculum filtering supports:
 
 - `all`: every lab and every concept (published or not)
 - `published`: only `status = available` concepts; labs without published concepts are hidden
-- `track`: labs marked `all_tracks` plus tag-matched concepts/labs for selected certification
+- `track`: labs marked `all_tracks` plus concepts whose `certification_ids` includes the selected certification `_id` (or `"*"`)

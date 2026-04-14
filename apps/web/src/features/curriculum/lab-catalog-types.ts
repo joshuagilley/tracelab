@@ -4,6 +4,8 @@ import type { ProgrammingLanguage } from '@/types/programming-language'
 
 /** One row from a lab catalog — lightweight list metadata only. */
 export interface LessonCatalogRow extends Concept {
+  /** Present on API payloads from Mongo (`certification_ids`). */
+  certification_ids?: string[]
   labKind: string
   vizType: string
   codeFiles: { name: string; lang: string }[]

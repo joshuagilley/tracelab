@@ -45,15 +45,15 @@ export default function TopicSidebarNav({
 }: TopicSidebarNavProps) {
   const navigate = useNavigate()
   const { filterMode } = useCurriculumVisibility()
-  const { selectedTrackTags } = useCareerTrack()
+  const { selectedTrackId } = useCareerTrack()
   const { labId } = useLab()
   const isAllTracksLab = isCatalogLabAllTracks(labId)
   const effectiveFilterMode = filterMode === 'track' && isAllTracksLab ? 'all' : filterMode
-  const effectiveTrackTags = isAllTracksLab ? [] : selectedTrackTags
+  const effectiveCertificationId = isAllTracksLab ? '' : selectedTrackId
   const bySlug = useMemo(() => Object.fromEntries(concepts.map(c => [c.slug, c])), [concepts])
   const visibleSections = useMemo(
-    () => filterCurriculumSections(sections, bySlug, effectiveFilterMode, effectiveTrackTags),
-    [sections, bySlug, effectiveFilterMode, effectiveTrackTags],
+    () => filterCurriculumSections(sections, bySlug, effectiveFilterMode, effectiveCertificationId),
+    [sections, bySlug, effectiveFilterMode, effectiveCertificationId],
   )
 
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
