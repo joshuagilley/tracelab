@@ -32,7 +32,6 @@ tracelab/
     api/
       cmd/server/             # API entrypoint
       cmd/seed-certifications # certification metadata seeding (Mongo)
-      cmd/sync-sandbox-practice # embedded practice sandbox → Mongo
       internal/
         auth/                 # OAuth/session/user persistence
         catalog/              # lab/concept catalog endpoints
@@ -44,7 +43,6 @@ tracelab/
         config/               # env/config wiring
         db/                   # mongo connection helpers
         transport/            # route registration
-  sandbox/                    # local practice source files for sync
   docs/                       # project documentation
 ```
 

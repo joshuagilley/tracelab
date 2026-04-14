@@ -13,21 +13,17 @@ Choose and keep these consistent:
 - `topicId` (topic bucket inside the lab)
 - `Concepts._id` (`<labId>/<slug>`)
 
-## 2) Add sandbox practice files
+## 2) Practice bundles (per language)
 
-Create language folders under `sandbox/<lab>/<topic>/`:
-
-- `go/`
-- `python/`
-- `typescript/`
-
-Each language bundle should include:
+Author practice in whatever repo or folder you use (often one directory per language). Each bundle should include:
 
 - `LAB.md`
 - starter (`main.go` / `main.py` / `main.ts`)
 - tests (`main_test.go` / `test_main.py` / `main.test.ts`)
 - optional reference solution (`solution.go` / `solution.py` / `solution.ts`)
 - for Go, include `go.mod`
+
+Typical layout: `go/`, `python/`, `typescript/` at the same level so ZIPs and GCS prefixes stay predictable.
 
 ## 3) Add/update Mongo concept document (`Concepts`)
 
@@ -63,7 +59,7 @@ Multi-language practice shape:
 
 In the `Labs` document for the lab, make sure `topics[].conceptSlugs` contains your new `slug` under the correct `topicId`.
 
-If this concept should show for all career tracks in Track mode, use `all_tracks` on the lab where appropriate.
+If every lesson in a lab should appear in Track mode for all career certifications, set `all_tracks: true` on that **`Labs`** document where appropriate. Per-concept scope still uses **`certification_ids`** on **`Concepts`**.
 
 ## 5) Wire frontend rendering
 
@@ -78,18 +74,9 @@ For simulations:
 2. Register adapter in `apps/web/src/lib/simulation-registry/`.
 3. Ensure `vizType` matches the registry key.
 
-## 6) Sync practice files to Mongo
+## 6) Put practice on the concept
 
-**Embedded practice** (files stored on the concept): use the sync command:
-
-```bash
-make sync-sandbox-mongo \
-  SANDBOX=<path-under-sandbox> \
-  CONCEPT=<labId/slug> \
-  ZIP=<zip-name> \
-  FOLDER=<folder-inside-zip> \
-  FILES=<comma-separated-files>
-```
+**Embedded practice** (small bundles, files on the concept): set `practice.zipName`, `practice.folder`, and `practice.languages[]` with `{ name, content }` in Mongo (Atlas UI, `mongosh`, or your own migration script).
 
 **GCS-backed practice** (`practice.storage: "gcs"`, sources in the bucket): put objects under `practice.path` / language segments; set slim `languages` metadata in Mongo (no embedded `files` on the concept).
 

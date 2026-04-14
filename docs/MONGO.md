@@ -149,5 +149,5 @@ Indexes:
 ## Practical workflow tips
 
 - Keep `Labs` as structure and `Concepts` as detail payload source.
-- Use `make sync-sandbox-mongo` for **embedded** practice content updates (sandbox → Mongo).
-- Use `make seed-certifications` when track tags/default certs change.
+- **Embedded practice:** update `Concepts.practice` in Atlas / `mongosh` (or your own tooling); large bundles usually use **`practice.storage: gcs`** instead (see above).
+- Use `make seed-certifications` when default certification metadata (titles, sort order) changes.

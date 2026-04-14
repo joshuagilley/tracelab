@@ -26,7 +26,7 @@ function resolvedLang(f: LabCodeFile): string {
 
 interface Props {
   files: LabCodeFile[]
-  /** Extra header controls (e.g. practice sandbox download for specific concepts). */
+  /** Extra header controls (e.g. practice ZIP download for specific concepts). */
   extraActions?: ReactNode
 }
 

@@ -1,14 +1,12 @@
 ---
-description: End-to-end flow for a new TraceLab concept — sandbox → practice bundle → Mongo Concepts → lesson + viz registries → simulation from a flow diagram.
-globs: sandbox/**/*
+description: End-to-end flow for a new TraceLab concept — practice bundle → Mongo Concepts → lesson + viz registries → simulation from a flow diagram.
+globs: apps/web/src/features/curriculum/**,apps/web/src/components/lessons/**,apps/web/src/components/simulations/**,docs/NEW_CONCEPT.md
 alwaysApply: false
 ---
 
-# New concept: sandbox → practice lesson → Mongo → registries → visualization
+# New concept: practice lesson → Mongo → registries → visualization
 
-Use this when a developer has iterated on a runnable under **`sandbox/<lab>/<topic>/`** and wants a full **TraceLab concept**: downloadable practice, editor **`codeFiles`**, optional **simulation**, and curriculum wiring. (**`topic`** here is the sandbox folder name; the catalog **slug** / URL may differ, e.g. **`load-balancing`**.)
-
-Path examples: **`sandbox/system-design/load-balancer/`** (folder name is usually short; URL slug may differ, e.g. **`load-balancing`**).
+Use this when a developer has a runnable **practice bundle** (Go / Python / TypeScript) and wants a full **TraceLab concept**: downloadable practice, editor **`codeFiles`**, optional **simulation**, and curriculum wiring. Keep **`labId`**, **`topicId`**, and catalog **`slug`** consistent (`Concepts._id` is **`labId/slug`**; URL slug may differ from an internal folder name, e.g. **`load-balancing`**).
 
 ---
 
@@ -18,8 +16,8 @@ This is the **complete list** of files that change for a typical new concept. Us
 
 | Area | File(s) | What you do |
 |------|---------|-------------|
-| **Sandbox** | `sandbox/<lab>/<topic>/go/`, `sandbox/<lab>/<topic>/python/`, `sandbox/<lab>/<topic>/typescript/` | Create one language folder per supported lab language; each folder includes `LAB.md`, starter, tests, and optional solution (§1). |
-| **Practice → Mongo** | *(command only)* | Seed `practice.languages[]` (not only `practice.files`) using `sync-sandbox-practice` + a JSON spec (see §3A). |
+| **Practice bundle** | Your repo / language dirs (`go/`, `python/`, …) | Each language: `LAB.md`, starter, tests, optional solution (§1). |
+| **Practice → Mongo** | Atlas / `mongosh` / your tooling | Set `practice` on **`Concepts`** (embedded or GCS-backed); see §3. |
 | **Lesson panel** | `apps/web/src/components/lessons/<lab>/<Topic>Lesson.tsx` | New text-lesson component (`LessonRoot` / `LessonProblem` / `LessonDiagram` / `LessonTradeoffs`). |
 | **Lesson registry** | `apps/web/src/features/curriculum/lesson-registry.ts` | Import + register `"<slug>": <Topic>Lesson`. |
 | **Simulation** | `apps/web/src/components/simulations/<lab>/<Topic>Simulation.tsx` + `.module.css` | SVG sim matching the user's PNG; reuse `CachingSimulation.module.css` panel chrome; rAF packet animation; `onMetrics` emitting metric ids. |
@@ -30,13 +28,13 @@ This is the **complete list** of files that change for a typical new concept. Us
 | **Code panel** | `apps/web/src/components/code/DynamicCodePanel.tsx` | Only if new lang/content fallback rules; otherwise **no change**. |
 | **Mongo** | `Labs` doc (`topics[]` with `conceptSlugs`; no embedded `concepts[]`), `Concepts` doc (`_id`, `labId`, `topicId`, `slug`, vizType, codeFiles, parameters, metricGroups, practice) | Manual edits in Atlas (or **`mongodump`** / **`mongorestore`** to copy collections between DBs). |
 | **Career tracks** | Mongo **`Concepts.certification_ids`** (certification `_id` strings, or **`"*"`** for all careers) | Set which certifications this concept counts toward; optional **`make seed-certifications`** only updates cert metadata (titles, sort order), not membership. |
-| **README** | `sandbox/README.md` | Document the new sandbox path if useful; practice sync stays generic (**`make sync-sandbox-mongo`**). |
+| **Docs** | `docs/NEW_CONCEPT.md` | Keep the human checklist in sync if the workflow changes. |
 
-Items marked **"no change"** are already generic enough from previous concepts. The first six rows are always new files or edits (practice sync is a command, not a new file).
+Items marked **"no change"** are already generic enough from previous concepts. The lesson / sim / registry rows are usually new files or edits; **`practice`** is updated in Mongo (not a TraceLab Makefile target).
 
 ---
 
-## 1. Practice bundle (under `sandbox/<lab>/<topic>/`)
+## 1. Practice bundle (per language)
 
 | File | Role |
 |------|------|
@@ -128,7 +126,7 @@ For a **new** simulation, define **`metricGroups` last**, after you know the exa
 
 ### A. Practice ZIP + `practice.languages[]` field
 
-Use **`make sync-sandbox-mongo`** (repo root, **`.env`** as needed) or **`go run ./cmd/sync-sandbox-practice`** to **`$set`** **`practice`** on **`Concepts._id`**. Multi-language concepts should set:
+**`$set`** **`practice`** on **`Concepts._id`** via Atlas, **`mongosh`**, or your own script. Multi-language concepts should set:
 
 - `practice.zipName`
 - `practice.folder`
@@ -136,15 +134,15 @@ Use **`make sync-sandbox-mongo`** (repo root, **`.env`** as needed) or **`go run
   - `type` (e.g. `Go`, `Python`, `TypeScript`)
   - `files[]` (same shape as before: `{ name, content }`)
 
-For caching test data, keep 3 language bundles: **Go**, **Python**, **TypeScript**.
+For caching-style test data, keep 3 language bundles: **Go**, **Python**, **TypeScript**.
 
-There is **only** **`cmd/sync-sandbox-practice`** for this — no **`sync-*-practice`** per concept.
+**GCS-backed practice:** set **`practice.storage: gcs`**, upload objects under **`practice.path`**, and store slim **`languages`** metadata in Mongo (no embedded **`files`**). See **`docs/MONGO.md`**.
 
 ### B. One-off metadata (`parameters`, `vizType`, `metricGroups`, …)
 
 For first-time wiring, a **temporary** helper is fine: small **`go run`** (Mongo update), **`mongosh`**, or a throwaway script that **`$set`s** the fields on **`Concepts`**. Sidebar membership comes from **`Labs.topics[].conceptSlugs`** (not from embedding **`concepts[]`** in **`Labs`**).
 
-**After values are correct in the database, remove** any **throwaway** Mongo-update script. **`sync-sandbox-practice`** stays in the repo as the single practice sync entry.
+**After values are correct in the database, remove** any **throwaway** Mongo-update script.
 
 ### C. Career certifications (`Concepts.certification_ids`)
 
@@ -188,16 +186,16 @@ The user provides a **PNG (or sketch) of the architecture flow**. This is the pr
 - **`Concepts._id`**: `"<labId>/<slug>"` for merged detail + **`practice`**.
 - **`Concepts.certification_ids`** lists which career certifications include this concept (or **`"*"`** for all).
 - Optional **`Concepts.tags`** for keywords / UI only (not used for Track membership).
-- Practice sync is always **`make sync-sandbox-mongo`** / **`sync-sandbox-practice`** — no new Makefile targets for each lab.
+- **`practice`** updated in Mongo (embedded or GCS) — no repo-local sync command.
 
 ---
 
 ## Prompt snippet for the agent
 
-> I have a working **`main.go`** under **`sandbox/<lab>/<topic>/`**. Here is a PNG of the architecture flow I want the simulation to match: *(attach PNG)*.
+> I have a working **`main.go`** (and tests) for this concept. Here is a PNG of the architecture flow I want the simulation to match: *(attach PNG)*.
 >
-> 1. Turn the sandbox into a **practice bundle**: **`go.mod`**, **`main.go`** (student starter with TODOs), **`main_test.go`**, **`solution.go`** (`//go:build ignore` — must pass `go test` when pasted into `main.go`), **`present.go`** (idiomatic demo), **`bad.go`** (anti-pattern), **`LAB.md`**.
-> 2. Wire **`sync-sandbox-practice`** for **`Concepts._id` `<labId>/<slug>`**.
+> 1. Finalize the **practice bundle**: **`go.mod`**, **`main.go`** (student starter with TODOs), **`main_test.go`**, **`solution.go`** (`//go:build ignore` — must pass `go test` when pasted into `main.go`), **`present.go`** (idiomatic demo), **`bad.go`** (anti-pattern), **`LAB.md`** (repeat pattern for Python/TypeScript if needed).
+> 2. Describe how to **`$set`** **`practice`** on **`Concepts._id` `<labId>/<slug>`** (embedded or GCS-backed per **`docs/MONGO.md`**).
 > 3. Define **`parameters`** and **`metricGroups`** for the simulation. Metric ids must match what the viz component emits via **`onMetrics`**.
 > 4. Build the **SVG simulation** matching the attached PNG — nodes, edges, animated request packets — inside the **Architecture Visualizer** panel header. Register it in **`lib/simulation-registry/`** under **`vizType` `<key>`**.
 > 5. Register the **text lesson** panel in **`features/curriculum/lesson-registry.ts`** (slug **`<slug>`**).

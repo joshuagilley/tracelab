@@ -1,4 +1,4 @@
-.PHONY: dev api web install build clean compose-up compose-down test sync-sandbox-mongo seed-certifications
+.PHONY: dev api web install build clean compose-up compose-down test seed-certifications
 
 # Bash so `api` can `source .env` (GitHub OAuth, Mongo, JWT, etc.)
 SHELL := /bin/bash
@@ -51,18 +51,6 @@ build:
 test:
 	cd services/api && go test ./...
 	cd apps/web && npm run build
-
-# Syncs practice files from sandbox/<SANDBOX>/ into the Concepts.practice.languages array in Mongo.
-# Loads .env if present. Required for each language bundle you add to a concept.
-# Example (caching, Go bundle):
-#   make sync-sandbox-mongo SANDBOX=system-design/caching-practice/go CONCEPT=system-design/caching \
-#     ZIP=tracelab-caching-practice.zip FOLDER=caching-practice/go \
-#     FILES=go.mod,LAB.md,main.go,main_test.go,solution.go
-sync-sandbox-mongo:
-	@test -n "$(SANDBOX)" && test -n "$(CONCEPT)" && test -n "$(ZIP)" && test -n "$(FOLDER)" && test -n "$(FILES)" || \
-		(echo 'Usage: make sync-sandbox-mongo SANDBOX=<path under sandbox/> CONCEPT=<Concepts _id> ZIP=<zip basename> FOLDER=<dir inside zip> FILES=<comma-separated filenames>'; exit 1)
-	@bash -c 'if [[ -f "$(CURDIR)/.env" ]]; then set -a && source "$(CURDIR)/.env" && set +a; fi; cd "$(CURDIR)/services/api" && go run ./cmd/sync-sandbox-practice -repo "$(CURDIR)" \
-		-sandbox "$(SANDBOX)" -concept "$(CONCEPT)" -zip "$(ZIP)" -folder "$(FOLDER)" -files "$(FILES)"'
 
 seed-certifications:
 	@bash -c 'if [[ -f "$(CURDIR)/.env" ]]; then set -a && source "$(CURDIR)/.env" && set +a; fi; cd "$(CURDIR)/services/api" && go run ./cmd/seed-certifications'
