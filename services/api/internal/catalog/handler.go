@@ -64,7 +64,9 @@ func (h *Handler) handleLesson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := HydrateCodeFilesFromGCS(r.Context(), h.labs, lesson, labID+"/"+slug); err != nil {
+	if LessonUsesGCSCodeFiles(lesson) && (h.labs == nil || !h.labs.Enabled()) {
+		StripCodeFilesGCSMetadata(lesson)
+	} else if err := HydrateCodeFilesFromGCS(r.Context(), h.labs, lesson, labID+"/"+slug); err != nil {
 		log.Printf("catalog: hydrate codeFiles lab=%q slug=%q: %v", labID, slug, err)
 		writeError(w, http.StatusBadGateway, "code_files_unavailable")
 		return

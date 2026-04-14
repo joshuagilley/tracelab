@@ -6,6 +6,18 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+func TestSortLessonCodeBasenames_goodBeforeBad(t *testing.T) {
+	t.Parallel()
+	bases := []string{"bad.go", "good.go", "exercise.go", "helper.go"}
+	sortLessonCodeBasenames(bases)
+	want := []string{"good.go", "bad.go", "exercise.go", "helper.go"}
+	for i := range want {
+		if bases[i] != want[i] {
+			t.Fatalf("got %v want %v", bases, want)
+		}
+	}
+}
+
 func TestRoleForConceptCodeBasename(t *testing.T) {
 	t.Parallel()
 	if got, want := roleForConceptCodeBasename("good.go"), "present"; got != want {

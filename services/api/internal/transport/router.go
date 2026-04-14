@@ -88,15 +88,12 @@ func newLabStorageService(cfg *config.Config, configColl *mongo.Collection) *lab
 	defer cancel()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
-		log.Printf("gcs labs: disabled (client error): %v", err)
+		log.Printf("gcs labs: storage client: %v", err)
 		return nil
 	}
 	var labsAllow *labconfig.LabsAllowlist
-	if al, err := labconfig.LoadLabsAllowlist(ctx, configColl); err != nil {
-		log.Printf("gcs labs: Config labs allowlist skipped: %v", err)
-	} else if al != nil {
+	if al, err := labconfig.LoadLabsAllowlist(ctx, configColl); err == nil && al != nil {
 		labsAllow = al
-		log.Printf("gcs labs: using Config language_file_structure allowlist")
 	}
 	return labstorage.NewService(labstorage.NewGCSReader(client), bucket, labsAllow)
 }

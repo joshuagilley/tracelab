@@ -30,7 +30,9 @@ AUTH_JWT_SECRET=
 FRONTEND_ORIGIN=http://localhost:5173
 AUTH_COOKIE_CROSS_SITE=false
 
-# Optional: default bucket for GCS-backed lab practice trees (see docs/MONGO.md).
+# Lab practice + lesson codeFiles when concepts use gcs (see docs/MONGO.md).
+# Leave empty only if you have no gcs-backed content; otherwise set e.g. tracelab-labs and run:
+#   gcloud auth application-default login
 GCS_LABS_BUCKET=
 
 SMTP_HOST=

@@ -19,6 +19,18 @@ func codeFilesStorageIsGCS(doc bson.M) bool {
 	return strings.EqualFold(strings.TrimSpace(st), "gcs")
 }
 
+// LessonUsesGCSCodeFiles reports whether the merged lesson expects code bodies from GCS.
+func LessonUsesGCSCodeFiles(lesson bson.M) bool {
+	return codeFilesStorageIsGCS(lesson)
+}
+
+// StripCodeFilesGCSMetadata removes gcs-only keys from the API response.
+func StripCodeFilesGCSMetadata(lesson bson.M) {
+	delete(lesson, "codeFilesStorage")
+	delete(lesson, "codeFilesPath")
+	delete(lesson, "codeFilesBucket")
+}
+
 // roleForConceptCodeBasename maps GCS lesson filenames to UI roles (good.* → present).
 func roleForConceptCodeBasename(b string) string {
 	lower := strings.ToLower(b)
@@ -32,6 +44,31 @@ func roleForConceptCodeBasename(b string) string {
 	default:
 		return ""
 	}
+}
+
+// lessonCodeFileRank orders lesson tabs: good (present) first, then bad, exercise, then others.
+func lessonCodeFileRank(basename string) int {
+	lower := strings.ToLower(basename)
+	switch {
+	case strings.HasPrefix(lower, "good."):
+		return 0
+	case strings.HasPrefix(lower, "bad."):
+		return 1
+	case strings.HasPrefix(lower, "exercise."):
+		return 2
+	default:
+		return 3
+	}
+}
+
+func sortLessonCodeBasenames(bases []string) {
+	sort.Slice(bases, func(i, j int) bool {
+		ri, rj := lessonCodeFileRank(bases[i]), lessonCodeFileRank(bases[j])
+		if ri != rj {
+			return ri < rj
+		}
+		return bases[i] < bases[j]
+	})
 }
 
 func syntheticCodeFileEntriesFromGCS(files []practicefiles.File) []any {
@@ -48,7 +85,7 @@ func syntheticCodeFileEntriesFromGCS(files []practicefiles.File) []any {
 		seen[b] = struct{}{}
 		bases = append(bases, b)
 	}
-	sort.Strings(bases)
+	sortLessonCodeBasenames(bases)
 	out := make([]any, 0, len(bases))
 	for _, b := range bases {
 		m := bson.M{"name": b, "lang": InferCodeLangFromName(b)}
@@ -117,11 +154,38 @@ func HydrateCodeFilesFromGCS(ctx context.Context, svc *labstorage.Service, lesso
 
 	arr2, _ := asAnySlice(lesson["codeFiles"])
 	lesson["codeFiles"] = normalizeCodeFilesForLesson(arr2)
+	sortCodeFilesForLessonDisplay(lesson)
 
 	delete(lesson, "codeFilesStorage")
 	delete(lesson, "codeFilesPath")
 	delete(lesson, "codeFilesBucket")
 	return nil
+}
+
+func sortCodeFilesForLessonDisplay(lesson bson.M) {
+	raw, ok := lesson["codeFiles"]
+	arr, ok := asAnySlice(raw)
+	if !ok || len(arr) < 2 {
+		return
+	}
+	sort.SliceStable(arr, func(i, j int) bool {
+		ai, ok := arr[i].(bson.M)
+		if !ok {
+			return false
+		}
+		aj, ok := arr[j].(bson.M)
+		if !ok {
+			return true
+		}
+		ni, _ := ai["name"].(string)
+		nj, _ := aj["name"].(string)
+		ri, rj := lessonCodeFileRank(ni), lessonCodeFileRank(nj)
+		if ri != rj {
+			return ri < rj
+		}
+		return ni < nj
+	})
+	lesson["codeFiles"] = arr
 }
 
 // SlimCodeFilesForAPI strips embedded bodies from concept detail before merge when code lives in GCS.
