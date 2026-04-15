@@ -4,6 +4,7 @@ This folder holds project documentation beyond local setup.
 
 ## Guides
 
+- `../labs/README.md` - CI practice bundle manifest (`concepts.json`) for **`lab-tester`**.
 - `ARCHITECTURE.md` - stack, folder structure, and system flow.
 - `NEW_CONCEPT.md` - end-to-end process for adding a new concept.
 - `NEW_LAB.md` - process for adding a brand-new lab section.

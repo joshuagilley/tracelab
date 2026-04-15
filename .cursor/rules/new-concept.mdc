@@ -24,7 +24,8 @@ This is the **complete list** of files that change for a typical new concept. Us
 
 | Area | File(s) | What you do |
 |------|---------|-------------|
-| **Practice bundle** | Your repo / language dirs (`go/`, `python/`, …) | Each language: `LAB.md`, starter, tests, optional solution (§1). |
+| **Practice bundle** | Your repo / language dirs (`go/`, `python/`, …) — optionally under **`sandbox/<lab>/<topic>/`** | Each language: `LAB.md`, starter, tests, optional solution (§1). |
+| **Lab manifest** | `labs/concepts.json` | Register each concept that has a runnable practice bundle checked in here (`id`, `bundles[]` with `sandboxPath`, `referenceFile`, `starterFile`, `testCommand`). CI **`lab-tester`** only runs bundles listed here. See **`labs/README.md`**. |
 | **Practice → Mongo** | Atlas / `mongosh` / your tooling | Set `practice` on **`Concepts`** (embedded or GCS-backed); see §3. |
 | **Lesson panel** | `apps/web/src/components/lessons/<lab>/<Topic>Lesson.tsx` | New text-lesson component (`LessonRoot` / `LessonProblem` / `LessonDiagram` / `LessonTradeoffs`). |
 | **Lesson registry** | `apps/web/src/features/curriculum/lesson-registry.ts` | Import + register `"<slug>": <Topic>Lesson`. |
@@ -65,6 +66,8 @@ Items marked **"no change"** are already generic enough from previous concepts. 
 ### `solution.go` and `main_test.go` (required invariant)
 
 **`solution.go` must pass the lesson tests by construction:** if you take the solution body (everything that belongs in the student file — types, functions, **`main`** as needed) and **paste it into `main.go`** in place of the starter stubs, then **`go test ./...`** must pass. The reference implementation and **`main_test.go`** must stay in lockstep: same exported/unexported surface the tests exercise, no extra manual steps. Keep **`//go:build ignore`** on **`solution.go`** so the default package build stays the student **`main.go`**.
+
+**`make test`** and CI run **`services/api/cmd/lab-tester`**, which reads **`labs/concepts.json`** and, for each bundle, applies **`referenceFile`** onto **`starterFile`** then runs **`testCommand`** so the reference never drifts from the canonical tests.
 
 ### HTTP / servers
 

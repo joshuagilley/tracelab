@@ -1,0 +1,28 @@
+{
+  "concepts": [
+    {
+      "id": "system-design/caching",
+      "bundles": [
+        {
+          "type": "go",
+          "sandboxPath": "system-design/caching-practice",
+          "referenceFile": "solution.go",
+          "starterFile": "main.go",
+          "testCommand": ["go", "test", "./..."]
+        }
+      ]
+    },
+    {
+      "id": "system-design/load-balancing",
+      "bundles": [
+        {
+          "type": "go",
+          "sandboxPath": "system-design/load-balancer",
+          "referenceFile": "solution.go",
+          "starterFile": "main.go",
+          "testCommand": ["go", "test", "./..."]
+        }
+      ]
+    }
+  ]
+}

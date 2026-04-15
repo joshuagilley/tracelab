@@ -25,6 +25,10 @@ jobs:
         run: go test ./...
         working-directory: services/api
 
+      - name: Sandbox lab solutions (reference passes tests)
+        run: go run ./cmd/lab-tester -repo "${GITHUB_WORKSPACE}"
+        working-directory: services/api
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'

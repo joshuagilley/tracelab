@@ -3,8 +3,9 @@
 The **`pre-commit`** hook runs the same checks as **GitHub CI** (see `.github/workflows/ci.yml`):
 
 1. **`go test ./...`** in `services/api`
-2. **`npm run slopsniff`** in `apps/web` (rules in `apps/web/slopsniff.json`)
-3. **`npm run build`** in `apps/web`
+2. **`go run ./cmd/lab-tester -repo <repo root>`** in `services/api` (see `labs/concepts.json`)
+3. **`npm run slopsniff`** in `apps/web` (rules in `apps/web/slopsniff.json`)
+4. **`npm run build`** in `apps/web`
 
 ## Enable
 

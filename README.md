@@ -48,7 +48,7 @@ SMTP_FROM=
 make install
 ```
 
-`make install` installs web dependencies and **enables `.githooks`** (`git config core.hooksPath`), so **`git commit`** runs Go tests, SlopSniff, and the web production build before the commit completes (same as CI). To turn that off: `git config --unset core.hooksPath` (see `.githooks/README.md`).
+`make install` installs web dependencies and **enables `.githooks`** (`git config core.hooksPath`), so **`git commit`** runs Go tests, **`lab-tester`**, SlopSniff, and the web production build before the commit completes (same as CI). To turn that off: `git config --unset core.hooksPath` (see `.githooks/README.md`).
 
 ```bash
 make dev
@@ -79,7 +79,7 @@ make web
 make test
 ```
 
-Runs Go tests, then **`npm run slopsniff`** and the web production build (see `apps/web/slopsniff.json`). With hooks enabled (default after **`make install`**), **`git commit`** runs the same steps via **`.githooks/pre-commit`**.
+Runs Go tests, then **`lab-tester`** (every bundle in **`labs/concepts.json`**), then **`npm run slopsniff`** and the web production build (see `apps/web/slopsniff.json`). With hooks enabled (default after **`make install`**), **`git commit`** runs the same steps via **`.githooks/pre-commit`**.
 
 ## Seed certifications
 

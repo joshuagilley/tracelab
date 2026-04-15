@@ -25,6 +25,10 @@ Author practice in whatever repo or folder you use (often one directory per lang
 
 Typical layout: `go/`, `python/`, `typescript/` at the same level so ZIPs and GCS prefixes stay predictable.
 
+### CI manifest (`labs/concepts.json`)
+
+For any runnable practice tree you keep under **`sandbox/`** (or mirror the same layout locally), register it in **`labs/concepts.json`** so **`services/api/cmd/lab-tester`** (run from **`make test`** / CI) applies the **`referenceFile`** onto the **`starterFile`** and runs your **`testCommand`**. The manifest is the only driver for **`lab-tester`**. Schema and examples: **`labs/README.md`**.
+
 ## 3) Add/update Mongo concept document (`Concepts`)
 
 Required baseline fields:

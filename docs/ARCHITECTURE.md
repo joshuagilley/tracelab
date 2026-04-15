@@ -32,6 +32,7 @@ tracelab/
     api/
       cmd/server/             # API entrypoint
       cmd/seed-certifications # certification metadata seeding (Mongo)
+      cmd/lab-tester          # CI: verify reference vs tests (labs/concepts.json)
       internal/
         auth/                 # OAuth/session/user persistence
         catalog/              # lab/concept catalog endpoints
@@ -43,13 +44,15 @@ tracelab/
         config/               # env/config wiring
         db/                   # mongo connection helpers
         transport/            # route registration
+  labs/                       # concepts.json — manifest of practice bundles for lab-tester
+  sandbox/                    # local practice sources (when tracked in git)
   docs/                       # project documentation
-  .githooks/                  # pre-commit: Go tests + web SlopSniff + web build (see README)
+  .githooks/                  # pre-commit: Go tests + lab-tester + SlopSniff + web build (see README)
 ```
 
 ## Local quality gates
 
-- **`make test`** — `go test ./...` under `services/api`, then `npm run slopsniff` and `npm run build` under `apps/web` (SlopSniff config: `apps/web/slopsniff.json`).
+- **`make test`** — `go test ./...` under `services/api`, then **`lab-tester`** (`labs/concepts.json`), then `npm run slopsniff` and `npm run build` under `apps/web` (SlopSniff config: `apps/web/slopsniff.json`).
 - **`make install`** — installs web dependencies and sets **`git config core.hooksPath`** to **`.githooks`**, so **`git commit`** (including from Cursor’s Source Control) runs the same sequence as **`.githooks/pre-commit`**, aligned with **`.github/workflows/ci.yml`**. Disable with `git config --unset core.hooksPath` (see `.githooks/README.md`).
 
 ## How components connect

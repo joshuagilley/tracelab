@@ -42,6 +42,7 @@ build:
 
 test:
 	cd services/api && go test ./...
+	cd services/api && go run ./cmd/lab-tester -repo "$(CURDIR)"
 	cd apps/web && npm run slopsniff && npm run build
 
 seed-certifications:
